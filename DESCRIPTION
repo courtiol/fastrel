@@ -2,7 +2,7 @@ Package: fastrel
 Type: Package
 Title: Fast Additive Relatedness Matrices from Pedigrees, with an
         Incremental Store
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: person("Alexandre", "Courtiol", email = "courtiol@izw-berlin.de",
     role = c("aut", "cre"))
 Description: Computes the additive relationship ("relatedness") matrix, twice

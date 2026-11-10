@@ -3,6 +3,7 @@
 #include <Rcpp.h>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 using namespace Rcpp;
 
 // Persistent store of the additive relationship ("relatedness") matrix
@@ -109,6 +110,35 @@ public:
     return out;
   }
 
+  // Fill an EMPTY store from a complete relatedness matrix (used to restore a
+  // saved store). The k individuals of A (rows/columns, in this order) get
+  // fresh slots; the capacity grows if k exceeds it. Returns their 1-based
+  // slots, in the order of the rows of A.
+  IntegerVector restore(NumericMatrix A) {
+    const int k = A.nrow();
+    if (A.ncol() != k) stop("A must be a square matrix");
+    if (size() != 0) stop("restore() requires an empty store");
+    for (int a = 0; a < k; a++)
+      for (int b = 0; b <= a; b++) {
+        if (!R_finite(A(a, b))) stop("A contains missing or non-finite values");
+        if (std::abs(A(a, b) - A(b, a)) > 1e-10) stop("A must be symmetric");
+      }
+    while (cap < k) grow();
+
+    std::vector<int> js(k);
+    IntegerVector out(k);
+    for (int a = 0; a < k; a++) {
+      const int j = free_.back(); free_.pop_back();
+      used[j] = true;
+      js[a] = j;
+      out[a] = j + 1;
+    }
+    for (int a = 0; a < k; a++)
+      for (int b = 0; b < k; b++)
+        K[js[b] + (size_t)js[a] * cap] = A(b, a);
+    return out;
+  }
+
   // 1-based slots currently in use
   IntegerVector alive() {
     std::vector<int> s;
@@ -164,6 +194,7 @@ RCPP_MODULE(relstore) {
   .method("add", &RelStore::add)
   .method("remove", &RelStore::remove)
   .method("get", &RelStore::get)
+  .method("restore", &RelStore::restore)
   .method("alive", &RelStore::alive)
   .method("size", &RelStore::size)
   .method("capacity", &RelStore::capacity);

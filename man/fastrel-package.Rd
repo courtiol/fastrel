@@ -32,11 +32,11 @@ non-inbred, and an unknown parent is treated as unrelated to everybody.
 }
 
 \author{
-\strong{Maintainer}: Alexandre Courtiol \email{your.email@example.com}
+\strong{Maintainer}: Alexandre Courtiol \email{courtiol@izw-berlin.de}
 
 Authors:
 \itemize{
-  \item Alexandre Courtiol \email{your.email@example.com}
+  \item Alexandre Courtiol \email{courtiol@izw-berlin.de}
 }
 
 }

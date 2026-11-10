@@ -182,3 +182,76 @@ check_store <- function(rel) {
     stop("`rel` must be a store created by rel_new()")
   invisible(TRUE)
 }
+
+#' Save and restore a store
+#'
+#' A store lives in C++ memory and cannot be saved with [saveRDS()] directly.
+#' `rel_save()` extracts its content (the identifiers and the relatedness matrix
+#' among them, plus the capacity) and `rel_load()` rebuilds a working store from
+#' it, so that a simulation can be checkpointed and resumed.
+#'
+#' The saved object contains the full dense relatedness matrix among the
+#' individuals in the store, so its size is `8 * n^2` bytes for `n` individuals.
+#' After loading, individuals have new internal slots, which is invisible when
+#' you work through the identifiers. The restored store behaves exactly like the
+#' original one: you can keep adding and removing individuals.
+#'
+#' @param rel A store created by [rel_new()].
+#' @param file Path of an `.rds` file. If `NULL` (default), `rel_save()` returns
+#'   the saved object instead of writing it.
+#' @param x For `rel_load()`, either the path of an `.rds` file written by
+#'   `rel_save()` or the object returned by `rel_save(rel)`.
+#'
+#' @return `rel_save()` returns the saved object (a list of class
+#'   `"relatedness_store_saved"`), or, when `file` is given, the file path
+#'   invisibly. `rel_load()` returns a new store.
+#'
+#' @examples
+#' rel <- rel_new(16)
+#' rel_add(rel, data.frame(id = c("A", "B"), mom = NA, dad = NA))
+#' rel_add(rel, data.frame(id = "C", mom = "A", dad = "B"))
+#'
+#' f <- tempfile(fileext = ".rds")
+#' rel_save(rel, f)
+#' rel2 <- rel_load(f)
+#' all.equal(rel_get(rel), rel_get(rel2))
+#'
+#' ## the restored store can be used as usual
+#' rel_add(rel2, data.frame(id = "D", mom = "C", dad = "A"))
+#' @seealso [rel_new()]
+#' @name relstore_io
+NULL
+
+#' @rdname relstore_io
+#' @export
+rel_save <- function(rel, file = NULL) {
+  check_store(rel)
+  out <- structure(
+    list(ids = rel$ids, A = rel_get(rel), capacity = rel_capacity(rel),
+         format = 1L),
+    class = "relatedness_store_saved")
+  if (is.null(file)) return(out)
+  saveRDS(out, file)
+  invisible(file)
+}
+
+#' @rdname relstore_io
+#' @export
+rel_load <- function(x) {
+  if (is.character(x) && length(x) == 1L) x <- readRDS(x)
+  if (!inherits(x, "relatedness_store_saved") ||
+      !all(c("ids", "A", "capacity") %in% names(x)))
+    stop("`x` must be a file or an object produced by rel_save()")
+  k <- length(x$ids)
+  if (!is.matrix(x$A) || nrow(x$A) != k || ncol(x$A) != k)
+    stop("the saved matrix does not match the saved identifiers")
+  if (anyNA(x$ids) || anyDuplicated(x$ids))
+    stop("the saved identifiers must be unique and not NA")
+
+  rel <- rel_new(max(x$capacity, k, 1L))
+  if (k > 0L) {
+    rel$slots <- rel$ks$restore(unname(x$A))
+    rel$ids   <- as.character(x$ids)
+  }
+  rel
+}
