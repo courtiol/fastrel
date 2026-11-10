@@ -1,0 +1,26 @@
+Package: fastrel
+Type: Package
+Title: Fast Additive Relatedness Matrices from Pedigrees, with an
+        Incremental Store
+Version: 0.1.0
+Authors@R: person("Alexandre", "Courtiol", email = "courtiol@izw-berlin.de",
+    role = c("aut", "cre"))
+Description: Computes the additive relationship ("relatedness") matrix, twice
+    the kinship matrix, of autosomal loci from a pedigree using the tabular
+    method implemented in C++. Also provides a persistent store that updates the
+    relatedness matrix incrementally as individuals are born, die, emigrate or
+    immigrate, which avoids recomputing the whole matrix at each step of an
+    individual-based simulation with a growing pedigree.
+License: GPL (>= 3)
+Encoding: UTF-8
+Depends: R (>= 4.0.0)
+Imports: methods, Rcpp (>= 1.0.0)
+LinkingTo: Rcpp
+Suggests: kinship2, microbenchmark, testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+NeedsCompilation: yes
+Packaged: 2026-11-10 21:06:24 UTC; root
+Author: Alexandre Courtiol [aut, cre]
+Maintainer: Alexandre Courtiol <courtiol@izw-berlin.de>
+Config/roxygen2/version: 8.1.1
