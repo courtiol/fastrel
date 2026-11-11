@@ -57,9 +57,14 @@ for (t in 0:100) {
 
 After editing roxygen comments or the C++ attributes:
 
-```r
+
 Rcpp::compileAttributes()
 roxygen2::roxygenise()
 ```
 
-Benchmarks: `system.file("benchmarks/relstore_benchmark.R", package = "fastrel")`.
+Benchmarks:
+
+```r
+source(system.file("benchmarks/relstore_benchmark.R", package = "fastrel"))
+source(system.file("benchmarks/sim_pop_benchmark.R", package = "fastrel"))
+```
