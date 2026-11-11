@@ -7,10 +7,10 @@ pedigree keeps growing.
 ## Install
 
 ```r
-# from the source tarball
-install.packages("fastrel_0.2.0.tar.gz", repos = NULL, type = "source")
-# or, from the package folder (requires roxygen2 to rebuild the documentation)
-# devtools::document(); devtools::install()
+if (!requireNamespace("pak")) {
+  install.packages("pak")
+}
+pak::pkg_install("courtiol/fastrel")
 ```
 
 ## Whole pedigree at once
