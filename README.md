@@ -57,7 +57,7 @@ for (t in 0:100) {
 
 After editing roxygen comments or the C++ attributes:
 
-
+```r
 Rcpp::compileAttributes()
 roxygen2::roxygenise()
 ```
