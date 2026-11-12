@@ -12,7 +12,7 @@
 \alias{print.relatedness_store}
 \title{Incremental store of the relatedness matrix}
 \usage{
-rel_new()
+rel_new(remember_removed = FALSE)
 
 rel_add(rel, ped)
 
@@ -29,6 +29,10 @@ rel_capacity(rel)
 \method{print}{relatedness_store}(x, ...)
 }
 \arguments{
+\item{remember_removed}{Should the store keep a trace of the individuals
+removed, so that \code{rel_add()} refuses to add them again? \code{FALSE} by default
+(see the section Removed individuals).}
+
 \item{rel}{A store created by \code{rel_new()}.}
 
 \item{ped}{A data frame whose first three columns are the identifier of the
@@ -86,6 +90,48 @@ as you want to query its relatedness. A removed individual cannot be used as a
 parent later (\code{rel_add()} raises an error), and a newborn gets no relatedness
 value with individuals removed before its birth. Relatedness values among the
 remaining individuals are not affected by removals.
+
+Removal is final. The relatedness between a removed individual and those
+born afterwards is not tracked, so if it is added again it comes back as
+unrelated to everybody, which is wrong for its relatives. By default
+nothing prevents this: it is up to you never to add again an individual
+that was removed. With \code{rel_new(remember_removed = TRUE)}, \code{rel_add()}
+raises an error instead (see the section Removed individuals).
+}
+
+\section{Removed individuals}{
+
+With \code{remember_removed = TRUE}, the store keeps a trace of every individual
+removed and \code{rel_add()} refuses to add it again. This protects against a
+silent error, at the cost of 11 to 23 bytes per individual removed: the
+memory used then grows slowly with the length of the pedigree (11 to 23 MB
+per million individuals removed), instead of depending only on the number
+of individuals in the store. This is why it is off by default. The time
+taken by \code{rel_add()} and \code{rel_remove()} is not affected.
+
+The trace is a 64-bit fingerprint of each identifier, not the identifier
+itself. A new identifier can thus be mistaken for a removed one, but with a
+negligible probability: the number of individuals removed divided by
+\code{2^64}, i.e. less than 1 in 10 million millions per addition after a million
+removals.
+}
+
+\section{Metapopulations}{
+
+To follow several patches connected by migration, use a single store for
+the whole metapopulation and do not remove the individuals that move to
+another patch: remove them only when they die or leave the metapopulation
+for good. Keep track of who is in which patch in your simulation, and
+extract the matrix of a patch with \code{rel_get(rel, ids_of_the_patch)}.
+Migrants then keep their exact relatedness with everybody, including the
+relatives they left behind and the offspring they produce elsewhere. The
+time per birth and the memory depend on the number of individuals alive
+over all the patches (see the section Memory).
+
+Creating the store with \code{rel_new(remember_removed = TRUE)} is recommended
+here: with individuals moving between patches, removing one that left a
+patch and adding it again when it comes back is an easy mistake to make,
+and it would go unnoticed.
 }
 
 \section{Memory}{
@@ -120,6 +166,22 @@ rel_add(rel, data.frame(id = "H", mom = "E", dad = "G"))
 A <- rel_get(rel)
 A
 diag(A) - 1   # inbreeding coefficients
+
+## two patches: one store, and the patch of each individual kept aside
+rel <- rel_new(remember_removed = TRUE)
+rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
+patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B")
+rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2"))   # born in A
+patch["a3"] <- "A"
+patch["a3"] <- "B"                                            # a3 moves to B
+rel_add(rel, data.frame(id = "b3", mom = "b1", dad = "a3"))   # and breeds there
+patch["b3"] <- "B"
+rel_get(rel, names(patch)[patch == "B"])
+rel_get(rel)["b3", "a1"]   # b3 is related to its grandparent in patch A
+
+## with remember_removed = TRUE, a removed individual cannot come back
+rel_remove(rel, "a3")
+try(rel_add(rel, data.frame(id = "a3", mom = NA, dad = NA)))
 }
 \seealso{
 \code{\link[=relatedness_fast]{relatedness_fast()}} to compute the whole matrix from a pedigree;

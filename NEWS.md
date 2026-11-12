@@ -1,3 +1,16 @@
+# fastrel 0.3.1
+
+* New argument `rel_new(remember_removed = TRUE)`: the store then keeps a trace
+  of the individuals removed and `rel_add()` refuses to add them again. Such an
+  individual otherwise comes back as an unrelated founder, which is silently
+  wrong for its relatives. It is off by default because it costs 11 to 23 bytes
+  per individual removed, so the memory used then grows with the length of the
+  pedigree; it is recommended for metapopulations. `rel_save()` / `rel_load()`
+  keep the setting and the trace.
+* The help page of the store and the README explain how to handle a
+  metapopulation: a single store for all the patches, in which migrants are
+  kept.
+
 # fastrel 0.3.0
 
 ## Breaking changes

@@ -106,13 +106,97 @@ test_that("an oversized or emptied store gives the same values", {
   rel_remove(rel, ped$id)
   expect_equal(rel_size(rel), 0L)
   expect_equal(dim(rel_get(rel)), c(0L, 0L))
-  rel_add(rel, ped[, c("id", "momid", "dadid")])
-  expect_equal(rel_get(rel, ped$id), full)
+  ## (under new identifiers: a removed individual cannot be added again)
+  ped2 <- ped[, c("id", "momid", "dadid")]
+  ped2[] <- lapply(ped2, function(x) ifelse(is.na(x), NA, paste0("new_", x)))
+  rel_add(rel, ped2)
+  expect_equal(unname(rel_get(rel, ped2$id)), unname(full))
   expect_equal(rel_capacity(rel), cap)         # the slots were reused
 })
 
+test_that("by default a removed individual can be added again, as a founder", {
+  rel <- rel_new()
+  rel_add(rel, data.frame(id = c("a", "b"), mom = NA, dad = NA))
+  rel_add(rel, data.frame(id = "c", mom = "a", dad = "b"))
+  rel_remove(rel, "a")
+  rel_add(rel, data.frame(id = "a", mom = NA, dad = NA))
+  expect_equal(rel_get(rel)["a", "c"], 0)      # documented: its relatives are lost
+  expect_identical(rel_save(rel)$removed, raw(0))
+  expect_error(rel_new(remember_removed = NA), "TRUE or FALSE")
+  expect_error(rel_new(remember_removed = 16), "TRUE or FALSE")
+})
+
+test_that("with remember_removed, a removed individual cannot be added again", {
+  rel <- rel_new(remember_removed = TRUE)
+  rel_add(rel, data.frame(id = c("a", "b"), mom = NA, dad = NA))
+  rel_add(rel, data.frame(id = "c", mom = "a", dad = "b"))
+  rel_remove(rel, "a")
+  ## it would come back unrelated to its offspring c
+  expect_error(rel_add(rel, data.frame(id = "a", mom = NA, dad = NA)), "removed")
+  expect_error(rel_add(rel, data.frame(id = c("d", "a"), mom = NA, dad = NA)), "removed")
+  expect_identical(rel_ids(rel), c("b", "c"))  # nothing was inserted
+  rel_add(rel, data.frame(id = "d", mom = "c", dad = "b"))
+  expect_identical(rel_ids(rel), c("b", "c", "d"))
+  ## a failed rel_add() does not count as a removal: x can be added later
+  expect_error(rel_add(rel, data.frame(id = c("x", "p", "q"), mom = c(NA, "q", "p"),
+                                       dad = NA)), "cycle")
+  rel_add(rel, data.frame(id = "x", mom = NA, dad = NA))
+  expect_true("x" %in% rel_ids(rel))
+  ## the memory survives a save and load
+  rel2 <- rel_load(rel_save(rel))
+  expect_error(rel_add(rel2, data.frame(id = "a", mom = NA, dad = NA)), "removed")
+  rel_add(rel2, data.frame(id = "e", mom = "d", dad = NA))
+  expect_equal(rel_size(rel2), 5L)
+  ## an object saved by a version without this feature still loads
+  old <- rel_save(rel); old$removed <- old$remember_removed <- NULL
+  rel3 <- rel_load(old)
+  expect_equal(rel_get(rel3), rel_get(rel))
+  rel_add(rel3, data.frame(id = "a", mom = NA, dad = NA))   # not remembered
+  bad <- rel_save(rel); bad$removed <- "a"
+  expect_error(rel_load(bad), "not valid")
+  bad$removed <- as.raw(1:5)
+  expect_error(rel_load(bad), "invalid")
+})
+
+test_that("the trace of removed individuals holds with many of them", {
+  rel <- rel_new(remember_removed = TRUE)
+  ids <- sprintf("i%05d", 1:5000)
+  for (chunk in split(ids, rep(1:50, each = 100))) {
+    rel_add(rel, data.frame(id = chunk, mom = NA, dad = NA))
+    rel_remove(rel, chunk)
+  }
+  expect_equal(rel_size(rel), 0L)
+  expect_equal(length(rel_save(rel)$removed), 8 * 5000)
+  for (id in ids[c(1, 77, 2500, 5000)])
+    expect_error(rel_add(rel, data.frame(id = id, mom = NA, dad = NA)), id)
+  ## none of 5000 new identifiers is mistaken for a removed one
+  rel_add(rel, data.frame(id = sprintf("j%05d", 1:5000), mom = NA, dad = NA))
+  expect_equal(rel_size(rel), 5000L)
+  rel2 <- rel_load(rel_save(rel))
+  expect_error(rel_add(rel2, data.frame(id = "i04999", mom = NA, dad = NA)), "removed")
+})
+
+test_that("a metapopulation in one store: migrants keep their relatives", {
+  rel <- rel_new(remember_removed = TRUE)
+  rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
+  patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B")
+  rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2"))
+  patch["a3"] <- "B"                           # a3 was born in A and moves to B
+  rel_add(rel, data.frame(id = "b3", mom = "b1", dad = "a3"))
+  patch["b3"] <- "B"
+  rel_add(rel, data.frame(id = "a4", mom = "a1", dad = "a2"))   # a sib born later in A
+  patch["a4"] <- "A"
+  B <- rel_get(rel, names(patch)[patch == "B"])
+  expect_identical(rownames(B), c("b1", "b2", "a3", "b3"))
+  expect_equal(B["b3", "a3"], 0.5)
+  A <- rel_get(rel)
+  expect_equal(A["a3", "a4"], 0.5)             # full sibs in different patches
+  expect_equal(A["b3", "a1"], 0.25)            # grandparent left behind
+  expect_equal(A["b3", "a4"], 0.25)            # uncle or aunt born after the move
+})
+
 test_that("the capacity is handled automatically and stays close to the peak", {
-  expect_error(rel_new(100), "unused argument")
+  expect_error(rel_new(capacity = 100), "unused argument")
   rel <- rel_new()
   set.seed(1)
   ped <- sim_ped(900, n_founders = 20, window = 60)
