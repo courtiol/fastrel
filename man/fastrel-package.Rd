@@ -17,10 +17,13 @@ Two interfaces are provided:
 (a fast replacement for \code{2 * kinship2::kinship()}).
 \item \code{\link[=rel_new]{rel_new()}}, \code{\link[=rel_add]{rel_add()}}, \code{\link[=rel_remove]{rel_remove()}} and \code{\link[=rel_get]{rel_get()}} maintain the matrix
 incrementally, which is much cheaper when a pedigree keeps growing, as in
-an individual-based simulation.
+an individual-based simulation. \code{\link[=rel_ids]{rel_ids()}}, \code{\link[=rel_size]{rel_size()}} and
+\code{\link[=rel_capacity]{rel_capacity()}} describe the content of such a store, and \code{\link[=rel_save]{rel_save()}} and
+\code{\link[=rel_load]{rel_load()}} save it to disk and restore it.
 }
 
-\code{\link[=sim_ped]{sim_ped()}} simulates a pedigree for testing and benchmarking.
+\code{\link[=sim_ped]{sim_ped()}} simulates a pedigree, and \code{\link[=sim_pop]{sim_pop()}} a population with births,
+deaths, emigration and immigration, for testing and benchmarking.
 }
 \section{Scale}{
 

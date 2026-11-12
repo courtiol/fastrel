@@ -39,15 +39,17 @@ public:
   IntegerVector add(IntegerVector mom, IntegerVector dad) {
     const int nb = mom.size();
     if (dad.size() != nb) stop("mom and dad must have the same length");
-    // validate all the parents first, so that an error leaves the store unchanged
+    // Everything that can fail is done before the first slot is taken, so
+    // that an error leaves the store unchanged (and in step with the R side):
+    // validate all the parents, then make room for all the newborns.
     for (int b = 0; b < nb; b++) { slot(mom[b]); slot(dad[b]); }
     IntegerVector out(nb);
+    while ((int)free_.size() < nb) grow();
 
     for (int b = 0; b < nb; b++) {
       const int m = slot(mom[b]), d = slot(dad[b]);   // 0-based, -1 if unknown
 
-      // take a free slot for the newborn, enlarging the matrix if none is left
-      if (free_.empty()) grow();
+      // take a free slot for the newborn
       const int j = free_.back(); free_.pop_back();
       used[j] = true;
       if (j >= hi) hi = j + 1;
@@ -149,13 +151,6 @@ public:
     return out;
   }
 
-  // 1-based slots currently in use
-  IntegerVector alive() {
-    std::vector<int> s;
-    for (int i = 0; i < cap; i++) if (used[i]) s.push_back(i + 1);
-    return wrap(s);
-  }
-
   int size() { return (int)(cap - free_.size()); }   // individuals in the store
   int capacity() { return cap; }                     // slots available (used + free)
 
@@ -188,17 +183,25 @@ private:
   }
 
   // Double the capacity: copy the old matrix into the top-left corner of a
-  // larger, zero-filled one and register the new slots as free.
+  // larger, zero-filled one and register the new slots as free. The new slots
+  // go to the bottom of the stack, so that the free slots with a low index
+  // are still used first. All the allocations are done before the store is
+  // modified: if memory runs out, the store is left as it was.
   void grow() {
     if (cap > INT_MAX / 2) stop("the store cannot grow any further");
     const int nc = cap * 2;
     std::vector<double> NK((size_t)nc * nc, 0.0);
-    for (int j = 0; j < cap; j++)
-      std::copy(K.begin() + (size_t)j * cap, K.begin() + (size_t)(j + 1) * cap,
+    std::vector<int> nf;
+    nf.reserve(free_.size() + (nc - cap));
+    used.reserve(nc);
+    for (int i = nc - 1; i >= cap; i--) nf.push_back(i);
+    nf.insert(nf.end(), free_.begin(), free_.end());
+    for (int j = 0; j < hi; j++)
+      std::copy(K.begin() + (size_t)j * cap, K.begin() + (size_t)j * cap + hi,
                 NK.begin() + (size_t)j * nc);
     K.swap(NK);
+    free_.swap(nf);
     used.resize(nc, false);
-    for (int i = nc - 1; i >= cap; i--) free_.push_back(i);
     cap = nc;
   }
 };
@@ -210,7 +213,6 @@ RCPP_MODULE(relstore) {
   .method("remove", &RelStore::remove)
   .method("get", &RelStore::get)
   .method("restore", &RelStore::restore)
-  .method("alive", &RelStore::alive)
   .method("size", &RelStore::size)
   .method("capacity", &RelStore::capacity);
 }

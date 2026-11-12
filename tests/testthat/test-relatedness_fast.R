@@ -54,4 +54,21 @@ test_that("rows in reverse birth order, and NA in id", {
   expect_equal(A1[ped$id, ped$id], A0)
   expect_true(isSymmetric(A1))
   expect_error(relatedness_fast(c("a", NA), c(NA, NA), c(NA, NA)), "NA")
+  expect_error(relatedness_fast(c("a", NA, "c"), dadid = c(NA, "zz", NA),
+                                momid = c(NA, "zz", NA)), "NA")
+})
+
+test_that("selfing, a self-parent, factor or numeric ids, and chrtype", {
+  ## 2 is the offspring of 1 selfing; 3 is a backcross of 2 to 1
+  A <- relatedness_fast(c(1, 2, 3), dadid = c(NA, 1, 1), momid = c(NA, 1, 2))
+  expect_equal(unname(A), matrix(c(1, 1, 1, 1, 1.5, 1.25, 1, 1.25, 1.5), 3))
+  expect_identical(rownames(A), c("1", "2", "3"))
+  p <- test_ped()
+  A0 <- relatedness_fast(p$id, dadid = p$dad, momid = p$mom)
+  expect_equal(relatedness_fast(factor(p$id), dadid = factor(p$dad), momid = factor(p$mom)), A0)
+  expect_error(relatedness_fast("a", dadid = "a", momid = NA), "own ancestor")
+  expect_equal(relatedness_fast(p$id, dadid = p$dad, momid = p$mom, sex = 1,
+                                chrtype = "autosome"), A0)
+  expect_error(relatedness_fast(p$id, dadid = p$dad, momid = p$mom, chrtype = "X"),
+               "autosome")
 })

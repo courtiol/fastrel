@@ -37,7 +37,8 @@ that did not die.}
 
 \item{n_immigrants}{Mean number of immigrants per step (Poisson).}
 
-\item{seed}{Seed of the random number generator.}
+\item{seed}{Seed of the random number generator, or \code{NULL} to use the
+generator of the session as it is.}
 }
 \value{
 A data frame with one row per individual ever present, in order of
@@ -80,8 +81,8 @@ born. Therefore, replaying the steps in order with \code{rel_add()} for the
 arrivals followed by \code{rel_remove()} for the exits never refers to an unknown
 individual or to a removed parent (see the example).
 
-The function calls \code{\link[=set.seed]{set.seed()}}, which changes the state of the random number
-generator of the session.
+Unless \code{seed = NULL}, the function calls \code{\link[=set.seed]{set.seed()}}, which changes the
+state of the random number generator of the session.
 }
 \examples{
 pop <- sim_pop(n_steps = 40, n_init = 60, seed = 2)
@@ -100,7 +101,7 @@ size
 
 ## the survivors agree with the relatedness computed from the whole pedigree
 A <- relatedness_fast(pop$id, pop$dadid, pop$momid)
-alive <- rel$ids
+alive <- rel_ids(rel)
 all.equal(rel_get(rel), A[alive, alive])
 }
 \seealso{

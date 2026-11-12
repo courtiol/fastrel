@@ -46,4 +46,6 @@ test_that("empty stores and invalid input", {
   bad <- rel_save(rel2); bad$A[1, 1] <- NA
   expect_error(rel_load(bad), "non-finite")
   expect_error(rel_save(list()), "store")
+  bad <- rel_save(rel2); bad$format <- 2L
+  expect_error(rel_load(bad), "format")
 })

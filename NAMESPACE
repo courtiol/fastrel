@@ -4,6 +4,7 @@ S3method(print,relatedness_store)
 export(rel_add)
 export(rel_capacity)
 export(rel_get)
+export(rel_ids)
 export(rel_load)
 export(rel_new)
 export(rel_remove)
@@ -17,8 +18,5 @@ importFrom(Rcpp,
   loadModule
 )
 importFrom(methods,new)
-importFrom(utils,
-  globalVariables,
-  head
-)
+importFrom(utils,head)
 useDynLib(fastrel, .registration = TRUE)

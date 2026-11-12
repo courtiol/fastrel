@@ -19,7 +19,7 @@
 #'   individual's mother (`NA` if unknown).
 #' @param ... Ignored. Present so that calls written for [kinship2::kinship()]
 #'   (e.g. with `sex` or `chrtype = "autosome"`) do not fail. Only autosomes are
-#'   supported.
+#'   supported: any other `chrtype` raises an error.
 #'
 #' @return A symmetric numeric matrix with `length(id)` rows and columns and
 #'   `id` as row and column names. The diagonal is `1 + F`, where `F` is the
@@ -44,6 +44,9 @@
 #' }
 #' @export
 relatedness_fast <- function(id, dadid, momid, ...) {
+  chrtype <- list(...)[["chrtype"]]
+  if (!is.null(chrtype) && !identical(tolower(chrtype), "autosome"))
+    stop("only autosomes are supported (`chrtype = \"autosome\"`)")
   if (anyNA(id)) stop("id values cannot be NA")
   if (anyDuplicated(id)) stop("All id values must be unique")
   n <- length(id)

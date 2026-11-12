@@ -31,13 +31,16 @@ test_that("population is roughly stable and replay with the store is exact", {
   }
   expect_gt(rel_size(rel), 10)
   expect_lt(rel_size(rel), nrow(pop))            # removals actually happened
-  alive <- rel$ids
+  alive <- rel_ids(rel)
   expect_equal(rel_get(rel), full[alive, alive])
 })
 
 test_that("edge cases", {
   expect_error(sim_pop(5, n_init = 0), "n_init")
   expect_error(sim_pop(5, p_death = 2), "probabilities")
+  expect_error(sim_pop(-1), "n_steps")
+  expect_error(sim_pop(5, n_init = 2.5), "n_init")
+  expect_error(sim_pop(5, maturity = -1), "maturity")
   expect_warning(pop <- sim_pop(10, n_init = 3, p_death = 1, n_immigrants = 0), "extinct")
   expect_true(all(!is.na(pop$exit)))
   none <- sim_pop(0, n_init = 5)

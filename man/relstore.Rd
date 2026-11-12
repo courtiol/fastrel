@@ -6,6 +6,7 @@
 \alias{rel_add}
 \alias{rel_remove}
 \alias{rel_get}
+\alias{rel_ids}
 \alias{rel_size}
 \alias{rel_capacity}
 \alias{print.relatedness_store}
@@ -18,6 +19,8 @@ rel_add(rel, ped)
 rel_remove(rel, ids)
 
 rel_get(rel, ids = rel$ids)
+
+rel_ids(rel)
 
 rel_size(rel)
 
@@ -45,8 +48,8 @@ For \code{rel_get()}, the default is every individual in the store.}
 \value{
 \code{rel_new()} returns the store. \code{rel_add()} and \code{rel_remove()} return
 the store invisibly. \code{rel_get()} returns a symmetric matrix with \code{ids} as
-dimnames (diagonal \code{1 + F}). \code{rel_size()} and \code{rel_capacity()} return
-integers.
+dimnames (diagonal \code{1 + F}). \code{rel_ids()} returns a character vector, in
+order of insertion. \code{rel_size()} and \code{rel_capacity()} return integers.
 }
 \description{
 A persistent store holds the additive relationship matrix
@@ -67,13 +70,16 @@ The functions work as follows:
 focal, mother and father.
 \item \code{rel_remove()} removes individuals.
 \item \code{rel_get()} extracts the relatedness matrix among chosen individuals.
+\item \code{rel_ids()} lists the individuals in the store.
 \item \code{rel_size()} and \code{rel_capacity()} report the number of individuals in the
 store and the number of slots allocated.
 }
 
 A store is an environment: \code{rel_add()} and \code{rel_remove()} modify it in place,
 and copying the object does not copy the data. A store cannot be saved to disk
-with \code{\link[=save]{save()}} or \code{\link[=saveRDS]{saveRDS()}} and restored in another session.
+with \code{\link[=save]{save()}} or \code{\link[=saveRDS]{saveRDS()}} and restored in another session: use
+\code{\link[=rel_save]{rel_save()}} and \code{\link[=rel_load]{rel_load()}} instead. The content of the environment is
+internal: use the functions above rather than reading or modifying it.
 }
 \section{What to keep in the store}{
 
@@ -105,6 +111,7 @@ rel_add(rel, data.frame(id = "G", mom = "E", dad = "F"))
 ## deaths (or emigration): free the slots
 rel_remove(rel, c("A", "B", "C", "D"))
 rel_size(rel)
+rel_ids(rel)
 
 ## a mother-son mating
 rel_add(rel, data.frame(id = "H", mom = "E", dad = "G"))
@@ -114,5 +121,6 @@ A
 diag(A) - 1   # inbreeding coefficients
 }
 \seealso{
-\code{\link[=relatedness_fast]{relatedness_fast()}} to compute the whole matrix from a pedigree.
+\code{\link[=relatedness_fast]{relatedness_fast()}} to compute the whole matrix from a pedigree;
+\code{\link[=rel_save]{rel_save()}} and \code{\link[=rel_load]{rel_load()}} to save a store to disk.
 }

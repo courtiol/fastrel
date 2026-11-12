@@ -21,9 +21,17 @@ all.equal(A1, A2)
 all.equal(A1, A3)
 
 ## speed ----
+## orig and fast compute the whole matrix from the pedigree. store_build does
+## the same with a store (creation, insertion and extraction), whereas
+## store_get only extracts the matrix from a store that is already filled.
 microbenchmark(orig  = source_orig(ped$id, ped$dadid, ped$momid),
                fast  = relatedness_fast(ped$id, ped$dadid, ped$momid),
-               store = rel_get(rel, ped$id),
+               store_build = {
+                 r <- rel_new(1000)
+                 rel_add(r, ped[, c("id", "momid", "dadid")])
+                 rel_get(r, ped$id)
+               },
+               store_get = rel_get(rel, ped$id),
                times = 200)
 
 ## scaling: a pedigree that keeps growing ----
@@ -47,7 +55,7 @@ for (n in steps[-1]) {
   ## incremental store: add the newborns and extract the whole matrix
   rec_time$relstore[k] <- system.time({
     rel_add(rel, new[, c("id", "momid", "dadid")])
-    rel_get(rel, rel$ids)
+    rel_get(rel)
   })[["elapsed"]]
 
   ## from scratch on the whole pedigree

@@ -16,12 +16,15 @@
 #'   focal, mother and father.
 #' * `rel_remove()` removes individuals.
 #' * `rel_get()` extracts the relatedness matrix among chosen individuals.
+#' * `rel_ids()` lists the individuals in the store.
 #' * `rel_size()` and `rel_capacity()` report the number of individuals in the
 #'   store and the number of slots allocated.
 #'
 #' A store is an environment: `rel_add()` and `rel_remove()` modify it in place,
 #' and copying the object does not copy the data. A store cannot be saved to disk
-#' with [save()] or [saveRDS()] and restored in another session.
+#' with [save()] or [saveRDS()] and restored in another session: use
+#' [rel_save()] and [rel_load()] instead. The content of the environment is
+#' internal: use the functions above rather than reading or modifying it.
 #'
 #' @section What to keep in the store:
 #' Keep an individual for as long as it can still become a parent, or for as long
@@ -47,10 +50,11 @@
 #'
 #' @return `rel_new()` returns the store. `rel_add()` and `rel_remove()` return
 #'   the store invisibly. `rel_get()` returns a symmetric matrix with `ids` as
-#'   dimnames (diagonal `1 + F`). `rel_size()` and `rel_capacity()` return
-#'   integers.
+#'   dimnames (diagonal `1 + F`). `rel_ids()` returns a character vector, in
+#'   order of insertion. `rel_size()` and `rel_capacity()` return integers.
 #'
-#' @seealso [relatedness_fast()] to compute the whole matrix from a pedigree.
+#' @seealso [relatedness_fast()] to compute the whole matrix from a pedigree;
+#'   [rel_save()] and [rel_load()] to save a store to disk.
 #'
 #' @examples
 #' rel <- rel_new(16)
@@ -65,6 +69,7 @@
 #' ## deaths (or emigration): free the slots
 #' rel_remove(rel, c("A", "B", "C", "D"))
 #' rel_size(rel)
+#' rel_ids(rel)
 #'
 #' ## a mother-son mating
 #' rel_add(rel, data.frame(id = "H", mom = "E", dad = "G"))
@@ -176,6 +181,13 @@ rel_get <- function(rel, ids = rel$ids) {
 
 #' @rdname relstore
 #' @export
+rel_ids <- function(rel) {
+  check_store(rel)
+  rel$ids
+}
+
+#' @rdname relstore
+#' @export
 rel_size <- function(rel) {
   check_store(rel)
   rel$ks$size()
@@ -193,6 +205,7 @@ rel_capacity <- function(rel) {
 #' @rdname relstore
 #' @export
 print.relatedness_store <- function(x, ...) {
+  check_store(x)
   cat("<relatedness_store>", length(x$ids), "individuals,",
       x$ks$capacity(), "slots\n")
   invisible(x)
@@ -201,8 +214,15 @@ print.relatedness_store <- function(x, ...) {
 check_store <- function(rel) {
   if (!inherits(rel, "relatedness_store"))
     stop("`rel` must be a store created by rel_new()")
+  ## a store read back with readRDS() or load() has lost its C++ content
+  if (identical(rel$ks$.pointer, nil_pointer))
+    stop("this store is no longer valid: a store cannot be saved with save() ",
+         "or saveRDS(), use rel_save() and rel_load() instead")
   invisible(TRUE)
 }
+
+## what the pointer to the C++ object becomes once saved and read back
+nil_pointer <- methods::new("externalptr")
 
 #' Save and restore a store
 #'
@@ -263,6 +283,9 @@ rel_load <- function(x) {
   if (!inherits(x, "relatedness_store_saved") ||
       !all(c("ids", "A", "capacity") %in% names(x)))
     stop("`x` must be a file or an object produced by rel_save()")
+  if (!is.null(x$format) && !identical(as.integer(x$format), 1L))
+    stop("this file was written in a format (", x$format, ") that this ",
+         "version of fastrel cannot read")
   k <- length(x$ids)
   if (!is.matrix(x$A) || nrow(x$A) != k || ncol(x$A) != k)
     stop("the saved matrix does not match the saved identifiers")

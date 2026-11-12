@@ -9,11 +9,27 @@
   constant time; and the store is looked up once per call instead of six times.
   `rel_get()` no longer zero-fills the matrix before writing it.
 * `sim_pop()` is about 10 times faster (same output for a given seed).
-* `rel_add()` leaves the store unchanged when it fails because of a cycle among
-  the new individuals, even if some of them had already been inserted.
-* More input checks: `NA` in the `id` of `relatedness_fast()`, non-numeric or
-  too large `capacity` in `rel_new()`, and `n_founders` or `window` below 1 in
-  `sim_ped()` (which could silently make an individual its own parent).
+* New `rel_ids()` listing the individuals in a store, to be used instead of
+  `rel$ids`.
+* `sim_ped()` and `sim_pop()` accept `seed = NULL` to leave the random number
+  generator of the session as it is.
+* `rel_add()` leaves the store unchanged when it fails, whether because of a
+  cycle among the new individuals (some of them could already have been
+  inserted) or because memory ran out while the store was growing.
+* `relatedness_fast()` now refuses `NA` in `id` (unknown parents were matched
+  to that individual, which could give a wrong matrix) and any `chrtype` other
+  than `"autosome"` (the autosomal matrix was returned silently).
+* A store read back with `readRDS()` or `load()` is now reported as such, with
+  a pointer to `rel_save()` and `rel_load()`, instead of failing inside Rcpp.
+* More input checks: non-numeric or too large `capacity` in `rel_new()`;
+  `n_founders` or `window` below 1 in `sim_ped()` (which could silently make an
+  individual its own parent) and `p_unknown` outside `[0, 1]`; `n_steps`,
+  `n_init` and `maturity` in `sim_pop()`; the `format` of a saved store in
+  `rel_load()`; `NA` slots in the C++ object.
+* Documentation: the help pages of the store and of the package now mention
+  `rel_save()`, `rel_load()`, `sim_pop()`, `rel_size()` and `rel_capacity()`.
+* Benchmarks: the store is now also timed on a full build, not only on
+  extraction, and a wrong comment on the capacity was corrected.
 * `stats` and `utils` are now declared in `Imports`.
 * The package is checked on GitHub Actions.
 

@@ -17,7 +17,7 @@ individual's mother (\code{NA} if unknown).}
 
 \item{...}{Ignored. Present so that calls written for \code{\link[kinship2:kinship]{kinship2::kinship()}}
 (e.g. with \code{sex} or \code{chrtype = "autosome"}) do not fail. Only autosomes are
-supported.}
+supported: any other \code{chrtype} raises an error.}
 }
 \value{
 A symmetric numeric matrix with \code{length(id)} rows and columns and
