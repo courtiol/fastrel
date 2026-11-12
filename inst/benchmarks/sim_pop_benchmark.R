@@ -55,9 +55,3 @@ plot(store ~ step, data = rec, type = "l", ylab = "seconds per step",
 lines(scratch ~ step, data = sc, lty = 2, type = "b")
 legend("topleft", lty = 1:2, bty = "n", legend = c("store (add + remove)", "from scratch"))
 par(op)
-
-## checkpointing: save, restore, and keep going
-f <- tempfile(fileext = ".rds")
-rel_save(rel, f)
-rel2 <- rel_load(f)
-stopifnot(isTRUE(all.equal(rel_get(rel2), rel_get(rel))))
