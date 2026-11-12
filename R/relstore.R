@@ -34,11 +34,26 @@
 #' remaining individuals are not affected by removals.
 #'
 #' Removal is final. The relatedness between a removed individual and those
-#' born afterwards is not tracked, so it could only come back as unrelated to
-#' everybody, which would be wrong for its relatives. `rel_add()` therefore
-#' refuses an identifier that was removed earlier. For this, the store
-#' remembers the identifiers removed, which is the only thing in it that grows
-#' with the length of the pedigree (about 70 bytes per individual removed).
+#' born afterwards is not tracked, so if it is added again it comes back as
+#' unrelated to everybody, which is wrong for its relatives. By default
+#' nothing prevents this: it is up to you never to add again an individual
+#' that was removed. With `rel_new(remember_removed = TRUE)`, `rel_add()`
+#' raises an error instead (see the section Removed individuals).
+#'
+#' @section Removed individuals:
+#' With `remember_removed = TRUE`, the store keeps a trace of every individual
+#' removed and `rel_add()` refuses to add it again. This protects against a
+#' silent error, at the cost of 11 to 23 bytes per individual removed: the
+#' memory used then grows slowly with the length of the pedigree (11 to 23 MB
+#' per million individuals removed), instead of depending only on the number
+#' of individuals in the store. This is why it is off by default. The time
+#' taken by `rel_add()` and `rel_remove()` is not affected.
+#'
+#' The trace is a 64-bit fingerprint of each identifier, not the identifier
+#' itself. A new identifier can thus be mistaken for a removed one, but with a
+#' negligible probability: the number of individuals removed divided by
+#' `2^64`, i.e. less than 1 in 10 million millions per addition after a million
+#' removals.
 #'
 #' @section Metapopulations:
 #' To follow several patches connected by migration, use a single store for
@@ -51,6 +66,11 @@
 #' time per birth and the memory depend on the number of individuals alive
 #' over all the patches (see the section Memory).
 #'
+#' Creating the store with `rel_new(remember_removed = TRUE)` is recommended
+#' here: with individuals moving between patches, removing one that left a
+#' patch and adding it again when it comes back is an easy mistake to make,
+#' and it would go unnoticed.
+#'
 #' @section Memory:
 #' The store allocates its matrix by itself: there is nothing to set. The
 #' matrix has one row and one column per slot, hence uses `8 * rel_capacity(rel)^2`
@@ -60,6 +80,9 @@
 #' stays within about 1.5 times the largest number of individuals the store has
 #' held at once. It never shrinks.
 #'
+#' @param remember_removed Should the store keep a trace of the individuals
+#'   removed, so that `rel_add()` refuses to add them again? `FALSE` by default
+#'   (see the section Removed individuals).
 #' @param rel A store created by `rel_new()`.
 #' @param ped A data frame whose first three columns are the identifier of the
 #'   focal individual, of its mother and of its father (`NA` for unknown
@@ -99,7 +122,7 @@
 #' diag(A) - 1   # inbreeding coefficients
 #'
 #' ## two patches: one store, and the patch of each individual kept aside
-#' rel <- rel_new()
+#' rel <- rel_new(remember_removed = TRUE)
 #' rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
 #' patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B")
 #' rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2"))   # born in A
@@ -109,14 +132,22 @@
 #' patch["b3"] <- "B"
 #' rel_get(rel, names(patch)[patch == "B"])
 #' rel_get(rel)["b3", "a1"]   # b3 is related to its grandparent in patch A
+#'
+#' ## with remember_removed = TRUE, a removed individual cannot come back
+#' rel_remove(rel, "a3")
+#' try(rel_add(rel, data.frame(id = "a3", mom = NA, dad = NA)))
 #' @name relstore
 NULL
 
 #' @rdname relstore
 #' @export
-rel_new <- function() {
+rel_new <- function(remember_removed = FALSE) {
+  if (!is.logical(remember_removed) || length(remember_removed) != 1L ||
+      is.na(remember_removed))
+    stop("`remember_removed` must be TRUE or FALSE")
   self <- new.env()
-  self$ks    <- new(RelStore, 16L)     # initial number of slots; grows as needed
+  ## 16: initial number of slots; grows as needed
+  self$ks    <- new(RelStore, 16L, remember_removed)
   self$ptr   <- self$ks$.pointer   # kept aside: quick to test in check_store()
   self$ids   <- character(0)   # IDs currently in the store
   self$slots <- integer(0)     # their slots, same order
@@ -264,8 +295,8 @@ nil_pointer <- methods::new("externalptr")
 #'
 #' The saved object contains the full dense relatedness matrix among the
 #' individuals in the store, so its size is `8 * n^2` bytes for `n` individuals,
-#' plus the identifiers of the individuals removed so far (which cannot be
-#' added again, see [rel_add()]).
+#' plus, for a store created with `remember_removed = TRUE`, 8 bytes per
+#' individual removed so far.
 #' After loading, individuals have new internal slots, which is invisible when
 #' you work through the identifiers. The restored store behaves exactly like the
 #' original one: you can keep adding and removing individuals.
@@ -301,7 +332,8 @@ NULL
 rel_save <- function(rel, file = NULL) {
   check_store(rel)
   out <- structure(
-    list(ids = rel$ids, A = rel_get(rel), removed = rel$ks$gone(), format = 1L),
+    list(ids = rel$ids, A = rel_get(rel), remember_removed = rel$ks$remember(),
+         removed = rel$ks$gone(), format = 1L),
     class = "relatedness_store_saved")
   if (is.null(file)) return(out)
   saveRDS(out, file)
@@ -324,11 +356,12 @@ rel_load <- function(x) {
   if (anyNA(x$ids) || anyDuplicated(x$ids))
     stop("the saved identifiers must be unique and not NA")
 
-  if (anyNA(x$removed) || any(x$removed %in% x$ids))
-    stop("the saved list of removed identifiers is not valid")
+  remember <- isTRUE(x$remember_removed)
+  if (remember && !is.raw(x$removed))
+    stop("the saved list of removed individuals is not valid")
 
-  rel <- rel_new()
-  if (length(x$removed)) rel$ks$mark_gone(as.character(x$removed))
+  rel <- rel_new(remember_removed = remember)
+  if (remember) rel$ks$load_gone(x$removed)
   if (k > 0L) {
     rel$slots <- rel$ks$restore(unname(x$A))
     rel$ids   <- as.character(x$ids)

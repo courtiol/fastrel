@@ -71,10 +71,20 @@ implies that the computational cost of adding a birth to the stored relatedness
 information and the memory used depend on the number of individuals in the store,
 not on the length of the pedigree.
 
-Removal is final: an individual that was removed cannot be added again, since
-its relatedness with the individuals born in the meantime is unknown. To model
-a metapopulation, use a single store for all the patches, keep the migrants in
-it, and extract a patch with `rel_get(rel, ids_of_the_patch)` (see `?rel_new`).
+Removal is final: an individual that was removed must not be added again, since
+its relatedness with the individuals born in the meantime is unknown (it would
+come back as unrelated to everybody).
+
+### Metapopulations
+
+To model a metapopulation, use a single store for all the patches, keep the
+migrants in it, and extract a patch with `rel_get(rel, ids_of_the_patch)`.
+In that case we recommend creating the store with
+`rel_new(remember_removed = TRUE)`: `rel_add()` then raises an error if an
+individual that was removed is added again, a mistake that is easy to make when
+individuals move between patches. This is off by default because it costs 11 to
+23 bytes per individual removed, so the memory used then grows (slowly) with
+the length of the pedigree. See `?rel_new` for details.
 
 ### Saving and loading the relatedness store
 

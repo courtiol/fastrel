@@ -114,8 +114,20 @@ test_that("an oversized or emptied store gives the same values", {
   expect_equal(rel_capacity(rel), cap)         # the slots were reused
 })
 
-test_that("a removed individual cannot be added again", {
+test_that("by default a removed individual can be added again, as a founder", {
   rel <- rel_new()
+  rel_add(rel, data.frame(id = c("a", "b"), mom = NA, dad = NA))
+  rel_add(rel, data.frame(id = "c", mom = "a", dad = "b"))
+  rel_remove(rel, "a")
+  rel_add(rel, data.frame(id = "a", mom = NA, dad = NA))
+  expect_equal(rel_get(rel)["a", "c"], 0)      # documented: its relatives are lost
+  expect_identical(rel_save(rel)$removed, raw(0))
+  expect_error(rel_new(remember_removed = NA), "TRUE or FALSE")
+  expect_error(rel_new(remember_removed = 16), "TRUE or FALSE")
+})
+
+test_that("with remember_removed, a removed individual cannot be added again", {
+  rel <- rel_new(remember_removed = TRUE)
   rel_add(rel, data.frame(id = c("a", "b"), mom = NA, dad = NA))
   rel_add(rel, data.frame(id = "c", mom = "a", dad = "b"))
   rel_remove(rel, "a")
@@ -135,13 +147,37 @@ test_that("a removed individual cannot be added again", {
   expect_error(rel_add(rel2, data.frame(id = "a", mom = NA, dad = NA)), "removed")
   rel_add(rel2, data.frame(id = "e", mom = "d", dad = NA))
   expect_equal(rel_size(rel2), 5L)
-  ## a file saved without the list of removed individuals still loads
-  old <- rel_save(rel); old$removed <- NULL
-  expect_equal(rel_get(rel_load(old)), rel_get(rel))
+  ## an object saved by a version without this feature still loads
+  old <- rel_save(rel); old$removed <- old$remember_removed <- NULL
+  rel3 <- rel_load(old)
+  expect_equal(rel_get(rel3), rel_get(rel))
+  rel_add(rel3, data.frame(id = "a", mom = NA, dad = NA))   # not remembered
+  bad <- rel_save(rel); bad$removed <- "a"
+  expect_error(rel_load(bad), "not valid")
+  bad$removed <- as.raw(1:5)
+  expect_error(rel_load(bad), "invalid")
+})
+
+test_that("the trace of removed individuals holds with many of them", {
+  rel <- rel_new(remember_removed = TRUE)
+  ids <- sprintf("i%05d", 1:5000)
+  for (chunk in split(ids, rep(1:50, each = 100))) {
+    rel_add(rel, data.frame(id = chunk, mom = NA, dad = NA))
+    rel_remove(rel, chunk)
+  }
+  expect_equal(rel_size(rel), 0L)
+  expect_equal(length(rel_save(rel)$removed), 8 * 5000)
+  for (id in ids[c(1, 77, 2500, 5000)])
+    expect_error(rel_add(rel, data.frame(id = id, mom = NA, dad = NA)), id)
+  ## none of 5000 new identifiers is mistaken for a removed one
+  rel_add(rel, data.frame(id = sprintf("j%05d", 1:5000), mom = NA, dad = NA))
+  expect_equal(rel_size(rel), 5000L)
+  rel2 <- rel_load(rel_save(rel))
+  expect_error(rel_add(rel2, data.frame(id = "i04999", mom = NA, dad = NA)), "removed")
 })
 
 test_that("a metapopulation in one store: migrants keep their relatives", {
-  rel <- rel_new()
+  rel <- rel_new(remember_removed = TRUE)
   rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
   patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B")
   rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2"))
@@ -160,7 +196,7 @@ test_that("a metapopulation in one store: migrants keep their relatives", {
 })
 
 test_that("the capacity is handled automatically and stays close to the peak", {
-  expect_error(rel_new(100), "unused argument")
+  expect_error(rel_new(capacity = 100), "unused argument")
   rel <- rel_new()
   set.seed(1)
   ped <- sim_ped(900, n_founders = 20, window = 60)

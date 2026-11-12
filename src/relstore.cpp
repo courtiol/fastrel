@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <cmath>
 #include <climits>
-#include <string>
-#include <unordered_set>
+#include <cstdint>
+#include <cstring>
 using namespace Rcpp;
 
 // Persistent store of the additive relationship ("relatedness") matrix
@@ -31,7 +31,11 @@ using namespace Rcpp;
 // Class invariant: rows/columns of free slots are all zero.
 class RelStore {
 public:
-  explicit RelStore(int capacity) { init(capacity); }
+  // remember: keep a trace of the individuals removed, to refuse adding them
+  // again (see the section "removed individuals" below).
+  RelStore(int capacity, bool remember) : remember_(remember), ngone_(0) {
+    init(capacity);
+  }
 
   // Add individuals. mom/dad are the SLOTS of the parents (1-based, NA =
   // unknown parent), not the slots of the newborns. Returns the slots that
@@ -90,7 +94,7 @@ public:
   // Remove individuals (they can no longer be used as parents). Their row and
   // column are zeroed to keep the invariant, and the slot is recycled.
   // Relatedness values of the remaining individuals are unaffected.
-  // `ids` are the identifiers to remember as removed (see mark_gone()); it is
+  // `ids` are the identifiers of these individuals, for mark_gone(); it is
   // empty when an insertion is undone, which is not a removal.
   void remove(IntegerVector slots, CharacterVector ids) {
     for (int s : slots) if (s != NA_INTEGER) slot(s);   // validate them all first
@@ -157,33 +161,59 @@ public:
     return out;
   }
 
-  // Identifiers of the individuals removed so far. The store itself works
-  // with slots, not identifiers; this set only lets the R side refuse to add
-  // again an individual that was removed (its relatedness to the others is
-  // lost, so it would wrongly come back as unrelated to everybody). It is the
-  // one thing that grows with the length of the pedigree, hence a hash set
-  // kept here rather than an R vector searched at each call.
+  // ---- removed individuals -------------------------------------------------
+  // The store itself works with slots, not identifiers. When asked to
+  // (remember_), it also keeps a trace of every individual removed, so that
+  // the R side can refuse to add it again: its relatedness to the others is
+  // lost, so it would wrongly come back as unrelated to everybody.
+  // This is the one thing that grows with the length of the pedigree, so it
+  // is kept as small as possible: not the identifier but a 64-bit fingerprint
+  // of it, in a flat hash table (open addressing, linear probing, at most 70%
+  // full), i.e. 11 to 23 bytes per individual removed. Two identifiers have
+  // the same fingerprint with probability 2^-64, so a new identifier is
+  // wrongly taken for a removed one with probability (number removed) / 2^64.
+
   void mark_gone(CharacterVector ids) {
-    for (R_xlen_t i = 0; i < ids.size(); i++) gone_.insert(key(ids[i]));
+    if (!remember_) return;
+    for (R_xlen_t i = 0; i < ids.size(); i++) insert(fingerprint(ids[i]));
   }
 
-  CharacterVector gone() {
-    CharacterVector out(gone_.size());
-    R_xlen_t i = 0;
-    for (const std::string& s : gone_) out[i++] = Rf_mkCharCE(s.c_str(), CE_UTF8);
+  // fingerprints of the removed individuals, 8 bytes each (to save a store)
+  RawVector gone() {
+    RawVector out(8 * ngone_);
+    unsigned char* o = out.begin();
+    for (std::uint64_t h : tab_)
+      if (h) { std::memcpy(o, &h, 8); o += 8; }
     return out;
   }
+
+  // the reverse of gone() (to restore a store)
+  void load_gone(RawVector raw) {
+    if (raw.size() % 8 != 0) stop("invalid list of removed individuals");
+    const unsigned char* r = raw.begin();
+    for (R_xlen_t i = 0; i < raw.size(); i += 8) {
+      std::uint64_t h;
+      std::memcpy(&h, r + i, 8);
+      if (h == 0) stop("invalid list of removed individuals");
+      insert(h);
+    }
+  }
+
+  bool remember() { return remember_; }
 
   // Called before individuals are added: refuse those that were removed
   // earlier, then make room for them all in a single step. (One call from R
   // for both, since each call to the C++ object has a fixed overhead.)
   void prepare(CharacterVector ids) {
     const int need = ids.size();
-    if (!gone_.empty()) {
+    if (ngone_ > 0) {
       std::string bad;
       int nbad = 0;
       for (int i = 0; i < need && nbad < 5; i++)
-        if (gone_.count(key(ids[i]))) { bad += (nbad++ ? ", " : "") + key(ids[i]); }
+        if (contains(fingerprint(ids[i]))) {
+          if (nbad++) bad += ", ";
+          bad += Rf_translateCharUTF8(ids[i]);
+        }
       if (nbad)
         stop("some focal IDs were removed from the store earlier and cannot be "
              "added again: %s", bad);
@@ -199,9 +229,48 @@ private:
   std::vector<double> K;      // cap x cap relatedness matrix, column-major
   std::vector<char> used;     // used[i] = slot i is occupied
   std::vector<int> free_;     // stack of free slots
-  std::unordered_set<std::string> gone_;   // identifiers removed so far
+  bool remember_;                   // keep a trace of the removed individuals?
+  std::vector<std::uint64_t> tab_;  // their fingerprints; 0 = empty cell
+  size_t ngone_;                    // number of fingerprints in tab_
 
-  static std::string key(SEXP s) { return std::string(Rf_translateCharUTF8(s)); }
+  // 64-bit fingerprint of an identifier (FNV-1a on its UTF-8 bytes, then a
+  // mixing step so that all the bits depend on all the bytes); never 0.
+  static std::uint64_t fingerprint(SEXP s) {
+    std::uint64_t h = 1469598103934665603ULL;
+    for (const char* c = Rf_translateCharUTF8(s); *c; c++) {
+      h ^= (unsigned char)*c;
+      h *= 1099511628211ULL;
+    }
+    h ^= h >> 33; h *= 0xff51afd7ed558ccdULL;
+    h ^= h >> 33; h *= 0xc4ceb9fe1a85ec53ULL;
+    h ^= h >> 33;
+    return h ? h : 1;
+  }
+
+  bool contains(std::uint64_t h) const {
+    if (tab_.empty()) return false;
+    const size_t mask = tab_.size() - 1;         // the size is a power of 2
+    for (size_t i = h & mask; tab_[i]; i = (i + 1) & mask)
+      if (tab_[i] == h) return true;
+    return false;
+  }
+
+  void insert(std::uint64_t h) {
+    if ((ngone_ + 1) * 10 > tab_.size() * 7) {   // keep it at most 70% full
+      std::vector<std::uint64_t> old(tab_.empty() ? 64 : tab_.size() * 2, 0);
+      old.swap(tab_);
+      ngone_ = 0;
+      for (std::uint64_t x : old) if (x) insert(x);
+    }
+    const size_t mask = tab_.size() - 1;
+    size_t i = h & mask;
+    while (tab_[i]) {
+      if (tab_[i] == h) return;                  // already there
+      i = (i + 1) & mask;
+    }
+    tab_[i] = h;
+    ngone_++;
+  }
 
   int hi;                     // all the slots >= hi are free, so rows/columns
                               // only need to be read or written below hi
@@ -256,13 +325,15 @@ private:
 
 RCPP_MODULE(relstore) {
   class_<RelStore>("RelStore")
-  .constructor<int>()
+  .constructor<int, bool>()
   .method("add", &RelStore::add)
   .method("remove", &RelStore::remove)
   .method("get", &RelStore::get)
   .method("restore", &RelStore::restore)
   .method("mark_gone", &RelStore::mark_gone)
   .method("gone", &RelStore::gone)
+  .method("load_gone", &RelStore::load_gone)
+  .method("remember", &RelStore::remember)
   .method("prepare", &RelStore::prepare)
   .method("size", &RelStore::size)
   .method("capacity", &RelStore::capacity);
