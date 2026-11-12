@@ -16,7 +16,7 @@ Encoding: UTF-8
 Depends: R (>= 4.0.0)
 Imports: methods, Rcpp (>= 1.0.0)
 LinkingTo: Rcpp
-Suggests: Pedixplorer, kinship2, ggroups, microbenchmark, testthat (>= 3.0.0)
+Suggests: kinship2, ggroups, microbenchmark, testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
 NeedsCompilation: yes
