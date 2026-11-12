@@ -63,7 +63,7 @@ rel <- rel_new() # initialize the store (once per simulation)
 rel_add(rel, data.frame(id = c("A", "B"), mom = NA, dad = NA)) # add founders
 rel_add(rel, data.frame(id = c("C", "D"), mom = c("A", "A"), dad = c(NA, "B"))) # add births
 rel_remove(rel, c("A", "B")) # remove dead / emigrated: free their slots
-rel_get(rel, ids = rel_ids(rel)) # extract relatedness matrix between remaining individuals
+rel_get(rel) # extract relatedness matrix between remaining individuals
 ```
 
 Removing every individual that can no longer become a parent (dead, emigrated, ...)
@@ -92,7 +92,7 @@ mean_relatedness <- data.frame(step = 0:1000, mean_rel = NA) # record mean relat
 for (t in 0:1000) {
   rel_add(rel, pop[pop$arrival == t, c("id", "momid", "dadid")])
   rel_remove(rel, pop$id[!is.na(pop$exit) & pop$exit == t])
-  A <- rel_get(rel, ids = rel_ids(rel))
+  A <- rel_get(rel)
   mean_relatedness[mean_relatedness$step == t, "mean_rel"] <- mean(A[upper.tri(A)])
 }
 plot(mean_rel ~ step, data = mean_relatedness,
