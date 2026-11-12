@@ -4,11 +4,12 @@
 library(fastrel)
 
 n_steps <- 150
-pop <- sim_pop(n_steps = n_steps, n_init = 300, carrying = 600, seed = 1)
+set.seed(1)
+pop <- sim_pop(n_steps = n_steps, n_init = 300, carrying = 600)
 cat("individuals ever present:", nrow(pop), "\n")
 
 ## the store only needs to hold the individuals that are present
-rel <- rel_new(1000)                  # about 1.2 x the peak number present (see rel_capacity())
+rel <- rel_new()                       # allocates and grows by itself (see rel_capacity())
 rec <- data.frame(step = 0:n_steps, present = 0L, ever = 0L,
                   store = 0, scratch = 0, capacity = 0L)
 
@@ -37,7 +38,7 @@ for (t in 0:n_steps) {
 
 ## correctness: the survivors agree with the from-scratch computation
 A <- relatedness_fast(pop$id, pop$dadid, pop$momid)
-alive <- rel$ids
+alive <- rel_ids(rel)
 stopifnot(isTRUE(all.equal(rel_get(rel), A[alive, alive])))
 
 print(tail(rec[rec$step %% 10 == 0, ], 5))

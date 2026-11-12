@@ -4,7 +4,7 @@
 \alias{sim_ped}
 \title{Simulate a pedigree}
 \usage{
-sim_ped(n = 1000, n_founders = 40, window = 150, p_unknown = 0.05, seed = 1)
+sim_ped(n = 1000, n_founders = 40, window = 150, p_unknown = 0.05)
 }
 \arguments{
 \item{n}{Total number of individuals (larger than \code{n_founders}).}
@@ -15,8 +15,6 @@ sim_ped(n = 1000, n_founders = 40, window = 150, p_unknown = 0.05, seed = 1)
 
 \item{p_unknown}{Probability that a parent (mother or father separately) is
 unknown for a non-founder.}
-
-\item{seed}{Seed of the random number generator.}
 }
 \value{
 A data frame with columns \code{id} (e.g. \code{"ind0001"}), \code{momid}, \code{dadid}
@@ -30,10 +28,11 @@ the \code{window} individuals born just before it. It is meant for testing and
 benchmarking.
 }
 \details{
-The function calls \code{\link[=set.seed]{set.seed()}}, which changes the state of the random number
-generator of the session.
+The result depends on the state of the random number generator of the
+session: call \code{\link[=set.seed]{set.seed()}} beforehand to make it reproducible.
 }
 \examples{
+set.seed(1)
 ped <- sim_ped(200)
 head(ped)
 A <- relatedness_fast(ped$id, ped$dadid, ped$momid)

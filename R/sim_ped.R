@@ -6,29 +6,31 @@
 #' the `window` individuals born just before it. It is meant for testing and
 #' benchmarking.
 #'
-#' The function calls [set.seed()], which changes the state of the random number
-#' generator of the session.
+#' The result depends on the state of the random number generator of the
+#' session: call [set.seed()] beforehand to make it reproducible.
 #'
 #' @param n Total number of individuals (larger than `n_founders`).
 #' @param n_founders Number of individuals with no parents at the start.
 #' @param window Number of preceding individuals among which parents are drawn.
 #' @param p_unknown Probability that a parent (mother or father separately) is
 #'   unknown for a non-founder.
-#' @param seed Seed of the random number generator.
 #'
 #' @return A data frame with columns `id` (e.g. `"ind0001"`), `momid`, `dadid`
 #'   and `sex` (1 = male, 2 = female).
 #'
 #' @examples
+#' set.seed(1)
 #' ped <- sim_ped(200)
 #' head(ped)
 #' A <- relatedness_fast(ped$id, ped$dadid, ped$momid)
 #' range(diag(A) - 1)
 #' @export
 sim_ped <- function(n = 1000, n_founders = 40, window = 150,
-                    p_unknown = 0.05, seed = 1) {
+                    p_unknown = 0.05) {
   if (n <= n_founders) stop("`n` must be larger than `n_founders`")
-  set.seed(seed)
+  if (n_founders < 1) stop("`n_founders` must be at least 1")
+  if (window < 1) stop("`window` must be at least 1")
+  if (p_unknown < 0 || p_unknown > 1) stop("`p_unknown` must be a probability")
   sex <- sample(1:2, n, replace = TRUE)       # 1 = male, 2 = female
   mom <- dad <- rep(NA_integer_, n)
 

@@ -6,18 +6,21 @@
 \alias{rel_add}
 \alias{rel_remove}
 \alias{rel_get}
+\alias{rel_ids}
 \alias{rel_size}
 \alias{rel_capacity}
 \alias{print.relatedness_store}
 \title{Incremental store of the relatedness matrix}
 \usage{
-rel_new(capacity = 1000L)
+rel_new()
 
 rel_add(rel, ped)
 
 rel_remove(rel, ids)
 
 rel_get(rel, ids = rel$ids)
+
+rel_ids(rel)
 
 rel_size(rel)
 
@@ -26,8 +29,6 @@ rel_capacity(rel)
 \method{print}{relatedness_store}(x, ...)
 }
 \arguments{
-\item{capacity}{Initial number of slots (a positive integer).}
-
 \item{rel}{A store created by \code{rel_new()}.}
 
 \item{ped}{A data frame whose first three columns are the identifier of the
@@ -45,18 +46,18 @@ For \code{rel_get()}, the default is every individual in the store.}
 \value{
 \code{rel_new()} returns the store. \code{rel_add()} and \code{rel_remove()} return
 the store invisibly. \code{rel_get()} returns a symmetric matrix with \code{ids} as
-dimnames (diagonal \code{1 + F}). \code{rel_size()} and \code{rel_capacity()} return
-integers.
+dimnames (diagonal \code{1 + F}). \code{rel_ids()} returns a character vector, in
+order of insertion. \code{rel_size()} and \code{rel_capacity()} return integers.
 }
 \description{
 A persistent store holds the additive relationship matrix
 \eqn{A = 2\phi}{A = 2 * phi} among the individuals currently in it. Because
 relatedness between existing individuals never changes when new individuals
 are born, a newborn's row is computed once from its parents' rows, at a cost
-proportional to the capacity of the store instead of recomputing the whole
-matrix. Individuals who can no longer become parents (dead, emigrated, ...)
-should be removed so that their slots are recycled. The cost per birth and
-the memory (\code{8 * capacity^2} bytes) then depend on the number of individuals
+proportional to the number of individuals the store has held at once instead
+of recomputing the whole matrix. Individuals who can no longer become parents
+(dead, emigrated, ...) should be removed so that their slots are recycled.
+The cost per birth and the memory then depend on the number of individuals
 in the store, not on the length of the pedigree.
 }
 \details{
@@ -67,13 +68,16 @@ The functions work as follows:
 focal, mother and father.
 \item \code{rel_remove()} removes individuals.
 \item \code{rel_get()} extracts the relatedness matrix among chosen individuals.
+\item \code{rel_ids()} lists the individuals in the store.
 \item \code{rel_size()} and \code{rel_capacity()} report the number of individuals in the
 store and the number of slots allocated.
 }
 
 A store is an environment: \code{rel_add()} and \code{rel_remove()} modify it in place,
 and copying the object does not copy the data. A store cannot be saved to disk
-with \code{\link[=save]{save()}} or \code{\link[=saveRDS]{saveRDS()}} and restored in another session.
+with \code{\link[=save]{save()}} or \code{\link[=saveRDS]{saveRDS()}} and restored in another session: use
+\code{\link[=rel_save]{rel_save()}} and \code{\link[=rel_load]{rel_load()}} instead. The content of the environment is
+internal: use the functions above rather than reading or modifying it.
 }
 \section{What to keep in the store}{
 
@@ -84,16 +88,19 @@ value with individuals removed before its birth. Relatedness values among the
 remaining individuals are not affected by removals.
 }
 
-\section{Capacity}{
+\section{Memory}{
 
-The matrix has \code{capacity} rows and columns. It doubles automatically when it
-is full, which costs a one-off copy and may overshoot. If you know roughly the
-peak number of individuals in the store, start with about 1.2 times that
-number. Capacity never shrinks.
+The store allocates its matrix by itself: there is nothing to set. The
+matrix has one row and one column per slot, hence uses \code{8 * rel_capacity(rel)^2}
+bytes. When all the slots are taken, the number of slots grows by half (or
+more if a single call to \code{rel_add()} requires it), which costs a one-off
+copy of the matrix. Beyond the initial 16 slots, the number of slots therefore
+stays within about 1.5 times the largest number of individuals the store has
+held at once. It never shrinks.
 }
 
 \examples{
-rel <- rel_new(16)
+rel <- rel_new()
 
 ## founders: unknown parents
 rel_add(rel, data.frame(id = c("A", "B", "C", "D"), mom = NA, dad = NA))
@@ -105,6 +112,7 @@ rel_add(rel, data.frame(id = "G", mom = "E", dad = "F"))
 ## deaths (or emigration): free the slots
 rel_remove(rel, c("A", "B", "C", "D"))
 rel_size(rel)
+rel_ids(rel)
 
 ## a mother-son mating
 rel_add(rel, data.frame(id = "H", mom = "E", dad = "G"))
@@ -114,5 +122,6 @@ A
 diag(A) - 1   # inbreeding coefficients
 }
 \seealso{
-\code{\link[=relatedness_fast]{relatedness_fast()}} to compute the whole matrix from a pedigree.
+\code{\link[=relatedness_fast]{relatedness_fast()}} to compute the whole matrix from a pedigree;
+\code{\link[=rel_save]{rel_save()}} and \code{\link[=rel_load]{rel_load()}} to save a store to disk.
 }

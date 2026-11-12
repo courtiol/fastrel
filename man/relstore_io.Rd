@@ -27,7 +27,7 @@ invisibly. \code{rel_load()} returns a new store.
 \description{
 A store lives in C++ memory and cannot be saved with \code{\link[=saveRDS]{saveRDS()}} directly.
 \code{rel_save()} extracts its content (the identifiers and the relatedness matrix
-among them, plus the capacity) and \code{rel_load()} rebuilds a working store from
+among them) and \code{rel_load()} rebuilds a working store from
 it, so that a simulation can be checkpointed and resumed.
 }
 \details{
@@ -38,7 +38,7 @@ you work through the identifiers. The restored store behaves exactly like the
 original one: you can keep adding and removing individuals.
 }
 \examples{
-rel <- rel_new(16)
+rel <- rel_new()
 rel_add(rel, data.frame(id = c("A", "B"), mom = NA, dad = NA))
 rel_add(rel, data.frame(id = "C", mom = "A", dad = "B"))
 

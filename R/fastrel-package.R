@@ -9,9 +9,12 @@
 #'   (a fast replacement for `2 * kinship2::kinship()`).
 #' * [rel_new()], [rel_add()], [rel_remove()] and [rel_get()] maintain the matrix
 #'   incrementally, which is much cheaper when a pedigree keeps growing, as in
-#'   an individual-based simulation.
+#'   an individual-based simulation. [rel_ids()], [rel_size()] and
+#'   [rel_capacity()] describe the content of such a store, and [rel_save()] and
+#'   [rel_load()] save it to disk and restore it.
 #'
-#' [sim_ped()] simulates a pedigree for testing and benchmarking.
+#' [sim_ped()] simulates a pedigree, and [sim_pop()] a population with births,
+#' deaths, emigration and immigration, for testing and benchmarking.
 #'
 #' @section Scale:
 #' All functions return relatedness, not kinship: \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 * phi[i,j]}.
