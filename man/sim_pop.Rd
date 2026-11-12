@@ -12,8 +12,7 @@ sim_pop(
   p_birth = 0.6,
   p_death = 0.1,
   p_emigrate = 0.02,
-  n_immigrants = 1,
-  seed = 1
+  n_immigrants = 1
 )
 }
 \arguments{
@@ -36,9 +35,6 @@ reproduce or emigrate. Founders and immigrants are mature on arrival.}
 that did not die.}
 
 \item{n_immigrants}{Mean number of immigrants per step (Poisson).}
-
-\item{seed}{Seed of the random number generator, or \code{NULL} to use the
-generator of the session as it is.}
 }
 \value{
 A data frame with one row per individual ever present, in order of
@@ -81,16 +77,17 @@ born. Therefore, replaying the steps in order with \code{rel_add()} for the
 arrivals followed by \code{rel_remove()} for the exits never refers to an unknown
 individual or to a removed parent (see the example).
 
-Unless \code{seed = NULL}, the function calls \code{\link[=set.seed]{set.seed()}}, which changes the
-state of the random number generator of the session.
+The result depends on the state of the random number generator of the
+session: call \code{\link[=set.seed]{set.seed()}} beforehand to make it reproducible.
 }
 \examples{
-pop <- sim_pop(n_steps = 40, n_init = 60, seed = 2)
+set.seed(2)
+pop <- sim_pop(n_steps = 40, n_init = 60)
 table(pop$origin)
 table(pop$fate, useNA = "ifany")
 
 ## replay the simulation with the incremental store
-rel <- rel_new(300)
+rel <- rel_new()
 size <- integer(41)
 for (t in 0:40) {
   rel_add(rel, pop[pop$arrival == t, c("id", "momid", "dadid")])

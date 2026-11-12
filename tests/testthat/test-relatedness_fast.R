@@ -10,6 +10,7 @@ test_that("known values for the mother-son pedigree", {
 })
 
 test_that("matches the reference implementation, whatever the row order", {
+  set.seed(1)
   ped <- sim_ped(300, n_founders = 20, window = 60)
   A0 <- ref_relatedness(ped$id, ped$dadid, ped$momid)
   expect_equal(relatedness_fast(ped$id, ped$dadid, ped$momid), A0)
@@ -22,6 +23,7 @@ test_that("matches the reference implementation, whatever the row order", {
 
 test_that("matches kinship2 when available", {
   skip_if_not_installed("kinship2")
+  set.seed(1)
   ped <- sim_ped(200, n_founders = 20, window = 50)
   expect_equal(relatedness_fast(ped$id, ped$dadid, ped$momid),
                2 * kinship2::kinship(ped$id, dadid = ped$dadid, momid = ped$momid))
@@ -46,6 +48,7 @@ test_that("input checks and edge cases", {
 })
 
 test_that("rows in reverse birth order, and NA in id", {
+  set.seed(1)
   ped <- sim_ped(150, n_founders = 5, window = 20, p_unknown = 0.3)
   A0 <- ref_relatedness(ped$id, ped$dadid, ped$momid)
   rev_ped <- ped[nrow(ped):1, ]

@@ -1,6 +1,7 @@
 test_that("save/load round trip, in memory and via file", {
+  set.seed(1)
   ped <- sim_ped(200, n_founders = 20, window = 50)
-  rel <- rel_new(16)
+  rel <- rel_new()
   rel_add(rel, ped[, c("id", "momid", "dadid")])
   rel_remove(rel, ped$id[1:60])                  # slots are recycled / holes exist
 
@@ -9,7 +10,7 @@ test_that("save/load round trip, in memory and via file", {
   rel2 <- rel_load(obj)
   expect_equal(rel_get(rel2), rel_get(rel))
   expect_equal(rel_size(rel2), rel_size(rel))
-  expect_gte(rel_capacity(rel2), rel_capacity(rel))
+  expect_gte(rel_capacity(rel2), rel_size(rel2))
 
   f <- tempfile(fileext = ".rds")
   expect_equal(rel_save(rel, f), f)
@@ -18,9 +19,10 @@ test_that("save/load round trip, in memory and via file", {
 })
 
 test_that("a restored store keeps working and stays exact", {
+  set.seed(1)
   ped <- sim_ped(300, n_founders = 20, window = 60)
   full <- relatedness_fast(ped$id, ped$dadid, ped$momid)
-  rel <- rel_new(8)
+  rel <- rel_new()
   rel_add(rel, ped[1:150, c("id", "momid", "dadid")])
   rel2 <- rel_load(rel_save(rel))
   rel_add(rel2, ped[151:300, c("id", "momid", "dadid")])
@@ -33,7 +35,7 @@ test_that("a restored store keeps working and stays exact", {
 })
 
 test_that("empty stores and invalid input", {
-  rel <- rel_new(4)
+  rel <- rel_new()
   rel2 <- rel_load(rel_save(rel))
   expect_equal(rel_size(rel2), 0L)
   rel_add(rel2, data.frame(id = "a", mom = NA, dad = NA))

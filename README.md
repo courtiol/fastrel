@@ -50,7 +50,8 @@ pak::pkg_install("courtiol/fastrel")
 
 ``` r
 library(fastrel)
-ped <- sim_ped(1000) # nb: seed = 1 as default
+set.seed(1) # for reproducibility
+ped <- sim_ped(1000)
 tail(ped, n = 3) # last 3 individuals
 ```
 
@@ -119,6 +120,7 @@ rel <- rel_load("store.rds") # a working store again
 
 ``` r
 rel <- rel_new()
+set.seed(1)
 pop <- sim_pop(n_steps = 1000, n_init = 200) # simulate pop (fine tuning the life history is possible)
 head(pop) # first 6 simulated individual life histories (no momid and dadid since founder) 
 ```

@@ -10,8 +10,9 @@ source_orig <- function(id, dadid, momid, ...) {
 }
 
 ## comparison ----
+set.seed(1)
 ped <- sim_ped(1000)                                # columns: id, momid, dadid, sex
-rel <- rel_new(64)                                  # small start, to exercise growth
+rel <- rel_new()
 rel_add(rel, ped[, c("id", "momid", "dadid")])      # any row order works
 A1 <- rel_get(rel, ped$id)
 A2 <- relatedness_fast(ped$id, ped$dadid, ped$momid)
@@ -27,7 +28,7 @@ all.equal(A1, A3)
 microbenchmark(orig  = source_orig(ped$id, ped$dadid, ped$momid),
                fast  = relatedness_fast(ped$id, ped$dadid, ped$momid),
                store_build = {
-                 r <- rel_new(1000)
+                 r <- rel_new()
                  rel_add(r, ped[, c("id", "momid", "dadid")])
                  rel_get(r, ped$id)
                },
@@ -37,12 +38,13 @@ microbenchmark(orig  = source_orig(ped$id, ped$dadid, ped$momid),
 ## scaling: a pedigree that keeps growing ----
 ## sim_ped() returns individuals in birth order, so the first n rows always
 ## form a closed pedigree (parents come before their offspring)
+set.seed(1)
 ped <- sim_ped(10000)
 
 batch <- 20
 steps <- seq(1000, 4000, by = batch)
 
-rel <- rel_new(10)
+rel <- rel_new()
 rel_add(rel, ped[1:1000, c("id", "momid", "dadid")])
 
 ped_ori <- ped[1:1000, ]

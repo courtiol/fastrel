@@ -1,5 +1,6 @@
 test_that("sim_pop returns a consistent pedigree", {
-  pop <- sim_pop(30, n_init = 40, seed = 5)
+  set.seed(5)
+  pop <- sim_pop(30, n_init = 40)
   expect_named(pop, c("id", "momid", "dadid", "sex", "arrival", "exit", "fate", "origin"))
   expect_false(anyDuplicated(pop$id) > 0)
   expect_equal(sum(pop$origin == "founder"), 40)
@@ -20,9 +21,10 @@ test_that("sim_pop returns a consistent pedigree", {
 })
 
 test_that("population is roughly stable and replay with the store is exact", {
-  pop <- sim_pop(40, n_init = 50, seed = 7)
+  set.seed(7)
+  pop <- sim_pop(40, n_init = 50)
   full <- relatedness_fast(pop$id, pop$dadid, pop$momid)
-  rel <- rel_new(30)
+  rel <- rel_new()
   for (t in 0:40) {
     rel_add(rel, pop[pop$arrival == t, c("id", "momid", "dadid")])
     rel_remove(rel, pop$id[!is.na(pop$exit) & pop$exit == t])
@@ -41,8 +43,10 @@ test_that("edge cases", {
   expect_error(sim_pop(-1), "n_steps")
   expect_error(sim_pop(5, n_init = 2.5), "n_init")
   expect_error(sim_pop(5, maturity = -1), "maturity")
+  set.seed(1)
   expect_warning(pop <- sim_pop(10, n_init = 3, p_death = 1, n_immigrants = 0), "extinct")
   expect_true(all(!is.na(pop$exit)))
+  set.seed(1)
   none <- sim_pop(0, n_init = 5)
   expect_equal(nrow(none), 5)
   expect_true(all(is.na(none$exit)))

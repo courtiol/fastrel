@@ -44,7 +44,7 @@ public:
     // validate all the parents, then make room for all the newborns.
     for (int b = 0; b < nb; b++) { slot(mom[b]); slot(dad[b]); }
     IntegerVector out(nb);
-    while ((int)free_.size() < nb) grow();
+    if ((int)free_.size() < nb) grow(nb);
 
     for (int b = 0; b < nb; b++) {
       const int m = slot(mom[b]), d = slot(dad[b]);   // 0-based, -1 if unknown
@@ -134,7 +134,7 @@ public:
         if (!R_finite(A(a, b))) stop("A contains missing or non-finite values");
         if (std::abs(A(a, b) - A(b, a)) > 1e-10) stop("A must be symmetric");
       }
-    while (cap < k) grow();
+    if (cap < k) grow(k);
 
     std::vector<int> js(k);
     IntegerVector out(k);
@@ -149,6 +149,11 @@ public:
       for (int b = 0; b < k; b++)
         K[js[b] + (size_t)js[a] * cap] = A(b, a);
     return out;
+  }
+
+  // Make room for `need` more individuals in a single step.
+  void reserve(int need) {
+    if (need > 0 && (int)free_.size() < need) grow(need);
   }
 
   int size() { return (int)(cap - free_.size()); }   // individuals in the store
@@ -182,14 +187,18 @@ private:
     return s - 1;
   }
 
-  // Double the capacity: copy the old matrix into the top-left corner of a
-  // larger, zero-filled one and register the new slots as free. The new slots
-  // go to the bottom of the stack, so that the free slots with a low index
-  // are still used first. All the allocations are done before the store is
-  // modified: if memory runs out, the store is left as it was.
-  void grow() {
-    if (cap > INT_MAX / 2) stop("the store cannot grow any further");
-    const int nc = cap * 2;
+  // Enlarge the matrix so that at least `need` slots are free: copy the old
+  // matrix into the top-left corner of a larger, zero-filled one and register
+  // the new slots as free. The capacity grows by half (not by doubling, which
+  // could leave a matrix four times larger than needed), or straight to the
+  // size required if that is more, so a large batch costs a single copy.
+  // The new slots go to the bottom of the stack, so that the free slots with
+  // a low index are still used first. All the allocations are done before the
+  // store is modified: if memory runs out, the store is left as it was.
+  void grow(int need) {
+    const double want = std::max(cap * 1.5 + 1.0, (double)size() + need);
+    if (want > INT_MAX) stop("the store cannot grow any further");
+    const int nc = (int)want;
     std::vector<double> NK((size_t)nc * nc, 0.0);
     std::vector<int> nf;
     nf.reserve(free_.size() + (nc - cap));
@@ -213,6 +222,7 @@ RCPP_MODULE(relstore) {
   .method("remove", &RelStore::remove)
   .method("get", &RelStore::get)
   .method("restore", &RelStore::restore)
+  .method("reserve", &RelStore::reserve)
   .method("size", &RelStore::size)
   .method("capacity", &RelStore::capacity);
 }

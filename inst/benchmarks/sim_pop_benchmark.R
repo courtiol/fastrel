@@ -4,11 +4,12 @@
 library(fastrel)
 
 n_steps <- 150
-pop <- sim_pop(n_steps = n_steps, n_init = 300, carrying = 600, seed = 1)
+set.seed(1)
+pop <- sim_pop(n_steps = n_steps, n_init = 300, carrying = 600)
 cat("individuals ever present:", nrow(pop), "\n")
 
 ## the store only needs to hold the individuals that are present
-rel <- rel_new(500)                   # about 1.2 x the peak number in the store (417 here)
+rel <- rel_new()                       # allocates and grows by itself (see rel_capacity())
 rec <- data.frame(step = 0:n_steps, present = 0L, ever = 0L,
                   store = 0, scratch = 0, capacity = 0L)
 

@@ -12,7 +12,7 @@
 \alias{print.relatedness_store}
 \title{Incremental store of the relatedness matrix}
 \usage{
-rel_new(capacity = 1000L)
+rel_new()
 
 rel_add(rel, ped)
 
@@ -29,8 +29,6 @@ rel_capacity(rel)
 \method{print}{relatedness_store}(x, ...)
 }
 \arguments{
-\item{capacity}{Initial number of slots (a positive integer).}
-
 \item{rel}{A store created by \code{rel_new()}.}
 
 \item{ped}{A data frame whose first three columns are the identifier of the
@@ -57,9 +55,9 @@ A persistent store holds the additive relationship matrix
 relatedness between existing individuals never changes when new individuals
 are born, a newborn's row is computed once from its parents' rows, at a cost
 proportional to the number of individuals the store has held at once instead
-of recomputing the whole matrix. Individuals who can no longer become parents (dead, emigrated, ...)
-should be removed so that their slots are recycled. The cost per birth and
-the memory (\code{8 * capacity^2} bytes) then depend on the number of individuals
+of recomputing the whole matrix. Individuals who can no longer become parents
+(dead, emigrated, ...) should be removed so that their slots are recycled.
+The cost per birth and the memory then depend on the number of individuals
 in the store, not on the length of the pedigree.
 }
 \details{
@@ -90,16 +88,19 @@ value with individuals removed before its birth. Relatedness values among the
 remaining individuals are not affected by removals.
 }
 
-\section{Capacity}{
+\section{Memory}{
 
-The matrix has \code{capacity} rows and columns. It doubles automatically when it
-is full, which costs a one-off copy and may overshoot. If you know roughly the
-peak number of individuals in the store, start with about 1.2 times that
-number. Capacity never shrinks.
+The store allocates its matrix by itself: there is nothing to set. The
+matrix has one row and one column per slot, hence uses \code{8 * rel_capacity(rel)^2}
+bytes. When all the slots are taken, the number of slots grows by half (or
+more if a single call to \code{rel_add()} requires it), which costs a one-off
+copy of the matrix. Beyond the initial 16 slots, the number of slots therefore
+stays within about 1.5 times the largest number of individuals the store has
+held at once. It never shrinks.
 }
 
 \examples{
-rel <- rel_new(16)
+rel <- rel_new()
 
 ## founders: unknown parents
 rel_add(rel, data.frame(id = c("A", "B", "C", "D"), mom = NA, dad = NA))

@@ -5,9 +5,9 @@
 #' relatedness between existing individuals never changes when new individuals
 #' are born, a newborn's row is computed once from its parents' rows, at a cost
 #' proportional to the number of individuals the store has held at once instead
-#' of recomputing the whole matrix. Individuals who can no longer become parents (dead, emigrated, ...)
-#' should be removed so that their slots are recycled. The cost per birth and
-#' the memory (`8 * capacity^2` bytes) then depend on the number of individuals
+#' of recomputing the whole matrix. Individuals who can no longer become parents
+#' (dead, emigrated, ...) should be removed so that their slots are recycled.
+#' The cost per birth and the memory then depend on the number of individuals
 #' in the store, not on the length of the pedigree.
 #'
 #' The functions work as follows:
@@ -33,13 +33,15 @@
 #' value with individuals removed before its birth. Relatedness values among the
 #' remaining individuals are not affected by removals.
 #'
-#' @section Capacity:
-#' The matrix has `capacity` rows and columns. It doubles automatically when it
-#' is full, which costs a one-off copy and may overshoot. If you know roughly the
-#' peak number of individuals in the store, start with about 1.2 times that
-#' number. Capacity never shrinks.
+#' @section Memory:
+#' The store allocates its matrix by itself: there is nothing to set. The
+#' matrix has one row and one column per slot, hence uses `8 * rel_capacity(rel)^2`
+#' bytes. When all the slots are taken, the number of slots grows by half (or
+#' more if a single call to `rel_add()` requires it), which costs a one-off
+#' copy of the matrix. Beyond the initial 16 slots, the number of slots therefore
+#' stays within about 1.5 times the largest number of individuals the store has
+#' held at once. It never shrinks.
 #'
-#' @param capacity Initial number of slots (a positive integer).
 #' @param rel A store created by `rel_new()`.
 #' @param ped A data frame whose first three columns are the identifier of the
 #'   focal individual, of its mother and of its father (`NA` for unknown
@@ -57,7 +59,7 @@
 #'   [rel_save()] and [rel_load()] to save a store to disk.
 #'
 #' @examples
-#' rel <- rel_new(16)
+#' rel <- rel_new()
 #'
 #' ## founders: unknown parents
 #' rel_add(rel, data.frame(id = c("A", "B", "C", "D"), mom = NA, dad = NA))
@@ -82,12 +84,9 @@ NULL
 
 #' @rdname relstore
 #' @export
-rel_new <- function(capacity = 1000L) {
-  if (!is.numeric(capacity) || length(capacity) != 1L || is.na(capacity) ||
-      capacity < 1 || capacity > .Machine$integer.max)
-    stop("`capacity` must be a single positive number")
+rel_new <- function() {
   self <- new.env()
-  self$ks    <- new(RelStore, as.integer(capacity))
+  self$ks    <- new(RelStore, 16L)     # initial number of slots; grows as needed
   self$ids   <- character(0)   # IDs currently in the store
   self$slots <- integer(0)     # their slots, same order
   class(self) <- "relatedness_store"
@@ -117,6 +116,7 @@ rel_add <- function(rel, ped) {
   m_new <- is.na(sm) & !is.na(mom)                # known parents that are not in
   d_new <- is.na(sd) & !is.na(dad)                # the store: must be in ped
 
+  rel$ks$reserve(n)                               # make room once for them all
   if (!any(m_new) && !any(d_new)) {
     ## Usual case: all the parents are already in the store.
     ord <- seq_len(n)
@@ -228,7 +228,7 @@ nil_pointer <- methods::new("externalptr")
 #'
 #' A store lives in C++ memory and cannot be saved with [saveRDS()] directly.
 #' `rel_save()` extracts its content (the identifiers and the relatedness matrix
-#' among them, plus the capacity) and `rel_load()` rebuilds a working store from
+#' among them) and `rel_load()` rebuilds a working store from
 #' it, so that a simulation can be checkpointed and resumed.
 #'
 #' The saved object contains the full dense relatedness matrix among the
@@ -248,7 +248,7 @@ nil_pointer <- methods::new("externalptr")
 #'   invisibly. `rel_load()` returns a new store.
 #'
 #' @examples
-#' rel <- rel_new(16)
+#' rel <- rel_new()
 #' rel_add(rel, data.frame(id = c("A", "B"), mom = NA, dad = NA))
 #' rel_add(rel, data.frame(id = "C", mom = "A", dad = "B"))
 #'
@@ -268,8 +268,7 @@ NULL
 rel_save <- function(rel, file = NULL) {
   check_store(rel)
   out <- structure(
-    list(ids = rel$ids, A = rel_get(rel), capacity = rel_capacity(rel),
-         format = 1L),
+    list(ids = rel$ids, A = rel_get(rel), format = 1L),
     class = "relatedness_store_saved")
   if (is.null(file)) return(out)
   saveRDS(out, file)
@@ -281,7 +280,7 @@ rel_save <- function(rel, file = NULL) {
 rel_load <- function(x) {
   if (is.character(x) && length(x) == 1L) x <- readRDS(x)
   if (!inherits(x, "relatedness_store_saved") ||
-      !all(c("ids", "A", "capacity") %in% names(x)))
+      !all(c("ids", "A") %in% names(x)))
     stop("`x` must be a file or an object produced by rel_save()")
   if (!is.null(x$format) && !identical(as.integer(x$format), 1L))
     stop("this file was written in a format (", x$format, ") that this ",
@@ -292,7 +291,7 @@ rel_load <- function(x) {
   if (anyNA(x$ids) || anyDuplicated(x$ids))
     stop("the saved identifiers must be unique and not NA")
 
-  rel <- rel_new(max(x$capacity, k, 1L))
+  rel <- rel_new()
   if (k > 0L) {
     rel$slots <- rel$ks$restore(unname(x$A))
     rel$ids   <- as.character(x$ids)

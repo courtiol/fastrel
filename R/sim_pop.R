@@ -24,8 +24,8 @@
 #' arrivals followed by `rel_remove()` for the exits never refers to an unknown
 #' individual or to a removed parent (see the example).
 #'
-#' Unless `seed = NULL`, the function calls [set.seed()], which changes the
-#' state of the random number generator of the session.
+#' The result depends on the state of the random number generator of the
+#' session: call [set.seed()] beforehand to make it reproducible.
 #'
 #' @param n_steps Number of time steps after step 0.
 #' @param n_init Number of founders at step 0.
@@ -39,8 +39,6 @@
 #' @param p_emigrate Probability of emigration per step for mature individuals
 #'   that did not die.
 #' @param n_immigrants Mean number of immigrants per step (Poisson).
-#' @param seed Seed of the random number generator, or `NULL` to use the
-#'   generator of the session as it is.
 #'
 #' @return A data frame with one row per individual ever present, in order of
 #'   arrival, so parents always come before their offspring, and with columns:
@@ -53,12 +51,13 @@
 #'   * `origin`: `"founder"`, `"born"` or `"immigrant"`.
 #'
 #' @examples
-#' pop <- sim_pop(n_steps = 40, n_init = 60, seed = 2)
+#' set.seed(2)
+#' pop <- sim_pop(n_steps = 40, n_init = 60)
 #' table(pop$origin)
 #' table(pop$fate, useNA = "ifany")
 #'
 #' ## replay the simulation with the incremental store
-#' rel <- rel_new(300)
+#' rel <- rel_new()
 #' size <- integer(41)
 #' for (t in 0:40) {
 #'   rel_add(rel, pop[pop$arrival == t, c("id", "momid", "dadid")])
@@ -75,7 +74,7 @@
 #' @export
 sim_pop <- function(n_steps = 50, n_init = 100, carrying = 2 * n_init,
                     maturity = 2, p_birth = 0.6, p_death = 0.1,
-                    p_emigrate = 0.02, n_immigrants = 1, seed = 1) {
+                    p_emigrate = 0.02, n_immigrants = 1) {
   whole <- function(x) is.numeric(x) && length(x) == 1L && !is.na(x) && x == round(x)
   if (!whole(n_steps) || n_steps < 0) stop("`n_steps` must be a non-negative whole number")
   if (!whole(n_init) || n_init < 1) stop("`n_init` must be a whole number, at least 1")
@@ -84,7 +83,6 @@ sim_pop <- function(n_steps = 50, n_init = 100, carrying = 2 * n_init,
   if (any(c(p_birth, p_death, p_emigrate) < 0 | c(p_birth, p_death, p_emigrate) > 1))
     stop("`p_birth`, `p_death` and `p_emigrate` must be probabilities")
   if (n_immigrants < 0) stop("`n_immigrants` must be non-negative")
-  if (!is.null(seed)) set.seed(seed)
 
   ## Individuals are numbered 1, 2, ... in order of arrival; the numbers are
   ## turned into identifiers at the end. Records are kept as plain vectors, one
