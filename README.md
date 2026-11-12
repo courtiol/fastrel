@@ -196,9 +196,9 @@ microbenchmark(ggroups = buildA(ped_ggroups),
 
 ```
 ## Unit: milliseconds
-##     expr        min         lq       mean     median         uq       max neval cld
-##  ggroups 208.593184 218.289928 232.493267 224.025567 230.553881 595.05915   100  a 
-##  fastrel   2.671074   2.941368   5.629565   3.432326   6.051152  26.64753   100   b
+##     expr        min         lq       mean    median         uq        max neval cld
+##  ggroups 108.770820 111.291425 118.309496 113.44469 118.258858 320.968973   100  a 
+##  fastrel   7.025427   7.302271   7.599506   7.51077   7.747342   8.784151   100   b
 ```
 As you can see `fastrel::relatedness_fast()` is much faster than `ggroups::buildA()` on our machine, for 1000 individuals.
 
