@@ -11,7 +11,7 @@ a computation time and memory footprint that do not increase over time as long a
 the population is at its demographic equilibrium
 (it only requires storing the information about alive individuals)
 - a function to compute relatedness from a pedigree more quickly than 
-[`ggroups`](https://cran.r-project.org/web/packages/ggroups/index.html) or 
+[`ggroups`](https://cran.r-project.org/web/packages/ggroups/index.html), [`kinship2`](https://cran.r-project.org/web/packages/kinship2/index.html) or 
 [`Pedixplorer`](https://louislenezet.github.io/Pedixplorer/)
 (which now supersedes `kinship2`)
 - a function to simulate a pedigree
@@ -182,8 +182,8 @@ microbenchmark(ggroups = buildA(ped_ggroups),
 ```
 ## Unit: milliseconds
 ##     expr        min         lq       mean     median         uq       max neval cld
-##  ggroups 199.337294 207.697344 216.820916 213.464191 220.700567 483.82672   100  a 
-##  fastrel   2.744712   3.684355   6.263514   4.608985   7.436562  19.44156   100   b
+##  ggroups 208.593184 218.289928 232.493267 224.025567 230.553881 595.05915   100  a 
+##  fastrel   2.671074   2.941368   5.629565   3.432326   6.051152  26.64753   100   b
 ```
 As you can see `fastrel::relatedness_fast()` is much faster than `ggroups::buildA()` on our machine, for 1000 individuals.
 
