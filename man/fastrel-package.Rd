@@ -31,12 +31,20 @@ Founders (individuals with unknown parents) are assumed to be unrelated and
 non-inbred, and an unknown parent is treated as unrelated to everybody.
 }
 
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/courtiol/fastrel}
+  \item Report bugs at \url{https://github.com/courtiol/fastrel/issues}
+}
+
+}
 \author{
-\strong{Maintainer}: Alexandre Courtiol \email{courtiol@izw-berlin.de}
+\strong{Maintainer}: Alexandre Courtiol \email{alexandre.courtiol@gmail.com} (\href{https://orcid.org/0000-0003-0637-2959}{ORCID})
 
 Authors:
 \itemize{
-  \item Alexandre Courtiol \email{courtiol@izw-berlin.de}
+  \item Alexandre Courtiol \email{alexandre.courtiol@gmail.com} (\href{https://orcid.org/0000-0003-0637-2959}{ORCID})
 }
 
 }

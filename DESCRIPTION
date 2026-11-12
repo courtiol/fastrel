@@ -1,10 +1,10 @@
 Package: fastrel
 Type: Package
-Title: Fast Additive Relatedness Matrices from Pedigrees, with an
-        Incremental Store
-Version: 0.2.0
-Authors@R: person("Alexandre", "Courtiol", email = "courtiol@izw-berlin.de",
-    role = c("aut", "cre"))
+Title: Fast Additive Relatedness Matrices from Pedigrees
+Version: 0.2.1
+Authors@R: c(
+  person("Alexandre", "Courtiol", email = "alexandre.courtiol@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0637-2959"))
+  )
 Description: Computes the additive relationship ("relatedness") matrix, twice
     the kinship matrix, of autosomal loci from a pedigree using the tabular
     method implemented in C++. Also provides a persistent store that updates the
@@ -16,11 +16,12 @@ Encoding: UTF-8
 Depends: R (>= 4.0.0)
 Imports: methods, Rcpp (>= 1.0.0)
 LinkingTo: Rcpp
-Suggests: kinship2, microbenchmark, testthat (>= 3.0.0)
+Suggests: Pedixplorer, kinship2, ggroups, microbenchmark, testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
 NeedsCompilation: yes
 Packaged: 2026-11-10 21:06:24 UTC; root
-Author: Alexandre Courtiol [aut, cre]
-Maintainer: Alexandre Courtiol <courtiol@izw-berlin.de>
 Config/roxygen2/version: 8.1.1
+URL: https://github.com/courtiol/fastrel
+BugReports: https://github.com/courtiol/fastrel/issues
+Language: en-GB

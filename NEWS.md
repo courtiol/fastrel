@@ -1,3 +1,7 @@
+# fastrel 0.2.1
+
+* Revised README
+
 # fastrel 0.2.0
 
 * New `rel_save()` and `rel_load()` to checkpoint and restore a store.
