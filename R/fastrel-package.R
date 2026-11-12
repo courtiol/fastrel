@@ -23,7 +23,7 @@
 #' @useDynLib fastrel, .registration = TRUE
 #' @importFrom Rcpp evalCpp loadModule
 #' @importFrom methods new
-#' @importFrom utils head globalVariables
+#' @importFrom utils head
 "_PACKAGE"
 
 ## The class generator RelStore is created at load time by loadModule()
