@@ -8,7 +8,7 @@ This package offers four main sets of functionalities:
 - a set of functions allowing for updating a relatedness matrix, conceived with 
 individual based simulations in mind, with no need to store a pedigree, and with
 a computation time and memory footprint that do not increase over time as long as
-the population at its demographic equilibrium
+the population is at its demographic equilibrium
 (it only requires storing the information about alive individuals)
 - a function to compute relatedness from a pedigree more quickly than 
 [`ggroups`](https://cran.r-project.org/web/packages/ggroups/index.html), [`kinship2`](https://cran.r-project.org/web/packages/kinship2/index.html) or 
@@ -20,7 +20,7 @@ immigrations and emigrations.
 
 The functions have been written with Claude Sonnet 5.5 in C++ and interfaced with R.
 
-The relatedness matrix is here techincally defined as the additive relationship matrix, A = 2 × kinship, with diagonal 1 + F.
+The relatedness matrix is here technically defined as the additive relationship matrix, A = 2 × kinship, with diagonal 1 + F.
 
 
 ## Installation

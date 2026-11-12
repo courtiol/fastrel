@@ -44,6 +44,7 @@
 #' }
 #' @export
 relatedness_fast <- function(id, dadid, momid, ...) {
+  if (anyNA(id)) stop("id values cannot be NA")
   if (anyDuplicated(id)) stop("All id values must be unique")
   n <- length(id)
   if (length(dadid) != n) stop("Invalid father id")

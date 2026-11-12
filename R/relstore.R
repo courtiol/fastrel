@@ -4,8 +4,8 @@
 #' \eqn{A = 2\phi}{A = 2 * phi} among the individuals currently in it. Because
 #' relatedness between existing individuals never changes when new individuals
 #' are born, a newborn's row is computed once from its parents' rows, at a cost
-#' proportional to the capacity of the store instead of recomputing the whole
-#' matrix. Individuals who can no longer become parents (dead, emigrated, ...)
+#' proportional to the number of individuals the store has held at once instead
+#' of recomputing the whole matrix. Individuals who can no longer become parents (dead, emigrated, ...)
 #' should be removed so that their slots are recycled. The cost per birth and
 #' the memory (`8 * capacity^2` bytes) then depend on the number of individuals
 #' in the store, not on the length of the pedigree.
@@ -78,7 +78,8 @@ NULL
 #' @rdname relstore
 #' @export
 rel_new <- function(capacity = 1000L) {
-  if (length(capacity) != 1L || is.na(capacity) || capacity < 1)
+  if (!is.numeric(capacity) || length(capacity) != 1L || is.na(capacity) ||
+      capacity < 1 || capacity > .Machine$integer.max)
     stop("`capacity` must be a single positive number")
   self <- new.env()
   self$ks    <- new(RelStore, as.integer(capacity))
@@ -97,33 +98,53 @@ rel_add <- function(rel, ped) {
   id  <- as.character(ped[[1]])
   mom <- as.character(ped[[2]])
   dad <- as.character(ped[[3]])
+  n <- length(id)
+  if (n == 0L) return(invisible(rel))             # nothing to add
 
   if (anyNA(id))                stop("focal IDs cannot be NA")
   if (anyDuplicated(id))        stop("duplicated focal IDs in ped")
-  if (any(id %in% rel$ids))     stop("some focal IDs are already in the store")
 
-  missing_par <- setdiff(c(mom, dad), c(NA, rel$ids, id))
-  if (length(missing_par))
-    stop("parents not found in the store or in ped: ",
-         paste(head(missing_par, 5), collapse = ", "))
+  ## a single lookup in the store for the focal individuals and their parents
+  k <- match(c(id, mom, dad), rel$ids)
+  if (!all(is.na(k[seq_len(n)]))) stop("some focal IDs are already in the store")
+  sm <- rel$slots[k[n + seq_len(n)]]              # slots of the parents; NA if
+  sd <- rel$slots[k[2L * n + seq_len(n)]]         # unknown or not in the store
+  m_new <- is.na(sm) & !is.na(mom)                # known parents that are not in
+  d_new <- is.na(sd) & !is.na(dad)                # the store: must be in ped
 
-  ## Parents must be inserted before their children. Normally all parents
-  ## are already in the store, so this loop runs once.
-  done <- logical(length(id))
-  while (!all(done)) {
-    todo  <- which(!done)
-    ready <- todo[(is.na(mom[todo]) | mom[todo] %in% rel$ids) &
-                  (is.na(dad[todo]) | dad[todo] %in% rel$ids)]
-    if (!length(ready)) stop("impossible pedigree: cycle among the new individuals")
-
-    sm  <- rel$slots[match(mom[ready], rel$ids)]   # NA stays NA
-    sd  <- rel$slots[match(dad[ready], rel$ids)]
+  if (!any(m_new) && !any(d_new)) {
+    ## Usual case: all the parents are already in the store.
+    ord <- seq_len(n)
     new <- rel$ks$add(sm, sd)
+  } else {
+    pm <- match(mom, id)                          # row of ped holding the parent
+    pd <- match(dad, id)
+    missing_par <- unique(c(mom[m_new & is.na(pm)], dad[d_new & is.na(pd)]))
+    if (length(missing_par))
+      stop("parents not found in the store or in ped: ",
+           paste(head(missing_par, 5), collapse = ", "))
 
-    rel$ids   <- c(rel$ids, id[ready])
-    rel$slots <- c(rel$slots, new)
-    done[ready] <- TRUE
+    ## Parents must be inserted before their children: insert, round after
+    ## round, the individuals whose parents are all in the store.
+    new  <- rep(NA_integer_, n)                   # slots given to the rows of ped
+    done <- logical(n)
+    ord  <- integer(0)                            # rows of ped, in insertion order
+    while (length(ord) < n) {
+      todo  <- which(!done)
+      ready <- todo[(!m_new[todo] | done[pm[todo]]) & (!d_new[todo] | done[pd[todo]])]
+      if (!length(ready)) {
+        rel$ks$remove(new[ord])                   # leave the store unchanged
+        stop("impossible pedigree: cycle among the new individuals")
+      }
+      s1 <- sm[ready]; i <- m_new[ready]; s1[i] <- new[pm[ready[i]]]
+      s2 <- sd[ready]; i <- d_new[ready]; s2[i] <- new[pd[ready[i]]]
+      new[ready]  <- rel$ks$add(s1, s2)
+      done[ready] <- TRUE
+      ord <- c(ord, ready)
+    }
   }
+  rel$ids   <- c(rel$ids, id[ord])
+  rel$slots <- c(rel$slots, new[ord])
   invisible(rel)
 }
 

@@ -53,8 +53,8 @@ A persistent store holds the additive relationship matrix
 \eqn{A = 2\phi}{A = 2 * phi} among the individuals currently in it. Because
 relatedness between existing individuals never changes when new individuals
 are born, a newborn's row is computed once from its parents' rows, at a cost
-proportional to the capacity of the store instead of recomputing the whole
-matrix. Individuals who can no longer become parents (dead, emigrated, ...)
+proportional to the number of individuals the store has held at once instead
+of recomputing the whole matrix. Individuals who can no longer become parents (dead, emigrated, ...)
 should be removed so that their slots are recycled. The cost per birth and
 the memory (\code{8 * capacity^2} bytes) then depend on the number of individuals
 in the store, not on the length of the pedigree.

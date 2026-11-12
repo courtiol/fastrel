@@ -74,3 +74,47 @@ test_that("print method works", {
   rel <- rel_new(4)
   expect_output(print(rel), "relatedness_store")
 })
+
+test_that("a cycle found after some insertions leaves the store unchanged", {
+  rel <- rel_new(2)
+  rel_add(rel, data.frame(id = c("a", "b"), mom = NA, dad = NA))
+  before <- rel_get(rel)
+  ## f and c can be inserted, p and q form a cycle
+  expect_error(rel_add(rel, data.frame(id  = c("f", "c", "p", "q"),
+                                       mom = c(NA, "f", "q", "p"),
+                                       dad = c(NA, "a", NA, NA))), "cycle")
+  expect_equal(rel_size(rel), 2L)
+  expect_equal(rel$ids, c("a", "b"))
+  expect_equal(rel_get(rel), before)
+  ## the store still works, and c is inserted after its mother f
+  rel_add(rel, data.frame(id = c("c", "f"), mom = c("f", "a"), dad = c("b", NA)))
+  expect_equal(rel$ids, c("a", "b", "f", "c"))
+  expect_equal(rel_get(rel, c("a", "b", "f", "c")),
+               relatedness_fast(c("a", "b", "f", "c"), dadid = c(NA, NA, NA, "b"),
+                                momid = c(NA, NA, "a", "f")))
+})
+
+test_that("an oversized or emptied store gives the same values", {
+  ped <- sim_ped(120, n_founders = 10, window = 30)
+  full <- relatedness_fast(ped$id, ped$dadid, ped$momid)
+  rel <- rel_new(5000)
+  rel_add(rel, ped[, c("id", "momid", "dadid")])
+  expect_equal(rel_get(rel, ped$id), full)
+  expect_equal(rel_capacity(rel), 5000L)
+  ## empty it completely and start again: no value must be left behind
+  rel_remove(rel, ped$id)
+  expect_equal(rel_size(rel), 0L)
+  expect_equal(dim(rel_get(rel)), c(0L, 0L))
+  rel_add(rel, ped[, c("id", "momid", "dadid")])
+  expect_equal(rel_get(rel, ped$id), full)
+})
+
+test_that("adding nothing and invalid capacities", {
+  rel <- rel_new(4)
+  expect_identical(rel_add(rel, data.frame(id = character(0), mom = character(0),
+                                           dad = character(0))), rel)
+  expect_equal(rel_size(rel), 0L)
+  expect_error(rel_new("a"), "positive")
+  expect_error(rel_new(1e10), "positive")
+  expect_error(rel_new(c(2, 3)), "positive")
+})

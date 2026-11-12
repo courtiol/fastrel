@@ -44,3 +44,14 @@ test_that("input checks and edge cases", {
   expect_error(relatedness_fast(c("a", "b"), dadid = c("b", "a"), momid = c(NA, NA)),
                "own ancestor")
 })
+
+test_that("rows in reverse birth order, and NA in id", {
+  ped <- sim_ped(150, n_founders = 5, window = 20, p_unknown = 0.3)
+  A0 <- ref_relatedness(ped$id, ped$dadid, ped$momid)
+  rev_ped <- ped[nrow(ped):1, ]
+  A1 <- relatedness_fast(rev_ped$id, rev_ped$dadid, rev_ped$momid)
+  expect_identical(rownames(A1), rev_ped$id)
+  expect_equal(A1[ped$id, ped$id], A0)
+  expect_true(isSymmetric(A1))
+  expect_error(relatedness_fast(c("a", NA), c(NA, NA), c(NA, NA)), "NA")
+})

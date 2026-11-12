@@ -82,29 +82,28 @@ sim_pop <- function(n_steps = 50, n_init = 100, carrying = 2 * n_init,
   if (n_immigrants < 0) stop("`n_immigrants` must be non-negative")
   set.seed(seed)
 
-  next_id <- 0L
-  new_ids <- function(k) {
-    ids <- sprintf("ind%08d", next_id + seq_len(k))
-    next_id <<- next_id + k
-    ids
-  }
+  ## Individuals are numbered 1, 2, ... in order of arrival; the numbers are
+  ## turned into identifiers at the end. Records are kept as plain vectors, one
+  ## chunk per step, and assembled into a data frame only once.
+  n_total <- n_init                               # individuals ever present
 
   ## state of the individuals currently present
-  a_id <- new_ids(n_init)
+  a_id  <- seq_len(n_init)
   a_sex <- sample(1:2, n_init, replace = TRUE)
-  a_mat <- rep(0L, n_init)                      # step from which it is mature
+  a_mat <- rep(0L, n_init)                        # step from which it is mature
 
-  ## records
-  chunks <- list(data.frame(id = a_id, momid = NA_character_, dadid = NA_character_,
-                            sex = a_sex, arrival = 0L, origin = "founder",
-                            stringsAsFactors = FALSE))
-  exits <- vector("list", n_steps)
+  ## records of the arrivals (founders first) and of the exits
+  r_mom <- r_dad <- r_sex <- r_arr <- r_ori <- vector("list", n_steps + 1L)
+  r_mom[[1L]] <- r_dad[[1L]] <- rep(NA_integer_, n_init)
+  r_sex[[1L]] <- a_sex
+  r_arr[[1L]] <- rep(0L, n_init)
+  r_ori[[1L]] <- rep("founder", n_init)
+  x_id <- x_step <- x_fate <- vector("list", n_steps)
 
   for (t in seq_len(n_steps)) {
     n_alive <- length(a_id)
     if (n_alive == 0L) {
       warning("the population went extinct at step ", t - 1L)
-      exits <- exits[seq_len(t - 1L)]
       break
     }
     mature <- a_mat <= t
@@ -115,47 +114,50 @@ sim_pop <- function(n_steps = 50, n_init = 100, carrying = 2 * n_init,
     p_b <- min(1, max(0, p_birth * (1 - n_alive / carrying)))
     mothers <- mothers[stats::runif(length(mothers)) < p_b]
     nb <- length(mothers)
-    born <- NULL
+    dads <- sex_b <- integer(0)
     if (nb > 0L) {
       dads <- if (length(fathers)) fathers[sample.int(length(fathers), nb, replace = TRUE)]
-              else rep(NA_character_, nb)
-      born <- data.frame(id = new_ids(nb), momid = mothers, dadid = dads,
-                         sex = sample(1:2, nb, replace = TRUE), arrival = t,
-                         origin = "born", stringsAsFactors = FALSE)
+              else rep(NA_integer_, nb)
+      sex_b <- sample(1:2, nb, replace = TRUE)
     }
 
     ## 2. immigrants
     ni <- stats::rpois(1, n_immigrants)
-    imm <- NULL
-    if (ni > 0L) {
-      imm <- data.frame(id = new_ids(ni), momid = NA_character_, dadid = NA_character_,
-                        sex = sample(1:2, ni, replace = TRUE), arrival = t,
-                        origin = "immigrant", stringsAsFactors = FALSE)
-    }
+    sex_i <- if (ni > 0L) sample(1:2, ni, replace = TRUE) else integer(0)
 
     ## 3. exits among those present at the start of the step
     dead <- stats::runif(n_alive) < p_death
     emig <- !dead & mature & stats::runif(n_alive) < p_emigrate
     gone <- dead | emig
-    if (any(gone))
-      exits[[t]] <- data.frame(id = a_id[gone], exit = t,
-                               fate = ifelse(dead[gone], "dead", "emigrated"),
-                               stringsAsFactors = FALSE)
+    if (any(gone)) {
+      x_id[[t]]   <- a_id[gone]
+      x_step[[t]] <- rep(t, sum(gone))
+      x_fate[[t]] <- ifelse(dead[gone], "dead", "emigrated")
+    }
 
-    ## update the individuals present
-    arrivals <- rbind(born, imm)
-    a_id  <- c(a_id[!gone],  arrivals$id)
-    a_sex <- c(a_sex[!gone], arrivals$sex)
+    ## record the arrivals and update the individuals present
+    na <- nb + ni
+    if (na > 0L) {
+      r_mom[[t + 1L]] <- c(mothers, rep(NA_integer_, ni))
+      r_dad[[t + 1L]] <- c(dads, rep(NA_integer_, ni))
+      r_sex[[t + 1L]] <- c(sex_b, sex_i)
+      r_arr[[t + 1L]] <- rep(t, na)
+      r_ori[[t + 1L]] <- rep(c("born", "immigrant"), c(nb, ni))
+    }
+    a_id  <- c(a_id[!gone],  n_total + seq_len(na))
+    a_sex <- c(a_sex[!gone], sex_b, sex_i)
     a_mat <- c(a_mat[!gone],
                c(rep(t + as.integer(maturity), nb), rep(t, ni)))
-    if (!is.null(arrivals)) chunks[[length(chunks) + 1L]] <- arrivals
+    n_total <- n_total + na
   }
 
-  ped <- do.call(rbind, chunks)
-  ex <- do.call(rbind, exits)
-  k <- if (is.null(ex)) rep(NA_integer_, nrow(ped)) else match(ped$id, ex$id)
-  ped$exit <- if (is.null(ex)) NA_integer_ else as.integer(ex$exit[k])
-  ped$fate <- if (is.null(ex)) NA_character_ else ex$fate[k]
-  rownames(ped) <- NULL
-  ped[, c("id", "momid", "dadid", "sex", "arrival", "exit", "fate", "origin")]
+  ids <- sprintf("ind%08d", seq_len(n_total))
+  exit <- rep(NA_integer_, n_total)
+  fate <- rep(NA_character_, n_total)
+  gone <- unlist(x_id)
+  exit[gone] <- unlist(x_step)
+  fate[gone] <- unlist(x_fate)
+  data.frame(id = ids, momid = ids[unlist(r_mom)], dadid = ids[unlist(r_dad)],
+             sex = unlist(r_sex), arrival = unlist(r_arr), exit = exit,
+             fate = fate, origin = unlist(r_ori), stringsAsFactors = FALSE)
 }
