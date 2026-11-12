@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <cmath>
 #include <climits>
+#include <string>
+#include <unordered_set>
 using namespace Rcpp;
 
 // Persistent store of the additive relationship ("relatedness") matrix
@@ -88,7 +90,10 @@ public:
   // Remove individuals (they can no longer be used as parents). Their row and
   // column are zeroed to keep the invariant, and the slot is recycled.
   // Relatedness values of the remaining individuals are unaffected.
-  void remove(IntegerVector slots) {
+  // `ids` are the identifiers to remember as removed (see mark_gone()); it is
+  // empty when an insertion is undone, which is not a removal.
+  void remove(IntegerVector slots, CharacterVector ids) {
+    for (int s : slots) if (s != NA_INTEGER) slot(s);   // validate them all first
     for (int s : slots) {
       if (s == NA_INTEGER) continue;       // NA: nothing to remove
       const int j = slot(s);
@@ -100,6 +105,7 @@ public:
       free_.push_back(j);
     }
     while (hi > 0 && !used[hi - 1]) hi--;
+    mark_gone(ids);
   }
 
   // Relatedness submatrix for the given slots (already on the A = 2*phi scale).
@@ -151,8 +157,37 @@ public:
     return out;
   }
 
-  // Make room for `need` more individuals in a single step.
-  void reserve(int need) {
+  // Identifiers of the individuals removed so far. The store itself works
+  // with slots, not identifiers; this set only lets the R side refuse to add
+  // again an individual that was removed (its relatedness to the others is
+  // lost, so it would wrongly come back as unrelated to everybody). It is the
+  // one thing that grows with the length of the pedigree, hence a hash set
+  // kept here rather than an R vector searched at each call.
+  void mark_gone(CharacterVector ids) {
+    for (R_xlen_t i = 0; i < ids.size(); i++) gone_.insert(key(ids[i]));
+  }
+
+  CharacterVector gone() {
+    CharacterVector out(gone_.size());
+    R_xlen_t i = 0;
+    for (const std::string& s : gone_) out[i++] = Rf_mkCharCE(s.c_str(), CE_UTF8);
+    return out;
+  }
+
+  // Called before individuals are added: refuse those that were removed
+  // earlier, then make room for them all in a single step. (One call from R
+  // for both, since each call to the C++ object has a fixed overhead.)
+  void prepare(CharacterVector ids) {
+    const int need = ids.size();
+    if (!gone_.empty()) {
+      std::string bad;
+      int nbad = 0;
+      for (int i = 0; i < need && nbad < 5; i++)
+        if (gone_.count(key(ids[i]))) { bad += (nbad++ ? ", " : "") + key(ids[i]); }
+      if (nbad)
+        stop("some focal IDs were removed from the store earlier and cannot be "
+             "added again: %s", bad);
+    }
     if (need > 0 && (int)free_.size() < need) grow(need);
   }
 
@@ -164,6 +199,10 @@ private:
   std::vector<double> K;      // cap x cap relatedness matrix, column-major
   std::vector<char> used;     // used[i] = slot i is occupied
   std::vector<int> free_;     // stack of free slots
+  std::unordered_set<std::string> gone_;   // identifiers removed so far
+
+  static std::string key(SEXP s) { return std::string(Rf_translateCharUTF8(s)); }
+
   int hi;                     // all the slots >= hi are free, so rows/columns
                               // only need to be read or written below hi
 
@@ -222,7 +261,9 @@ RCPP_MODULE(relstore) {
   .method("remove", &RelStore::remove)
   .method("get", &RelStore::get)
   .method("restore", &RelStore::restore)
-  .method("reserve", &RelStore::reserve)
+  .method("mark_gone", &RelStore::mark_gone)
+  .method("gone", &RelStore::gone)
+  .method("prepare", &RelStore::prepare)
   .method("size", &RelStore::size)
   .method("capacity", &RelStore::capacity);
 }

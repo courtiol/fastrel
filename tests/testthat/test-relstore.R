@@ -106,9 +106,57 @@ test_that("an oversized or emptied store gives the same values", {
   rel_remove(rel, ped$id)
   expect_equal(rel_size(rel), 0L)
   expect_equal(dim(rel_get(rel)), c(0L, 0L))
-  rel_add(rel, ped[, c("id", "momid", "dadid")])
-  expect_equal(rel_get(rel, ped$id), full)
+  ## (under new identifiers: a removed individual cannot be added again)
+  ped2 <- ped[, c("id", "momid", "dadid")]
+  ped2[] <- lapply(ped2, function(x) ifelse(is.na(x), NA, paste0("new_", x)))
+  rel_add(rel, ped2)
+  expect_equal(unname(rel_get(rel, ped2$id)), unname(full))
   expect_equal(rel_capacity(rel), cap)         # the slots were reused
+})
+
+test_that("a removed individual cannot be added again", {
+  rel <- rel_new()
+  rel_add(rel, data.frame(id = c("a", "b"), mom = NA, dad = NA))
+  rel_add(rel, data.frame(id = "c", mom = "a", dad = "b"))
+  rel_remove(rel, "a")
+  ## it would come back unrelated to its offspring c
+  expect_error(rel_add(rel, data.frame(id = "a", mom = NA, dad = NA)), "removed")
+  expect_error(rel_add(rel, data.frame(id = c("d", "a"), mom = NA, dad = NA)), "removed")
+  expect_identical(rel_ids(rel), c("b", "c"))  # nothing was inserted
+  rel_add(rel, data.frame(id = "d", mom = "c", dad = "b"))
+  expect_identical(rel_ids(rel), c("b", "c", "d"))
+  ## a failed rel_add() does not count as a removal: x can be added later
+  expect_error(rel_add(rel, data.frame(id = c("x", "p", "q"), mom = c(NA, "q", "p"),
+                                       dad = NA)), "cycle")
+  rel_add(rel, data.frame(id = "x", mom = NA, dad = NA))
+  expect_true("x" %in% rel_ids(rel))
+  ## the memory survives a save and load
+  rel2 <- rel_load(rel_save(rel))
+  expect_error(rel_add(rel2, data.frame(id = "a", mom = NA, dad = NA)), "removed")
+  rel_add(rel2, data.frame(id = "e", mom = "d", dad = NA))
+  expect_equal(rel_size(rel2), 5L)
+  ## a file saved without the list of removed individuals still loads
+  old <- rel_save(rel); old$removed <- NULL
+  expect_equal(rel_get(rel_load(old)), rel_get(rel))
+})
+
+test_that("a metapopulation in one store: migrants keep their relatives", {
+  rel <- rel_new()
+  rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
+  patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B")
+  rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2"))
+  patch["a3"] <- "B"                           # a3 was born in A and moves to B
+  rel_add(rel, data.frame(id = "b3", mom = "b1", dad = "a3"))
+  patch["b3"] <- "B"
+  rel_add(rel, data.frame(id = "a4", mom = "a1", dad = "a2"))   # a sib born later in A
+  patch["a4"] <- "A"
+  B <- rel_get(rel, names(patch)[patch == "B"])
+  expect_identical(rownames(B), c("b1", "b2", "a3", "b3"))
+  expect_equal(B["b3", "a3"], 0.5)
+  A <- rel_get(rel)
+  expect_equal(A["a3", "a4"], 0.5)             # full sibs in different patches
+  expect_equal(A["b3", "a1"], 0.25)            # grandparent left behind
+  expect_equal(A["b3", "a4"], 0.25)            # uncle or aunt born after the move
 })
 
 test_that("the capacity is handled automatically and stays close to the peak", {

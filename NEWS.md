@@ -1,3 +1,13 @@
+# fastrel 0.3.1
+
+* `rel_add()` now refuses an identifier that was removed from the store
+  earlier. Such an individual used to come back as an unrelated founder, which
+  was silently wrong for its relatives. The store remembers the identifiers
+  removed for this (about 70 bytes each), and `rel_save()` / `rel_load()`
+  keep them.
+* The help page of the store explains how to handle a metapopulation: a single
+  store for all the patches, in which migrants are kept.
+
 # fastrel 0.3.0
 
 ## Breaking changes

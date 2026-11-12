@@ -86,6 +86,26 @@ as you want to query its relatedness. A removed individual cannot be used as a
 parent later (\code{rel_add()} raises an error), and a newborn gets no relatedness
 value with individuals removed before its birth. Relatedness values among the
 remaining individuals are not affected by removals.
+
+Removal is final. The relatedness between a removed individual and those
+born afterwards is not tracked, so it could only come back as unrelated to
+everybody, which would be wrong for its relatives. \code{rel_add()} therefore
+refuses an identifier that was removed earlier. For this, the store
+remembers the identifiers removed, which is the only thing in it that grows
+with the length of the pedigree (about 70 bytes per individual removed).
+}
+
+\section{Metapopulations}{
+
+To follow several patches connected by migration, use a single store for
+the whole metapopulation and do not remove the individuals that move to
+another patch: remove them only when they die or leave the metapopulation
+for good. Keep track of who is in which patch in your simulation, and
+extract the matrix of a patch with \code{rel_get(rel, ids_of_the_patch)}.
+Migrants then keep their exact relatedness with everybody, including the
+relatives they left behind and the offspring they produce elsewhere. The
+time per birth and the memory depend on the number of individuals alive
+over all the patches (see the section Memory).
 }
 
 \section{Memory}{
@@ -120,6 +140,18 @@ rel_add(rel, data.frame(id = "H", mom = "E", dad = "G"))
 A <- rel_get(rel)
 A
 diag(A) - 1   # inbreeding coefficients
+
+## two patches: one store, and the patch of each individual kept aside
+rel <- rel_new()
+rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
+patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B")
+rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2"))   # born in A
+patch["a3"] <- "A"
+patch["a3"] <- "B"                                            # a3 moves to B
+rel_add(rel, data.frame(id = "b3", mom = "b1", dad = "a3"))   # and breeds there
+patch["b3"] <- "B"
+rel_get(rel, names(patch)[patch == "B"])
+rel_get(rel)["b3", "a1"]   # b3 is related to its grandparent in patch A
 }
 \seealso{
 \code{\link[=relatedness_fast]{relatedness_fast()}} to compute the whole matrix from a pedigree;

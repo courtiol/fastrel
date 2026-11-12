@@ -32,7 +32,9 @@ it, so that a simulation can be checkpointed and resumed.
 }
 \details{
 The saved object contains the full dense relatedness matrix among the
-individuals in the store, so its size is \code{8 * n^2} bytes for \code{n} individuals.
+individuals in the store, so its size is \code{8 * n^2} bytes for \code{n} individuals,
+plus the identifiers of the individuals removed so far (which cannot be
+added again, see \code{\link[=rel_add]{rel_add()}}).
 After loading, individuals have new internal slots, which is invisible when
 you work through the identifiers. The restored store behaves exactly like the
 original one: you can keep adding and removing individuals.
