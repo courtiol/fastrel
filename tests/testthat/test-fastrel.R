@@ -108,3 +108,30 @@ test_that("fastrel_ped refuses ambiguous or incomplete columns", {
   expect_error(fastrel_ped(as.matrix(p)), "data frame")
   expect_error(relatedness_fast(p$id, p$dad, p$mom), "could not find function")
 })
+
+test_that("range of values stated in the documentation", {
+  ## repeated selfing: the diagonal is 2 - (1/2)^n and approaches 2
+  n <- 12
+  id <- seq_len(n + 1)
+  A <- fastrel_vec(id, dadid = c(NA, id[-(n + 1)]), momid = c(NA, id[-(n + 1)]))
+  expect_equal(unname(diag(A)), 2 - 0.5^(0:n))
+  expect_lt(max(A), 2)
+  ## two offspring of the same selfed parent are related by its diagonal value
+  B <- fastrel_vec(1:4, dadid = c(NA, 1, 2, 2), momid = c(NA, 1, 2, 2))
+  expect_equal(B["3", "4"], B["2", "2"])
+  expect_gt(B["3", "4"], 1)
+  ## in general: 0 <= A[i,j] <= sqrt(A[i,i] * A[j,j]) <= 2, so cov2cor(A) <= 1
+  set.seed(4)
+  ped <- sim_ped(400, n_founders = 4, window = 6, p_unknown = 0)   # much inbreeding
+  A <- fastrel_ped(ped)
+  expect_gt(max(diag(A)), 1.5)
+  expect_gt(max(A[upper.tri(A)]), 1)
+  expect_true(all(A >= 0 & A <= 2))
+  expect_true(all(A <= sqrt(outer(diag(A), diag(A))) + 1e-12))
+  expect_lte(max(cov2cor(A)), 1 + 1e-12)
+  ## without inbreeding, relatedness between two individuals is at most 1
+  p <- test_ped()[1:7, ]
+  A <- fastrel_ped(p)
+  expect_equal(unname(diag(A)), rep(1, 7))
+  expect_lte(max(A[upper.tri(A)]), 0.5)
+})

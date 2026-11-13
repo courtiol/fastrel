@@ -21,6 +21,8 @@ immigrations and emigrations.
 The functions have been written with Claude Sonnet 5.5 & Fable 5.2 in C++ and interfaced with R.
 
 The relatedness matrix is here technically defined as the additive relationship matrix, A = 2 × kinship, with diagonal 1 + F.
+Its values lie between 0 and 2: between individuals that are not inbred, relatedness is at most 1 (identical twins or clones; 0.5 for parent and offspring or full siblings), and it can only exceed 1 with inbreeding.
+Use `cov2cor(A)` for a measure that cannot exceed 1 whatever the inbreeding (see `?fastrel`).
 
 | Task | Functions |
 |---|---|

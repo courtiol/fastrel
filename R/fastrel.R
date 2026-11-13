@@ -51,6 +51,8 @@
 #' @return A symmetric numeric matrix with one row and one column per
 #'   individual, in the order given, and the identifiers as row and column
 #'   names. The diagonal is `1 + F`, where `F` is the inbreeding coefficient.
+#'   Values lie between 0 and 2, and exceed 1 only with inbreeding: see the
+#'   section Range of values in [fastrel-package].
 #'
 #' @seealso [rel_new()] for the incremental version.
 #'
