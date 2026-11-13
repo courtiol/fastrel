@@ -28,12 +28,9 @@
 * The words "store" and "slot" are now defined, and the help page explains what
   a store is made of: an R environment that points to a C++ object holding the
   matrix.
-* Memory figures were corrected after measuring them: with
-  `remember_removed = TRUE`, the table of traces uses 11 to 23 bytes per
-  individual removed as stated, but the R process grew by 30 bytes per
-  individual removed, because memory released when the table is enlarged is
-  not always returned to the system at once. For the same reason a store that
-  grew in small steps made the process use about 20% more than its matrix.
+* Memory figures were corrected after measuring them: `remember_removed = TRUE`
+  costs about 30 bytes per individual removed (not 11 to 23), and a store that
+  grew in small steps made the R process use about 20% more than its matrix.
 
 # fastrel 0.3.1
 

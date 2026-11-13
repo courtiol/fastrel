@@ -142,15 +142,12 @@ raises an error instead (see the section Removed individuals).
 
 With \code{remember_removed = TRUE}, the store keeps a trace of every individual
 removed and \code{rel_add()} refuses to add it again. This protects against a
-silent error, at the cost of 11 to 23 bytes per individual removed for the
-table that holds the traces. Seen from the operating system the cost can be
-up to twice that, since the memory released each time this table is
-enlarged is not always returned to the system at once: we measured 30 bytes
-per individual removed. The memory used then grows slowly with the length
-of the pedigree (a few tens of MB per million individuals removed), instead
-of depending only on the number of individuals in the store. This is why it
-is off by default. The time taken by \code{rel_add()} and \code{rel_remove()} is not
-affected.
+silent error, at the cost of about 30 bytes per individual removed for the
+table that holds the traces. The memory used then grows slowly with the
+length of the pedigree (about 30 MB per million individuals removed),
+instead of depending only on the number of individuals in the store. This
+is why it is off by default. The time taken by \code{rel_add()} and
+\code{rel_remove()} is not affected.
 
 The trace is a 64-bit fingerprint of each identifier, not the identifier
 itself. A new identifier can thus be mistaken for a removed one, but with a

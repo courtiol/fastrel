@@ -150,10 +150,10 @@ record("simulation: memory at the end / at mid-run",
        1, mem[length(mem)] / mem[1], tolerance = 0.10)
 rm(rel)
 
-## 7. remember_removed = TRUE costs 11 to 23 bytes per individual removed -----
-##    for the table of traces itself, and up to twice that for the process
-##    (as in 5: the memory released when the table is enlarged is not always
-##    returned to the system at once)
+## 7. remember_removed = TRUE costs about 30 bytes per individual removed ----
+##    (the table of traces itself takes 11 to 23 bytes per individual; the rest
+##    is, as in 5, memory released when the table is enlarged that the system
+##    does not get back at once)
 ## Two million individuals are added and removed by batches, with and without
 ## the option. Each run is done in a fresh R process, so that the two are
 ## strictly comparable (within one process, memory that R has already obtained
@@ -183,8 +183,8 @@ run <- function(remember_removed) {
   as.numeric(out[length(out)])
 }
 per_removed <- (run(TRUE) - run(FALSE)) / n_removed
-record("remember_removed = TRUE: bytes per individual removed, for the process (at most 2 * 23)",
-       46, per_removed, tolerance = 0, upper_only = TRUE)
+record("remember_removed = TRUE: bytes per individual removed (about 30)",
+       30, per_removed, tolerance = 0.25)
 rel <- rel_new(remember_removed = TRUE)
 rel_add(rel, data.frame(id = 1:1000, mom = NA, dad = NA))
 rel_remove(rel, 1:1000)
