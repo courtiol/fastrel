@@ -16,7 +16,12 @@ Encoding: UTF-8
 Depends: R (>= 4.0.0)
 Imports: methods, Rcpp (>= 1.0.0), stats, utils
 LinkingTo: Rcpp
-Suggests: kinship2, ggroups, microbenchmark, testthat (>= 3.0.0)
+Suggests: 
+    kinship2,
+    ggroups,
+    microbenchmark,
+    testthat (>= 3.0.0),
+    spelling
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.1.1
