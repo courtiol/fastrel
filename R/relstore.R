@@ -21,7 +21,7 @@
 #'   store and the number of slots allocated.
 #'
 #' A store is an environment: `rel_add()` and `rel_remove()` modify it in place,
-#' and copying the object does not copy the data. A store cannot be saved to disk
+#' and copying the object does not copy the data. A store cannot thus be saved to disk
 #' with [save()] or [saveRDS()] and restored in another session: use
 #' [rel_save()] and [rel_load()] instead. The content of the environment is
 #' internal: use the functions above rather than reading or modifying it.
@@ -71,7 +71,7 @@
 #' patch and adding it again when it comes back is an easy mistake to make,
 #' and it would go unnoticed.
 #'
-#' @section Memory:
+#' @section Memory management:
 #' The store allocates its matrix by itself: there is nothing to set. The
 #' matrix has one row and one column per slot, hence uses `8 * rel_capacity(rel)^2`
 #' bytes. When all the slots are taken, the number of slots grows by half (or

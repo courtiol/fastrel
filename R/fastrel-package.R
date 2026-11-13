@@ -8,7 +8,7 @@
 #' * [relatedness_fast()] computes the whole matrix from a pedigree in one go
 #'   (a fast replacement for `2 * kinship2::kinship()`).
 #' * [rel_new()], [rel_add()], [rel_remove()] and [rel_get()] maintain the matrix
-#'   incrementally, which is much cheaper when a pedigree keeps growing, as in
+#'   incrementally, which is computationally much cheaper when a pedigree keeps growing, as in
 #'   an individual-based simulation. [rel_ids()], [rel_size()] and
 #'   [rel_capacity()] describe the content of such a store, and [rel_save()] and
 #'   [rel_load()] save it to disk and restore it.

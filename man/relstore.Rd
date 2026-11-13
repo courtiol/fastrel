@@ -78,7 +78,7 @@ store and the number of slots allocated.
 }
 
 A store is an environment: \code{rel_add()} and \code{rel_remove()} modify it in place,
-and copying the object does not copy the data. A store cannot be saved to disk
+and copying the object does not copy the data. A store cannot thus be saved to disk
 with \code{\link[=save]{save()}} or \code{\link[=saveRDS]{saveRDS()}} and restored in another session: use
 \code{\link[=rel_save]{rel_save()}} and \code{\link[=rel_load]{rel_load()}} instead. The content of the environment is
 internal: use the functions above rather than reading or modifying it.
@@ -134,7 +134,7 @@ patch and adding it again when it comes back is an easy mistake to make,
 and it would go unnoticed.
 }
 
-\section{Memory}{
+\section{Memory management}{
 
 The store allocates its matrix by itself: there is nothing to set. The
 matrix has one row and one column per slot, hence uses \code{8 * rel_capacity(rel)^2}
