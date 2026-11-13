@@ -10,11 +10,13 @@ fastrel_ped(ped)
 fastrel_vec(id, dadid, momid, ...)
 }
 \arguments{
-\item{ped}{A data frame with one row per individual and three columns giving
+\item{ped}{A data frame (or a tibble) with one row per individual and three columns giving
 the identifier of the individual, of its mother and of its father (\code{NA} if
 unknown). See the section Columns of \code{ped}.}
 
-\item{id}{Vector of unique individual identifiers.}
+\item{id}{Vector of unique individual identifiers. For this argument and
+the next two, a data frame with a single column (what \code{x[, "id"]} returns
+when \code{x} is a tibble) is taken as that column.}
 
 \item{dadid}{Vector of the same length as \code{id} with the identifier of each
 individual's father (\code{NA} if unknown).}

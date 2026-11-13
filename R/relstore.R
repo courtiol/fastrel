@@ -121,7 +121,7 @@
 #'   removed, so that `rel_add()` refuses to add them again? `FALSE` by default
 #'   (see the section Removed individuals).
 #' @param rel A store created by `rel_new()`.
-#' @param ped A data frame with one row per individual to add and three columns
+#' @param ped A data frame (or a tibble) with one row per individual to add and three columns
 #'   giving the identifier of the individual, of its mother and of its father
 #'   (`NA` for unknown parents). The columns are found by their names (e.g.
 #'   `id`, `mom`, `dad` or `Animal`, `Dam`, `Sire`), whatever their order, and
@@ -130,6 +130,7 @@
 #'   Parents must be in the store or in `ped` itself; the rows of `ped` may be
 #'   in any order.
 #' @param ids Character vector (or coercible to it) of individual identifiers.
+#'   A data frame with a single column is taken as that column.
 #'   For `rel_get()`, the default is every individual in the store.
 #'
 #' @return `rel_new()` returns the store. `rel_add()` and `rel_remove()` return
@@ -259,7 +260,7 @@ rel_add <- function(rel, ped) {
 #' @export
 rel_remove <- function(rel, ids) {
   check_store(rel)
-  ids <- unique(as.character(ids))
+  ids <- unique(as.character(id_vector(ids, "ids")))
   if (!length(ids)) return(invisible(rel))          # nothing to remove
   i <- match(ids, rel$ids)
   if (anyNA(i)) stop("unknown IDs: ", paste(head(ids[is.na(i)], 5), collapse = ", "))
@@ -273,7 +274,7 @@ rel_remove <- function(rel, ids) {
 #' @export
 rel_get <- function(rel, ids = rel$ids) {
   check_store(rel)
-  ids <- as.character(ids)
+  ids <- as.character(id_vector(ids, "ids"))
   i <- match(ids, rel$ids)
   if (anyNA(i)) stop("unknown IDs: ", paste(head(ids[is.na(i)], 5), collapse = ", "))
   A <- rel$ks$get(rel$slots[i])

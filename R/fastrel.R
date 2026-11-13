@@ -34,10 +34,12 @@
 #' If only some of the three are recognised, or if several columns could play
 #' the same role, an error is raised rather than guessing.
 #'
-#' @param ped A data frame with one row per individual and three columns giving
+#' @param ped A data frame (or a tibble) with one row per individual and three columns giving
 #'   the identifier of the individual, of its mother and of its father (`NA` if
 #'   unknown). See the section Columns of `ped`.
-#' @param id Vector of unique individual identifiers.
+#' @param id Vector of unique individual identifiers. For this argument and
+#'   the next two, a data frame with a single column (what `x[, "id"]` returns
+#'   when `x` is a tibble) is taken as that column.
 #' @param dadid Vector of the same length as `id` with the identifier of each
 #'   individual's father (`NA` if unknown).
 #' @param momid Vector of the same length as `id` with the identifier of each
@@ -86,6 +88,9 @@ fastrel_vec <- function(id, dadid, momid, ...) {
   chrtype <- list(...)[["chrtype"]]
   if (!is.null(chrtype) && !identical(tolower(chrtype), "autosome"))
     stop("only autosomes are supported (`chrtype = \"autosome\"`)")
+  id    <- id_vector(id, "id")
+  dadid <- id_vector(dadid, "dadid")
+  momid <- id_vector(momid, "momid")
   if (anyNA(id)) stop("id values cannot be NA")
   if (anyDuplicated(id)) stop("All id values must be unique")
   n <- length(id)
