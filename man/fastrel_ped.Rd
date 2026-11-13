@@ -32,6 +32,8 @@ supported: any other \code{chrtype} raises an error.}
 A symmetric numeric matrix with one row and one column per
 individual, in the order given, and the identifiers as row and column
 names. The diagonal is \code{1 + F}, where \code{F} is the inbreeding coefficient.
+Values lie between 0 and 2, and exceed 1 only with inbreeding: see the
+section Range of values in \link{fastrel-package}.
 }
 \description{
 Compute the additive relationship matrix \eqn{A = 2\phi}{A = 2 * phi} of

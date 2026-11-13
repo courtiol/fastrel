@@ -55,7 +55,8 @@ For \code{rel_get()}, the default is every individual in the store.}
 \value{
 \code{rel_new()} returns the store. \code{rel_add()} and \code{rel_remove()} return
 the store invisibly. \code{rel_get()} returns a symmetric matrix with \code{ids} as
-dimnames (diagonal \code{1 + F}). \code{rel_ids()} returns a character vector, in
+dimnames (diagonal \code{1 + F}; see the section Range of values in
+\link{fastrel-package}). \code{rel_ids()} returns a character vector, in
 order of insertion. \code{rel_size()} and \code{rel_capacity()} return integers.
 }
 \description{

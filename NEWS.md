@@ -1,3 +1,9 @@
+# fastrel 0.5.1
+
+* The documentation now states the range of relatedness values (0 to 2, above
+  1 only with inbreeding) and how to rescale them with `cov2cor()`: see the
+  section Range of values in `?fastrel`.
+
 # fastrel 0.5.0
 
 ## Bug fixes

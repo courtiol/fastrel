@@ -135,7 +135,8 @@
 #'
 #' @return `rel_new()` returns the store. `rel_add()` and `rel_remove()` return
 #'   the store invisibly. `rel_get()` returns a symmetric matrix with `ids` as
-#'   dimnames (diagonal `1 + F`). `rel_ids()` returns a character vector, in
+#'   dimnames (diagonal `1 + F`; see the section Range of values in
+#'   [fastrel-package]). `rel_ids()` returns a character vector, in
 #'   order of insertion. `rel_size()` and `rel_capacity()` return integers.
 #'
 #' @seealso [fastrel_ped()] to compute the whole matrix from a pedigree;

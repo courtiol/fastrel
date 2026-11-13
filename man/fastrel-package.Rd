@@ -35,6 +35,28 @@ Founders (individuals with unknown parents) are assumed to be unrelated and
 non-inbred, and an unknown parent is treated as unrelated to everybody.
 }
 
+\section{Range of values}{
+
+Relatedness values lie between 0 and 2, since a kinship coefficient lies
+between 0 and 1.
+\itemize{
+\item The diagonal goes from 1 (not inbred) to 2 (fully inbred).
+\item The relatedness between two individuals is at most the geometric mean of
+their diagonal values, \eqn{A_{ij} \le \sqrt{A_{ii} A_{jj}}}{A[i,j] <= sqrt(A[i,i] * A[j,j])}.
+Between individuals that are not inbred it is therefore at most 1, the
+value for identical twins or clones; usual values are 0.5 for parent and
+offspring or for full siblings, and 0.25 for half siblings.
+\item Values above 1 thus only occur with inbreeding. For example, after \code{n}
+generations of selfing the inbreeding coefficient is \code{1 - (1/2)^n}, so the
+diagonal is 1.5, 1.75, 1.875, ... The maximum of 2 is approached but
+never reached, since founders are assumed not to be inbred.
+}
+
+For a measure that cannot exceed 1 whatever the inbreeding, divide each
+value by the geometric mean of the two diagonal values, which is what
+\code{\link[stats:cor]{stats::cov2cor()}} does: \code{cov2cor(A)}.
+}
+
 \seealso{
 Useful links:
 \itemize{
