@@ -5,8 +5,9 @@
 #' coefficient, for autosomal loci.
 #'
 #' Two interfaces are provided:
-#' * [relatedness_fast()] computes the whole matrix from a pedigree in one go
-#'   (a fast replacement for `2 * kinship2::kinship()`).
+#' * [fastrel_ped()] and [fastrel_vec()] compute the whole matrix from a
+#'   pedigree in one go, given as a data frame or as vectors (the latter is a
+#'   fast replacement for `2 * kinship2::kinship()`).
 #' * [rel_new()], [rel_add()], [rel_remove()] and [rel_get()] maintain the matrix
 #'   incrementally, which is computationally much cheaper when a pedigree keeps growing, as in
 #'   an individual-based simulation. [rel_ids()], [rel_size()] and

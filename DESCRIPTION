@@ -1,7 +1,7 @@
 Package: fastrel
 Type: Package
 Title: Fast Additive Relatedness Matrices from Pedigrees
-Version: 0.3.1
+Version: 0.4.0
 Authors@R: c(
   person("Alexandre", "Courtiol", email = "alexandre.courtiol@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0637-2959"))
   )
@@ -19,6 +19,7 @@ LinkingTo: Rcpp
 Suggests: 
     kinship2,
     ggroups,
+    lobstr,
     microbenchmark,
     testthat (>= 3.0.0),
     spelling

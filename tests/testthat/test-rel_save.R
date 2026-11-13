@@ -21,7 +21,7 @@ test_that("save/load round trip, in memory and via file", {
 test_that("a restored store keeps working and stays exact", {
   set.seed(1)
   ped <- sim_ped(300, n_founders = 20, window = 60)
-  full <- relatedness_fast(ped$id, ped$dadid, ped$momid)
+  full <- fastrel_vec(ped$id, ped$dadid, ped$momid)
   rel <- rel_new()
   rel_add(rel, ped[1:150, c("id", "momid", "dadid")])
   rel2 <- rel_load(rel_save(rel))

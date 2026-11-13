@@ -23,7 +23,7 @@ test_that("sim_pop returns a consistent pedigree", {
 test_that("population is roughly stable and replay with the store is exact", {
   set.seed(7)
   pop <- sim_pop(40, n_init = 50)
-  full <- relatedness_fast(pop$id, pop$dadid, pop$momid)
+  full <- fastrel_vec(pop$id, pop$dadid, pop$momid)
   rel <- rel_new()
   for (t in 0:40) {
     rel_add(rel, pop[pop$arrival == t, c("id", "momid", "dadid")])
@@ -41,6 +41,11 @@ test_that("edge cases", {
   expect_error(sim_pop(5, n_init = 0), "n_init")
   expect_error(sim_pop(5, p_death = 2), "probabilities")
   expect_error(sim_pop(-1), "n_steps")
+  expect_error(sim_pop(5, K = 0), "K")
+  expect_error(sim_pop(5, carrying = 100), "unused argument")
+  set.seed(2); small <- sim_pop(60, n_init = 40, K = 50)
+  set.seed(2); large <- sim_pop(60, n_init = 40, K = 400)
+  expect_lt(nrow(small), nrow(large))            # K limits the births
   expect_error(sim_pop(5, n_init = 2.5), "n_init")
   expect_error(sim_pop(5, maturity = -1), "maturity")
   set.seed(1)

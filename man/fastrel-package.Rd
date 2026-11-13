@@ -13,8 +13,9 @@ coefficient, for autosomal loci.
 \details{
 Two interfaces are provided:
 \itemize{
-\item \code{\link[=relatedness_fast]{relatedness_fast()}} computes the whole matrix from a pedigree in one go
-(a fast replacement for \code{2 * kinship2::kinship()}).
+\item \code{\link[=fastrel_ped]{fastrel_ped()}} and \code{\link[=fastrel_vec]{fastrel_vec()}} compute the whole matrix from a
+pedigree in one go, given as a data frame or as vectors (the latter is a
+fast replacement for \code{2 * kinship2::kinship()}).
 \item \code{\link[=rel_new]{rel_new()}}, \code{\link[=rel_add]{rel_add()}}, \code{\link[=rel_remove]{rel_remove()}} and \code{\link[=rel_get]{rel_get()}} maintain the matrix
 incrementally, which is computationally much cheaper when a pedigree keeps growing, as in
 an individual-based simulation. \code{\link[=rel_ids]{rel_ids()}}, \code{\link[=rel_size]{rel_size()}} and

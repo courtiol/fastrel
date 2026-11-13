@@ -35,10 +35,14 @@ removed, so that \code{rel_add()} refuses to add them again? \code{FALSE} by def
 
 \item{rel}{A store created by \code{rel_new()}.}
 
-\item{ped}{A data frame whose first three columns are the identifier of the
-focal individual, of its mother and of its father (\code{NA} for unknown
-parents). Only individuals not yet in the store can be added. Parents must
-be in the store or in \code{ped} itself; the rows of \code{ped} may be in any order.}
+\item{ped}{A data frame with one row per individual to add and three columns
+giving the identifier of the individual, of its mother and of its father
+(\code{NA} for unknown parents). The columns are found by their names (e.g.
+\code{id}, \code{mom}, \code{dad} or \code{Animal}, \code{Dam}, \code{Sire}), whatever their order, and
+other columns are ignored: see the section Columns of \code{ped} in
+\code{\link[=fastrel_ped]{fastrel_ped()}}. Only individuals not yet in the store can be added.
+Parents must be in the store or in \code{ped} itself; the rows of \code{ped} may be
+in any order.}
 
 \item{ids}{Character vector (or coercible to it) of individual identifiers.
 For \code{rel_get()}, the default is every individual in the store.}
@@ -54,8 +58,9 @@ dimnames (diagonal \code{1 + F}). \code{rel_ids()} returns a character vector, i
 order of insertion. \code{rel_size()} and \code{rel_capacity()} return integers.
 }
 \description{
-A persistent store holds the additive relationship matrix
-\eqn{A = 2\phi}{A = 2 * phi} among the individuals currently in it. Because
+A \emph{store} is an object that keeps the additive relationship matrix
+\eqn{A = 2\phi}{A = 2 * phi} among the individuals currently in it, and
+that is updated as individuals are added and removed. Because
 relatedness between existing individuals never changes when new individuals
 are born, a newborn's row is computed once from its parents' rows, at a cost
 proportional to the number of individuals the store has held at once instead
@@ -68,21 +73,55 @@ in the store, not on the length of the pedigree.
 The functions work as follows:
 \itemize{
 \item \code{rel_new()} creates an empty store.
-\item \code{rel_add()} adds individuals, given by a data frame with the columns
-focal, mother and father.
+\item \code{rel_add()} adds individuals, given by a data frame with columns for the
+focal individual, its mother and its father.
 \item \code{rel_remove()} removes individuals.
 \item \code{rel_get()} extracts the relatedness matrix among chosen individuals.
 \item \code{rel_ids()} lists the individuals in the store.
 \item \code{rel_size()} and \code{rel_capacity()} report the number of individuals in the
 store and the number of slots allocated.
 }
-
-A store is an environment: \code{rel_add()} and \code{rel_remove()} modify it in place,
-and copying the object does not copy the data. A store cannot thus be saved to disk
-with \code{\link[=save]{save()}} or \code{\link[=saveRDS]{saveRDS()}} and restored in another session: use
-\code{\link[=rel_save]{rel_save()}} and \code{\link[=rel_load]{rel_load()}} instead. The content of the environment is
-internal: use the functions above rather than reading or modifying it.
 }
+\section{Vocabulary}{
+
+\emph{Store} and \emph{slot} are everyday words of computer science, not terms of R or
+of C++.
+\itemize{
+\item A \strong{store} is a container that keeps data in memory between calls, here
+the relatedness matrix. You create it once and then pass it to the other
+functions, which read it or update it.
+\item A \strong{slot} is one position in the matrix of the store, i.e. one row and
+the matching column, reserved for one individual. An individual occupies a
+slot from the moment it is added until it is removed; the slot is then
+free and is given to an individual added later. The matrix is allocated
+with more slots than needed so that it does not have to be enlarged at
+each birth: its number of slots is the \emph{capacity} of the store.
+}
+}
+
+\section{What a store is made of}{
+
+The object returned by \code{rel_new()} is an R environment (the kind of object
+created by \code{\link[=new.env]{new.env()}}) of class \code{"relatedness_store"}. It holds the
+identifiers of the individuals, the slot of each of them, and a pointer to a
+C++ object which holds the matrix itself. Two consequences follow, which
+differ from the usual behaviour of R objects:
+\itemize{
+\item Like any R environment, a store is modified in place and is not copied
+when it is assigned or passed to a function: \code{rel_add()} and \code{rel_remove()}
+change the store they are given, and after \code{rel2 <- rel} both names refer
+to the same store.
+\item The matrix lives in memory managed by C++, outside the memory managed by
+R. It is therefore not written by \code{\link[=save]{save()}} or \code{\link[=saveRDS]{saveRDS()}}, and a store
+read back from such a file is unusable: use \code{\link[=rel_save]{rel_save()}} and \code{\link[=rel_load]{rel_load()}}
+instead. For the same reason \code{\link[utils:object.size]{utils::object.size()}} does not see it: see
+the section Memory management.
+}
+
+The content of the environment is internal: use the functions above rather
+than reading or modifying it.
+}
+
 \section{What to keep in the store}{
 
 Keep an individual for as long as it can still become a parent, or for as long
@@ -103,11 +142,15 @@ raises an error instead (see the section Removed individuals).
 
 With \code{remember_removed = TRUE}, the store keeps a trace of every individual
 removed and \code{rel_add()} refuses to add it again. This protects against a
-silent error, at the cost of 11 to 23 bytes per individual removed: the
-memory used then grows slowly with the length of the pedigree (11 to 23 MB
-per million individuals removed), instead of depending only on the number
-of individuals in the store. This is why it is off by default. The time
-taken by \code{rel_add()} and \code{rel_remove()} is not affected.
+silent error, at the cost of 11 to 23 bytes per individual removed for the
+table that holds the traces. Seen from the operating system the cost can be
+up to twice that, since the memory released each time this table is
+enlarged is not always returned to the system at once: we measured 30 bytes
+per individual removed. The memory used then grows slowly with the length
+of the pedigree (a few tens of MB per million individuals removed), instead
+of depending only on the number of individuals in the store. This is why it
+is off by default. The time taken by \code{rel_add()} and \code{rel_remove()} is not
+affected.
 
 The trace is a 64-bit fingerprint of each identifier, not the identifier
 itself. A new identifier can thus be mistaken for a removed one, but with a
@@ -143,6 +186,15 @@ more if a single call to \code{rel_add()} requires it), which costs a one-off
 copy of the matrix. Beyond the initial 16 slots, the number of slots therefore
 stays within about 1.5 times the largest number of individuals the store has
 held at once. It never shrinks.
+
+R does not see this memory: \code{\link[utils:object.size]{utils::object.size()}} or \code{lobstr::obj_size()}
+only report the small R side of a store. Also, each time the matrix is
+enlarged, the old and the new matrix coexist for a moment, and the memory of
+the old one is not always returned to the operating system at once: in our
+benchmark, a store that grew in small steps made the R process use about
+20\% more memory than its matrix. All the figures given here can be checked
+on your machine with the script
+\code{system.file("benchmarks/memory_benchmark.R", package = "fastrel")}.
 }
 
 \examples{
@@ -151,8 +203,8 @@ rel <- rel_new()
 ## founders: unknown parents
 rel_add(rel, data.frame(id = c("A", "B", "C", "D"), mom = NA, dad = NA))
 
-## births: columns are focal, mother, father
-rel_add(rel, data.frame(id = c("E", "F"), mom = c("A", "C"), dad = c("B", "D")))
+## births: the columns are found by their names, in any order
+rel_add(rel, data.frame(sire = c("B", "D"), dam = c("A", "C"), animal = c("E", "F")))
 rel_add(rel, data.frame(id = "G", mom = "E", dad = "F"))
 
 ## deaths (or emigration): free the slots
@@ -184,6 +236,6 @@ rel_remove(rel, "a3")
 try(rel_add(rel, data.frame(id = "a3", mom = NA, dad = NA)))
 }
 \seealso{
-\code{\link[=relatedness_fast]{relatedness_fast()}} to compute the whole matrix from a pedigree;
+\code{\link[=fastrel_ped]{fastrel_ped()}} to compute the whole matrix from a pedigree;
 \code{\link[=rel_save]{rel_save()}} and \code{\link[=rel_load]{rel_load()}} to save a store to disk.
 }

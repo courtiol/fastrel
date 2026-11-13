@@ -9,7 +9,7 @@
 #' Step 0 creates `n_init` adult founders with unknown parents. At each
 #' following step `t`:
 #' 1. Each mature female alive at the start of the step reproduces with
-#'    probability `p_birth * (1 - N / carrying)` (bounded to `[0, 1]`), where `N`
+#'    probability `p_birth * (1 - N / K)` (bounded to `[0, 1]`), where `N`
 #'    is the number of individuals alive. The father is drawn at random among
 #'    the mature males (`NA` if there is none). Newborns arrive at step `t`.
 #' 2. A Poisson number (mean `n_immigrants`) of adult immigrants with unknown
@@ -29,8 +29,8 @@
 #'
 #' @param n_steps Number of time steps after step 0.
 #' @param n_init Number of founders at step 0.
-#' @param carrying Carrying capacity: the birth probability decreases linearly to
-#'   0 when `N` reaches it.
+#' @param K Carrying capacity: the birth probability decreases linearly to 0
+#'   when the number of individuals alive, `N`, reaches it.
 #' @param maturity Number of steps after birth before an individual can
 #'   reproduce or emigrate. Founders and immigrants are mature on arrival.
 #' @param p_birth Maximum probability that a mature female reproduces in a step
@@ -60,26 +60,26 @@
 #' rel <- rel_new()
 #' size <- integer(41)
 #' for (t in 0:40) {
-#'   rel_add(rel, pop[pop$arrival == t, c("id", "momid", "dadid")])
+#'   rel_add(rel, pop[pop$arrival == t, ])   # the columns needed are found by name
 #'   rel_remove(rel, pop$id[!is.na(pop$exit) & pop$exit == t])
 #'   size[t + 1] <- rel_size(rel)
 #' }
 #' size
 #'
 #' ## the survivors agree with the relatedness computed from the whole pedigree
-#' A <- relatedness_fast(pop$id, pop$dadid, pop$momid)
+#' A <- fastrel_ped(pop)
 #' alive <- rel_ids(rel)
 #' all.equal(rel_get(rel), A[alive, alive])
 #' @seealso [sim_ped()], [rel_remove()]
 #' @export
-sim_pop <- function(n_steps = 50, n_init = 100, carrying = 2 * n_init,
+sim_pop <- function(n_steps = 50, n_init = 100, K = 2 * n_init,
                     maturity = 2, p_birth = 0.6, p_death = 0.1,
                     p_emigrate = 0.02, n_immigrants = 1) {
   whole <- function(x) is.numeric(x) && length(x) == 1L && !is.na(x) && x == round(x)
   if (!whole(n_steps) || n_steps < 0) stop("`n_steps` must be a non-negative whole number")
   if (!whole(n_init) || n_init < 1) stop("`n_init` must be a whole number, at least 1")
   if (!whole(maturity) || maturity < 0) stop("`maturity` must be a non-negative whole number")
-  if (carrying <= 0) stop("`carrying` must be positive")
+  if (K <= 0) stop("`K` must be positive")
   if (any(c(p_birth, p_death, p_emigrate) < 0 | c(p_birth, p_death, p_emigrate) > 1))
     stop("`p_birth`, `p_death` and `p_emigrate` must be probabilities")
   if (n_immigrants < 0) stop("`n_immigrants` must be non-negative")
@@ -113,7 +113,7 @@ sim_pop <- function(n_steps = 50, n_init = 100, carrying = 2 * n_init,
     ## 1. births
     mothers <- a_id[mature & a_sex == 2L]
     fathers <- a_id[mature & a_sex == 1L]
-    p_b <- min(1, max(0, p_birth * (1 - n_alive / carrying)))
+    p_b <- min(1, max(0, p_birth * (1 - n_alive / K)))
     mothers <- mothers[stats::runif(length(mothers)) < p_b]
     nb <- length(mothers)
     dads <- sex_b <- integer(0)
