@@ -282,10 +282,10 @@ microbenchmark(ggroups = buildA(ped_ggroups),
 ```
 
 ```
-## Unit: microseconds
-##     expr        min          lq       mean     median         uq      max neval
-##  ggroups 106656.003 108879.8365 112814.961 113252.250 114619.569 125594.5   100
-##  fastrel    687.349    807.5965   6890.753    977.092   5478.294 159534.0   100
+## Unit: milliseconds
+##     expr        min         lq       mean     median         uq        max neval
+##  ggroups 201.883894 211.044996 222.367009 215.600118 220.184972 445.463085   100
+##  fastrel   1.614917   2.219615   3.878631   2.410373   5.347473   9.224892   100
 ##  cld
 ##   a 
 ##    b
