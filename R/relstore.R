@@ -1,7 +1,8 @@
 #' Incremental store of the relatedness matrix
 #'
-#' A persistent store holds the additive relationship matrix
-#' \eqn{A = 2\phi}{A = 2 * phi} among the individuals currently in it. Because
+#' A *store* is an object that keeps the additive relationship matrix
+#' \eqn{A = 2\phi}{A = 2 * phi} among the individuals currently in it, and
+#' that is updated as individuals are added and removed. Because
 #' relatedness between existing individuals never changes when new individuals
 #' are born, a newborn's row is computed once from its parents' rows, at a cost
 #' proportional to the number of individuals the store has held at once instead
@@ -12,19 +13,45 @@
 #'
 #' The functions work as follows:
 #' * `rel_new()` creates an empty store.
-#' * `rel_add()` adds individuals, given by a data frame with the columns
-#'   focal, mother and father.
+#' * `rel_add()` adds individuals, given by a data frame with columns for the
+#'   focal individual, its mother and its father.
 #' * `rel_remove()` removes individuals.
 #' * `rel_get()` extracts the relatedness matrix among chosen individuals.
 #' * `rel_ids()` lists the individuals in the store.
 #' * `rel_size()` and `rel_capacity()` report the number of individuals in the
 #'   store and the number of slots allocated.
 #'
-#' A store is an environment: `rel_add()` and `rel_remove()` modify it in place,
-#' and copying the object does not copy the data. A store cannot thus be saved to disk
-#' with [save()] or [saveRDS()] and restored in another session: use
-#' [rel_save()] and [rel_load()] instead. The content of the environment is
-#' internal: use the functions above rather than reading or modifying it.
+#' @section Vocabulary:
+#' *Store* and *slot* are everyday words of computer science, not terms of R or
+#' of C++.
+#' * A **store** is a container that keeps data in memory between calls, here
+#'   the relatedness matrix. You create it once and then pass it to the other
+#'   functions, which read it or update it.
+#' * A **slot** is one position in the matrix of the store, i.e. one row and
+#'   the matching column, reserved for one individual. An individual occupies a
+#'   slot from the moment it is added until it is removed; the slot is then
+#'   free and is given to an individual added later. The matrix is allocated
+#'   with more slots than needed so that it does not have to be enlarged at
+#'   each birth: its number of slots is the *capacity* of the store.
+#'
+#' @section What a store is made of:
+#' The object returned by `rel_new()` is an R environment (the kind of object
+#' created by [new.env()]) of class `"relatedness_store"`. It holds the
+#' identifiers of the individuals, the slot of each of them, and a pointer to a
+#' C++ object which holds the matrix itself. Two consequences follow, which
+#' differ from the usual behaviour of R objects:
+#' * Like any R environment, a store is modified in place and is not copied
+#'   when it is assigned or passed to a function: `rel_add()` and `rel_remove()`
+#'   change the store they are given, and after `rel2 <- rel` both names refer
+#'   to the same store.
+#' * The matrix lives in memory managed by C++, outside the memory managed by
+#'   R. It is therefore not written by [save()] or [saveRDS()], and a store
+#'   read back from such a file is unusable: use [rel_save()] and [rel_load()]
+#'   instead. For the same reason [utils::object.size()] does not see it: see
+#'   the section Memory management.
+#'
+#' The content of the environment is internal: use the functions above rather
+#' than reading or modifying it.
 #'
 #' @section What to keep in the store:
 #' Keep an individual for as long as it can still become a parent, or for as long
@@ -43,11 +70,12 @@
 #' @section Removed individuals:
 #' With `remember_removed = TRUE`, the store keeps a trace of every individual
 #' removed and `rel_add()` refuses to add it again. This protects against a
-#' silent error, at the cost of 11 to 23 bytes per individual removed: the
-#' memory used then grows slowly with the length of the pedigree (11 to 23 MB
-#' per million individuals removed), instead of depending only on the number
-#' of individuals in the store. This is why it is off by default. The time
-#' taken by `rel_add()` and `rel_remove()` is not affected.
+#' silent error, at the cost of about 30 bytes per individual removed for the
+#' table that holds the traces. The memory used then grows slowly with the
+#' length of the pedigree (about 30 MB per million individuals removed),
+#' instead of depending only on the number of individuals in the store. This
+#' is why it is off by default. The time taken by `rel_add()` and
+#' `rel_remove()` is not affected.
 #'
 #' The trace is a 64-bit fingerprint of each identifier, not the identifier
 #' itself. A new identifier can thus be mistaken for a removed one, but with a
@@ -80,14 +108,27 @@
 #' stays within about 1.5 times the largest number of individuals the store has
 #' held at once. It never shrinks.
 #'
+#' R does not see this memory: [utils::object.size()] or `lobstr::obj_size()`
+#' only report the small R side of a store. Also, each time the matrix is
+#' enlarged, the old and the new matrix coexist for a moment, and the memory of
+#' the old one is not always returned to the operating system at once: in our
+#' benchmark, a store that grew in small steps made the R process use about
+#' 20% more memory than its matrix. All the figures given here can be checked
+#' on your machine with the script
+#' `system.file("benchmarks/memory_benchmark.R", package = "fastrel")`.
+#'
 #' @param remember_removed Should the store keep a trace of the individuals
 #'   removed, so that `rel_add()` refuses to add them again? `FALSE` by default
 #'   (see the section Removed individuals).
 #' @param rel A store created by `rel_new()`.
-#' @param ped A data frame whose first three columns are the identifier of the
-#'   focal individual, of its mother and of its father (`NA` for unknown
-#'   parents). Only individuals not yet in the store can be added. Parents must
-#'   be in the store or in `ped` itself; the rows of `ped` may be in any order.
+#' @param ped A data frame with one row per individual to add and three columns
+#'   giving the identifier of the individual, of its mother and of its father
+#'   (`NA` for unknown parents). The columns are found by their names (e.g.
+#'   `id`, `mom`, `dad` or `Animal`, `Dam`, `Sire`), whatever their order, and
+#'   other columns are ignored: see the section Columns of `ped` in
+#'   [fastrel_ped()]. Only individuals not yet in the store can be added.
+#'   Parents must be in the store or in `ped` itself; the rows of `ped` may be
+#'   in any order.
 #' @param ids Character vector (or coercible to it) of individual identifiers.
 #'   For `rel_get()`, the default is every individual in the store.
 #'
@@ -96,7 +137,7 @@
 #'   dimnames (diagonal `1 + F`). `rel_ids()` returns a character vector, in
 #'   order of insertion. `rel_size()` and `rel_capacity()` return integers.
 #'
-#' @seealso [relatedness_fast()] to compute the whole matrix from a pedigree;
+#' @seealso [fastrel_ped()] to compute the whole matrix from a pedigree;
 #'   [rel_save()] and [rel_load()] to save a store to disk.
 #'
 #' @examples
@@ -105,8 +146,8 @@
 #' ## founders: unknown parents
 #' rel_add(rel, data.frame(id = c("A", "B", "C", "D"), mom = NA, dad = NA))
 #'
-#' ## births: columns are focal, mother, father
-#' rel_add(rel, data.frame(id = c("E", "F"), mom = c("A", "C"), dad = c("B", "D")))
+#' ## births: the columns are found by their names, in any order
+#' rel_add(rel, data.frame(sire = c("B", "D"), dam = c("A", "C"), animal = c("E", "F")))
 #' rel_add(rel, data.frame(id = "G", mom = "E", dad = "F"))
 #'
 #' ## deaths (or emigration): free the slots
@@ -159,11 +200,10 @@ rel_new <- function(remember_removed = FALSE) {
 #' @export
 rel_add <- function(rel, ped) {
   check_store(rel)
-  if (!is.data.frame(ped) || ncol(ped) < 3L)
-    stop("`ped` must be a data frame with columns focal, mother and father")
-  id  <- as.character(ped[[1]])
-  mom <- as.character(ped[[2]])
-  dad <- as.character(ped[[3]])
+  cols <- ped_columns(ped)                        # found by their names
+  id  <- as.character(ped[[cols[1L]]])
+  mom <- as.character(ped[[cols[2L]]])
+  dad <- as.character(ped[[cols[3L]]])
   n <- length(id)
   if (n == 0L) return(invisible(rel))             # nothing to add
 

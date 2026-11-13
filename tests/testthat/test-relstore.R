@@ -1,4 +1,4 @@
-test_that("store reproduces relatedness_fast, any row order, with growth", {
+test_that("store reproduces fastrel_vec, any row order, with growth", {
   set.seed(1)
   ped <- sim_ped(400, n_founders = 20, window = 60)
   rel <- rel_new()
@@ -7,13 +7,13 @@ test_that("store reproduces relatedness_fast, any row order, with growth", {
   expect_equal(rel_size(rel), 400L)
   expect_gte(rel_capacity(rel), 400L)
   expect_equal(rel_get(rel, ped$id),
-               relatedness_fast(ped$id, ped$dadid, ped$momid))
+               fastrel_vec(ped$id, ped$dadid, ped$momid))
 })
 
 test_that("incremental additions and removals stay exact (slot reuse)", {
   set.seed(1)
   ped <- sim_ped(600, n_founders = 20, window = 60)
-  full <- relatedness_fast(ped$id, ped$dadid, ped$momid)
+  full <- fastrel_vec(ped$id, ped$dadid, ped$momid)
   rel <- rel_new()
   rel_add(rel, ped[1:30, c("id", "momid", "dadid")])
   batch <- 10
@@ -90,14 +90,14 @@ test_that("a cycle found after some insertions leaves the store unchanged", {
   rel_add(rel, data.frame(id = c("c", "f"), mom = c("f", "a"), dad = c("b", NA)))
   expect_equal(rel_ids(rel), c("a", "b", "f", "c"))
   expect_equal(rel_get(rel, c("a", "b", "f", "c")),
-               relatedness_fast(c("a", "b", "f", "c"), dadid = c(NA, NA, NA, "b"),
+               fastrel_vec(c("a", "b", "f", "c"), dadid = c(NA, NA, NA, "b"),
                                 momid = c(NA, NA, "a", "f")))
 })
 
 test_that("an oversized or emptied store gives the same values", {
   set.seed(1)
   ped <- sim_ped(120, n_founders = 10, window = 30)
-  full <- relatedness_fast(ped$id, ped$dadid, ped$momid)
+  full <- fastrel_vec(ped$id, ped$dadid, ped$momid)
   rel <- rel_new()
   rel_add(rel, ped[, c("id", "momid", "dadid")])
   expect_equal(rel_get(rel, ped$id), full)
@@ -200,7 +200,7 @@ test_that("the capacity is handled automatically and stays close to the peak", {
   rel <- rel_new()
   set.seed(1)
   ped <- sim_ped(900, n_founders = 20, window = 60)
-  full <- relatedness_fast(ped$id, ped$dadid, ped$momid)
+  full <- fastrel_vec(ped$id, ped$dadid, ped$momid)
   ## births one at a time; from the 301st on, the oldest individual is removed
   for (i in seq_len(nrow(ped))) {
     rel_add(rel, ped[i, c("id", "momid", "dadid")])
@@ -228,7 +228,7 @@ test_that("adding nothing", {
 test_that("rel_ids, and rel_get with a subset, another order or duplicates", {
   set.seed(1)
   ped <- sim_ped(80, n_founders = 10, window = 20)
-  full <- relatedness_fast(ped$id, ped$dadid, ped$momid)
+  full <- fastrel_vec(ped$id, ped$dadid, ped$momid)
   rel <- rel_new()
   for (i in seq_len(nrow(ped))) rel_add(rel, ped[i, c("id", "momid", "dadid")])
   expect_identical(rel_ids(rel), ped$id)       # order of insertion
@@ -247,7 +247,7 @@ test_that("selfing, a self-parent, and factor or numeric ids", {
   rel_add(rel, data.frame(id = factor("s"), mom = factor("1"), dad = factor("1")))
   rel_add(rel, data.frame(id = 3, mom = "s", dad = 1))
   A <- rel_get(rel, c(1, "s", 3))
-  expect_equal(unname(A), unname(relatedness_fast(c(1, 2, 3), dadid = c(NA, 1, 1),
+  expect_equal(unname(A), unname(fastrel_vec(c(1, 2, 3), dadid = c(NA, 1, 1),
                                                    momid = c(NA, 1, 2))))
   expect_equal(A["s", "s"], 1.5)               # selfing: F = 1/2
   expect_equal(A["s", "1"], 1)
@@ -276,4 +276,25 @@ test_that("the C++ object rejects invalid slots and stays unchanged", {
   expect_error(rel$ks$add(c(1L, 1L), c(2L, 7L)), "slot")
   expect_equal(rel$ks$size(), 2L)
   expect_equal(rel_ids(rel), c("a", "b"))
+})
+
+test_that("rel_add finds the columns by their names", {
+  p <- test_ped()
+  A0 <- fastrel_ped(p)
+  rel <- rel_new()
+  rel_add(rel, data.frame(SIRE = p$dad[1:4], Animal = p$id[1:4], Dam = p$mom[1:4]))
+  rel_add(rel, data.frame(weight = 0, mother = p$mom[5:7], focal = p$id[5:7],
+                          father = p$dad[5:7]))
+  rel_add(rel, data.frame(id = p$id[8:9], dadid = p$dad[8:9], momid = p$mom[8:9]))
+  expect_equal(rel_get(rel, p$id), A0)
+  ## a whole data frame from sim_pop() can be given as it is
+  set.seed(3)
+  pop <- sim_pop(15, n_init = 30)
+  rel <- rel_new()
+  for (t in 0:15) rel_add(rel, pop[pop$arrival == t, ])
+  expect_equal(rel_get(rel, pop$id), fastrel_ped(pop))
+  ## errors leave the store unchanged
+  expect_error(rel_add(rel, data.frame(id = "z", mom = NA, papa = NA)), "father")
+  expect_error(rel_add(rel, data.frame(id = "z", mom = NA, mum = NA, dad = NA)), "several")
+  expect_equal(rel_size(rel), nrow(pop))
 })

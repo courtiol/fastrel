@@ -24,7 +24,7 @@ The relatedness matrix is here technically defined as the additive relationship 
 
 | Task | Functions |
 |---|---|
-| Relatedness of a whole pedigree | `relatedness_fast()` |
+| Relatedness of a whole pedigree | `fastrel_ped()` (from a data frame), `fastrel_vec()` (from vectors) |
 | Relatedness updated step by step (the "store") | `rel_new()`, `rel_add()`, `rel_remove()`, `rel_get()` |
 | Content of a store | `rel_ids()`, `rel_size()`, `rel_capacity()` |
 | Saving and restoring a store | `rel_save()`, `rel_load()` |
@@ -59,7 +59,7 @@ library(fastrel)
 set.seed(1) # for reproducibility
 ped <- sim_ped(1000)
 tail(ped, n = 3) # last 3 individuals
-A <- relatedness_fast(ped$id, dadid = ped$dadid, momid = ped$momid)
+A <- fastrel_ped(ped) # same as fastrel_vec(ped$id, dadid = ped$dadid, momid = ped$momid)
 A[998:1000, 998:1000] # relatedness matrix between those 3 individuals
 max(diag(A) - 1)   # maximum inbreeding coefficients
 ```
@@ -74,10 +74,20 @@ rel_remove(rel, c("A", "B")) # remove dead / emigrated: free their slots
 rel_get(rel) # extract relatedness matrix between remaining individuals
 ```
 
+`fastrel_ped()` and `rel_add()` find the columns they need by their names,
+whatever their order and their capitalisation, and ignore the other columns.
+The usual names are recognised (e.g. `id`, `focal` or `animal`; `mom`, `mum`,
+`mother` or `dam`; `dad`, `father` or `sire`; with or without `id`, as in
+`momid` or `mother_id`): see `?fastrel_ped` for the list.
+
 ## Using the store in a simulation
 
-The store created by `rel_new()` holds the relatedness matrix among the
-individuals currently in it. This section explains how to use it well.
+The *store* created by `rel_new()` is an object that keeps the relatedness
+matrix among the individuals currently in it, and that `rel_add()` and
+`rel_remove()` update directly (there is no need to reassign their result).
+Each individual in the store occupies a *slot*, i.e. one row and the matching
+column of that matrix; removing an individual frees its slot for an individual
+added later. This section explains how to use the store well.
 
 ### Who to keep and who to remove
 
@@ -179,13 +189,13 @@ ped_ggroups$DAM[is.na(ped_ggroups$DAM)]   <- 0
 
 # check that the computed relatedness are the same
 all.equal(unname(as.matrix(buildA(ped_ggroups))),
-          unname(relatedness_fast(ped$id, dadid = ped$dadid, momid = ped$momid)))
+          unname(fastrel_vec(ped$id, dadid = ped$dadid, momid = ped$momid)))
 
 # benchmark
 microbenchmark(ggroups = buildA(ped_ggroups),
-               fastrel = relatedness_fast(ped$id, dadid = ped$dadid, momid = ped$momid))
+               fastrel = fastrel_vec(ped$id, dadid = ped$dadid, momid = ped$momid))
 ```
-As you can see `fastrel::relatedness_fast()` is much faster than `ggroups::buildA()` on our machine, for 1000 individuals.
+As you can see `fastrel::fastrel_vec()` is much faster than `ggroups::buildA()` on our machine, for 1000 individuals.
 
 
 You can also run the integrated benchmarks as follows:
@@ -193,6 +203,7 @@ You can also run the integrated benchmarks as follows:
 ```{r, eval = FALSE}
 source(system.file("benchmarks/relstore_benchmark.R", package = "fastrel"))
 source(system.file("benchmarks/sim_pop_benchmark.R", package = "fastrel"))
+source(system.file("benchmarks/memory_benchmark.R", package = "fastrel")) # memory used (needs lobstr)
 ```
 
 

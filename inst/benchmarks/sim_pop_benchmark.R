@@ -5,7 +5,7 @@ library(fastrel)
 
 n_steps <- 150
 set.seed(1)
-pop <- sim_pop(n_steps = n_steps, n_init = 300, carrying = 600)
+pop <- sim_pop(n_steps = n_steps, n_init = 300, K = 600)
 cat("individuals ever present:", nrow(pop), "\n")
 
 ## the store only needs to hold the individuals that are present
@@ -29,7 +29,7 @@ for (t in 0:n_steps) {
   seen <- pop[pop$arrival <= t, ]
   if (t %% 10 == 0)
     rec$scratch[t + 1] <- system.time(
-      relatedness_fast(seen$id, seen$dadid, seen$momid))[["elapsed"]]
+      fastrel_vec(seen$id, seen$dadid, seen$momid))[["elapsed"]]
 
   rec$present[t + 1]  <- rel_size(rel)
   rec$ever[t + 1]     <- nrow(seen)
@@ -37,7 +37,7 @@ for (t in 0:n_steps) {
 }
 
 ## correctness: the survivors agree with the from-scratch computation
-A <- relatedness_fast(pop$id, pop$dadid, pop$momid)
+A <- fastrel_vec(pop$id, pop$dadid, pop$momid)
 alive <- rel_ids(rel)
 stopifnot(isTRUE(all.equal(rel_get(rel), A[alive, alive])))
 

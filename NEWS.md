@@ -1,3 +1,37 @@
+# fastrel 0.4.0
+
+## Breaking changes
+
+* `relatedness_fast()` is replaced by two functions: `fastrel_vec()`, which is
+  the same function under a new name, and `fastrel_ped()`, which takes the
+  pedigree as a data frame.
+* The argument `carrying` of `sim_pop()` is now called `K`.
+* `rel_add()` now finds the columns of `ped` by their names (see below). A data
+  frame in which only some of the three columns have a recognised name (e.g.
+  `id`, `m`, `d`) used to be read by position and is now refused.
+
+## New features
+
+* `fastrel_ped()` and `rel_add()` find the columns for the focal individual,
+  its mother and its father by their names, whatever their order and their
+  capitalisation, and ignore the other columns. Usual names are recognised
+  (`id`, `focal`, `animal`, ...; `mom`, `mum`, `mother`, `dam`, ...; `dad`,
+  `father`, `sire`, ...; with or without `id`, as in `momid` or `mother_id`).
+  If no column has a recognised name, the first three columns are used as
+  before. The data frames returned by `sim_ped()` and `sim_pop()` can thus be
+  passed as they are.
+* New benchmark `inst/benchmarks/memory_benchmark.R` measuring the memory used
+  against what the documentation says (needs the package lobstr).
+
+## Documentation
+
+* The words "store" and "slot" are now defined, and the help page explains what
+  a store is made of: an R environment that points to a C++ object holding the
+  matrix.
+* Memory figures were corrected after measuring them: `remember_removed = TRUE`
+  costs about 30 bytes per individual removed (not 11 to 23), and a store that
+  grew in small steps made the R process use about 20% more than its matrix.
+
 # fastrel 0.3.1
 
 * New argument `rel_new(remember_removed = TRUE)`: the store then keeps a trace

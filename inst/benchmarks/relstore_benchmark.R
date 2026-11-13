@@ -15,7 +15,7 @@ ped <- sim_ped(1000)                                # columns: id, momid, dadid,
 rel <- rel_new()
 rel_add(rel, ped[, c("id", "momid", "dadid")])      # any row order works
 A1 <- rel_get(rel, ped$id)
-A2 <- relatedness_fast(ped$id, ped$dadid, ped$momid)
+A2 <- fastrel_vec(ped$id, ped$dadid, ped$momid)
 A3 <- source_orig(ped$id, ped$dadid, ped$momid)
 
 all.equal(A1, A2)
@@ -26,7 +26,7 @@ all.equal(A1, A3)
 ## the same with a store (creation, insertion and extraction), whereas
 ## store_get only extracts the matrix from a store that is already filled.
 microbenchmark(orig  = source_orig(ped$id, ped$dadid, ped$momid),
-               fast  = relatedness_fast(ped$id, ped$dadid, ped$momid),
+               fast  = fastrel_vec(ped$id, ped$dadid, ped$momid),
                store_build = {
                  r <- rel_new()
                  rel_add(r, ped[, c("id", "momid", "dadid")])

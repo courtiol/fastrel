@@ -35,6 +35,6 @@ session: call \code{\link[=set.seed]{set.seed()}} beforehand to make it reproduc
 set.seed(1)
 ped <- sim_ped(200)
 head(ped)
-A <- relatedness_fast(ped$id, ped$dadid, ped$momid)
+A <- fastrel_ped(ped)
 range(diag(A) - 1)
 }

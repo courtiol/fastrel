@@ -7,7 +7,7 @@
 sim_pop(
   n_steps = 50,
   n_init = 100,
-  carrying = 2 * n_init,
+  K = 2 * n_init,
   maturity = 2,
   p_birth = 0.6,
   p_death = 0.1,
@@ -20,8 +20,8 @@ sim_pop(
 
 \item{n_init}{Number of founders at step 0.}
 
-\item{carrying}{Carrying capacity: the birth probability decreases linearly to
-0 when \code{N} reaches it.}
+\item{K}{Carrying capacity: the birth probability decreases linearly to 0
+when the number of individuals alive, \code{N}, reaches it.}
 
 \item{maturity}{Number of steps after birth before an individual can
 reproduce or emigrate. Founders and immigrants are mature on arrival.}
@@ -61,7 +61,7 @@ Step 0 creates \code{n_init} adult founders with unknown parents. At each
 following step \code{t}:
 \enumerate{
 \item Each mature female alive at the start of the step reproduces with
-probability \code{p_birth * (1 - N / carrying)} (bounded to \verb{[0, 1]}), where \code{N}
+probability \code{p_birth * (1 - N / K)} (bounded to \verb{[0, 1]}), where \code{N}
 is the number of individuals alive. The father is drawn at random among
 the mature males (\code{NA} if there is none). Newborns arrive at step \code{t}.
 \item A Poisson number (mean \code{n_immigrants}) of adult immigrants with unknown
@@ -90,14 +90,14 @@ table(pop$fate, useNA = "ifany")
 rel <- rel_new()
 size <- integer(41)
 for (t in 0:40) {
-  rel_add(rel, pop[pop$arrival == t, c("id", "momid", "dadid")])
+  rel_add(rel, pop[pop$arrival == t, ])   # the columns needed are found by name
   rel_remove(rel, pop$id[!is.na(pop$exit) & pop$exit == t])
   size[t + 1] <- rel_size(rel)
 }
 size
 
 ## the survivors agree with the relatedness computed from the whole pedigree
-A <- relatedness_fast(pop$id, pop$dadid, pop$momid)
+A <- fastrel_ped(pop)
 alive <- rel_ids(rel)
 all.equal(rel_get(rel), A[alive, alive])
 }
