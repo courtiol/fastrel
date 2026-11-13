@@ -1,3 +1,22 @@
+# fastrel 0.5.0
+
+## Bug fixes
+
+* `fastrel_vec()` returned a wrong 1 x 1 matrix when given data frames with a
+  single column instead of vectors, which is what `x[, "id"]` returns when `x`
+  is a tibble. `rel_get()` failed with a misleading "unknown IDs" error in the
+  same situation.
+
+## New features
+
+* Tibbles are supported and tested: `fastrel_vec()`, `rel_get()` and
+  `rel_remove()` take a data frame with a single column as that column where a
+  vector is expected, and `fastrel_ped()` and `rel_add()` accept a tibble as
+  `ped`.
+* `fastrel_vec()`, `rel_get()` and `rel_remove()` now raise a clear error when
+  given something that cannot be a vector of identifiers (a data frame with
+  several columns, a list), instead of treating it as a single identifier.
+
 # fastrel 0.4.0
 
 ## Breaking changes
@@ -20,10 +39,6 @@
   If no column has a recognised name, the first three columns are used as
   before. The data frames returned by `sim_ped()` and `sim_pop()` can thus be
   passed as they are.
-* Tibbles are supported and tested. In particular `fastrel_vec()`,
-  `rel_get()` and `rel_remove()` accept a data frame with a single column where
-  a vector is expected, which is what `x[, "id"]` returns when `x` is a tibble:
-  `fastrel_vec()` used to return a wrong 1 x 1 matrix in that case.
 * New benchmark `inst/benchmarks/memory_benchmark.R` measuring the memory used
   against what the documentation says (needs the package lobstr).
 
