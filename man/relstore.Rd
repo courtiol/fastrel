@@ -35,7 +35,7 @@ removed, so that \code{rel_add()} refuses to add them again? \code{FALSE} by def
 
 \item{rel}{A store created by \code{rel_new()}.}
 
-\item{ped}{A data frame with one row per individual to add and three columns
+\item{ped}{A data frame (or a tibble) with one row per individual to add and three columns
 giving the identifier of the individual, of its mother and of its father
 (\code{NA} for unknown parents). The columns are found by their names (e.g.
 \code{id}, \code{mom}, \code{dad} or \code{Animal}, \code{Dam}, \code{Sire}), whatever their order, and
@@ -45,6 +45,7 @@ Parents must be in the store or in \code{ped} itself; the rows of \code{ped} may
 in any order.}
 
 \item{ids}{Character vector (or coercible to it) of individual identifiers.
+A data frame with a single column is taken as that column.
 For \code{rel_get()}, the default is every individual in the store.}
 
 \item{x}{A store created by \code{rel_new()}.}

@@ -54,3 +54,19 @@ ped_columns <- function(ped) {
 }
 
 ped_cache <- new.env()
+
+## Identifiers given as a vector. A data frame with a single column is
+## accepted too and replaced by that column: this is what `x[, "id"]` returns
+## when `x` is a tibble, where a base data frame returns the vector. Anything
+## else that is not a plain vector is refused, as it would otherwise be
+## treated as a single identifier.
+id_vector <- function(x, arg) {
+  if (is.data.frame(x)) {
+    if (ncol(x) != 1L)
+      stop("`", arg, "` must be a vector, not a data frame with ", ncol(x), " columns")
+    x <- x[[1L]]
+  }
+  if (!is.atomic(x) && !is.null(x))
+    stop("`", arg, "` must be a vector")
+  x
+}

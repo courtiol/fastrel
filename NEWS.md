@@ -20,6 +20,10 @@
   If no column has a recognised name, the first three columns are used as
   before. The data frames returned by `sim_ped()` and `sim_pop()` can thus be
   passed as they are.
+* Tibbles are supported and tested. In particular `fastrel_vec()`,
+  `rel_get()` and `rel_remove()` accept a data frame with a single column where
+  a vector is expected, which is what `x[, "id"]` returns when `x` is a tibble:
+  `fastrel_vec()` used to return a wrong 1 x 1 matrix in that case.
 * New benchmark `inst/benchmarks/memory_benchmark.R` measuring the memory used
   against what the documentation says (needs the package lobstr).
 
