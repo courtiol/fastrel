@@ -1,8 +1,10 @@
-#' fastrel: fast additive relatedness matrices from pedigrees
+#' fastrel: fast relatedness, relationship and kinship matrices from pedigrees
 #'
 #' Tools to compute the additive relationship ("relatedness") matrix
 #' \eqn{A = 2\phi}{A = 2 * phi}, where \eqn{\phi}{phi} is the kinship
-#' coefficient, for autosomal loci.
+#' coefficient, for autosomal loci, as well as the kinship coefficient itself,
+#' Wright's coefficient of relationship and Hamilton's regression coefficient
+#' of relatedness.
 #'
 #' Two interfaces are provided:
 #' * [fastrel_ped()] and [fastrel_vec()] compute the whole matrix from a

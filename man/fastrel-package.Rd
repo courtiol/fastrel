@@ -4,11 +4,13 @@
 \name{fastrel-package}
 \alias{fastrel}
 \alias{fastrel-package}
-\title{fastrel: fast additive relatedness matrices from pedigrees}
+\title{fastrel: fast relatedness, relationship and kinship matrices from pedigrees}
 \description{
 Tools to compute the additive relationship ("relatedness") matrix
 \eqn{A = 2\phi}{A = 2 * phi}, where \eqn{\phi}{phi} is the kinship
-coefficient, for autosomal loci.
+coefficient, for autosomal loci, as well as the kinship coefficient itself,
+Wright's coefficient of relationship and Hamilton's regression coefficient
+of relatedness.
 }
 \details{
 Two interfaces are provided:
