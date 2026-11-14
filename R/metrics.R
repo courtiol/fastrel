@@ -7,12 +7,21 @@
 #' coefficient, so choosing one or the other costs a single pass over the
 #' matrix at most.
 #'
-#' | `metric` | Measure | Formula | Diagonal | Off-diagonal | Symmetric |
-#' |---|---|---|---|---|---|
-#' | `"additive"` (default) | additive (or numerator) relationship | \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 phi[i,j]} | \eqn{1 + F_i}{1 + F[i]}, in \[1, 2\] | \[0, 2\] | yes |
-#' | `"kinship"` | kinship (or coancestry) coefficient | \eqn{\phi_{ij}}{phi[i,j]} | \eqn{(1 + F_i)/2}{(1 + F[i]) / 2}, in \[0.5, 1\] | \[0, 1\] | yes |
-#' | `"wright"` | Wright's coefficient of relationship (1 = as similar as an individual is to itself) | \eqn{A_{ij} / \sqrt{A_{ii} A_{jj}}}{A[i,j] / sqrt(A[i,i] A[j,j])} | 1 | \[0, 1\] | yes |
-#' | `"hamilton"` | regression coefficient of relatedness, as in Hamilton's rule | \eqn{A_{ij} / A_{ii}}{A[i,j] / A[i,i]} | 1 | \[0, 1\] | no |
+#' | `metric` | Measure | Formula |
+#' |---|---|---|
+#' | `"additive"` (default) | additive relationship | \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 phi[i,j]} |
+#' | `"kinship"` | kinship coefficient | \eqn{\phi_{ij}}{phi[i,j]} |
+#' | `"wright"` | Wright's coefficient of relationship | \eqn{A_{ij} / \sqrt{A_{ii} A_{jj}}}{A[i,j] / sqrt(A[i,i] A[j,j])} |
+#' | `"hamilton"` | Hamilton's coefficient of relatedness | \eqn{A_{ij} / A_{ii}}{A[i,j] / A[i,i]} |
+#'
+#' Their values are as follows:
+#'
+#' | `metric` | Diagonal | Range of the diagonal | Range off the diagonal | Symmetric |
+#' |---|---|---|---|---|
+#' | `"additive"` | \eqn{1 + F_i}{1 + F[i]} | 1 to 2 | 0 to 2 | yes |
+#' | `"kinship"` | \eqn{(1 + F_i)/2}{(1 + F[i]) / 2} | 0.5 to 1 | 0 to 1 | yes |
+#' | `"wright"` | 1 | 1 | 0 to 1 | yes |
+#' | `"hamilton"` | 1 | 1 | 0 to 1 | no |
 #'
 #' Here \eqn{\phi_{ij}}{phi[i,j]} is the kinship coefficient between
 #' individuals \eqn{i} and \eqn{j}, and \eqn{F_i}{F[i]} is the inbreeding

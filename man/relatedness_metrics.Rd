@@ -8,12 +8,21 @@
 of the genetic resemblance between individuals, chosen with their argument
 \code{metric}. All four are derived from the same quantity, the kinship
 coefficient, so choosing one or the other costs a single pass over the
-matrix at most.\tabular{llllll}{
-   \code{metric} \tab Measure \tab Formula \tab Diagonal \tab Off-diagonal \tab Symmetric \cr
-   \code{"additive"} (default) \tab additive (or numerator) relationship \tab \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 phi[i,j]} \tab \eqn{1 + F_i}{1 + F[i]}, in [1, 2] \tab [0, 2] \tab yes \cr
-   \code{"kinship"} \tab kinship (or coancestry) coefficient \tab \eqn{\phi_{ij}}{phi[i,j]} \tab \eqn{(1 + F_i)/2}{(1 + F[i]) / 2}, in [0.5, 1] \tab [0, 1] \tab yes \cr
-   \code{"wright"} \tab Wright's coefficient of relationship (1 = as similar as an individual is to itself) \tab \eqn{A_{ij} / \sqrt{A_{ii} A_{jj}}}{A[i,j] / sqrt(A[i,i] A[j,j])} \tab 1 \tab [0, 1] \tab yes \cr
-   \code{"hamilton"} \tab regression coefficient of relatedness, as in Hamilton's rule \tab \eqn{A_{ij} / A_{ii}}{A[i,j] / A[i,i]} \tab 1 \tab [0, 1] \tab no \cr
+matrix at most.\tabular{lll}{
+   \code{metric} \tab Measure \tab Formula \cr
+   \code{"additive"} (default) \tab additive relationship \tab \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 phi[i,j]} \cr
+   \code{"kinship"} \tab kinship coefficient \tab \eqn{\phi_{ij}}{phi[i,j]} \cr
+   \code{"wright"} \tab Wright's coefficient of relationship \tab \eqn{A_{ij} / \sqrt{A_{ii} A_{jj}}}{A[i,j] / sqrt(A[i,i] A[j,j])} \cr
+   \code{"hamilton"} \tab Hamilton's coefficient of relatedness \tab \eqn{A_{ij} / A_{ii}}{A[i,j] / A[i,i]} \cr
+}
+
+
+Their values are as follows:\tabular{lllll}{
+   \code{metric} \tab Diagonal \tab Range of the diagonal \tab Range off the diagonal \tab Symmetric \cr
+   \code{"additive"} \tab \eqn{1 + F_i}{1 + F[i]} \tab 1 to 2 \tab 0 to 2 \tab yes \cr
+   \code{"kinship"} \tab \eqn{(1 + F_i)/2}{(1 + F[i]) / 2} \tab 0.5 to 1 \tab 0 to 1 \tab yes \cr
+   \code{"wright"} \tab 1 \tab 1 \tab 0 to 1 \tab yes \cr
+   \code{"hamilton"} \tab 1 \tab 1 \tab 0 to 1 \tab no \cr
 }
 
 
