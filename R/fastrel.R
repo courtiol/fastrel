@@ -1,12 +1,17 @@
 #' Relatedness matrix from a pedigree
 #'
-#' Compute the additive relationship matrix \eqn{A = 2\phi}{A = 2 * phi} of
-#' autosomal loci for all individuals of a pedigree, using the tabular method
-#' implemented in C++. The two functions do the same thing and differ only in
-#' how the pedigree is given:
+#' Compute a measure of relatedness of autosomal loci between all individuals
+#' of a pedigree, using the tabular method implemented in C++. By default, the
+#' measure is the additive relationship \eqn{A = 2\phi}{A = 2 * phi}, where
+#' \eqn{\phi}{phi} is the kinship coefficient; the argument `metric` gives the
+#' kinship coefficient itself, Wright's coefficient of relationship or
+#' Hamilton's regression coefficient of relatedness instead (see
+#' [relatedness_metrics]). The two functions do the same thing and differ only
+#' in how the pedigree is given:
 #' * `fastrel_ped()` takes a data frame;
 #' * `fastrel_vec()` takes three vectors, as [kinship2::kinship()] does. It is a
-#'   fast replacement for `2 * kinship2::kinship()`.
+#'   fast replacement for `2 * kinship2::kinship()`, or for
+#'   `kinship2::kinship()` with `metric = "kinship"`.
 #'
 #' Rows of the pedigree can be in any order: parents do not need to appear
 #' before their offspring. Parents that are `NA` or that are not found among
@@ -47,14 +52,22 @@
 #' @param ... Ignored. Present so that calls written for [kinship2::kinship()]
 #'   (e.g. with `sex` or `chrtype = "autosome"`) do not fail. Only autosomes are
 #'   supported: any other `chrtype` raises an error.
+#' @param metric The measure of relatedness to return: `"additive"` (the
+#'   default), `"kinship"`, `"wright"` or `"hamilton"`. See
+#'   [relatedness_metrics] for their definitions. For `fastrel_vec()`, it must
+#'   be named (it comes after `...`, so that calls written for
+#'   [kinship2::kinship()] keep working).
 #'
-#' @return A symmetric numeric matrix with one row and one column per
-#'   individual, in the order given, and the identifiers as row and column
-#'   names. The diagonal is `1 + F`, where `F` is the inbreeding coefficient.
-#'   Values lie between 0 and 2, and exceed 1 only with inbreeding: see the
-#'   section Range of values in [fastrel-package].
+#' @return A numeric matrix with one row and one column per individual, in the
+#'   order given, and the identifiers as row and column names. With the default
+#'   `metric = "additive"`, the matrix is symmetric, its diagonal is `1 + F`,
+#'   where `F` is the inbreeding coefficient, and its values lie between 0 and
+#'   2, exceeding 1 only with inbreeding. For the other measures, see
+#'   [relatedness_metrics]; note that with `metric = "hamilton"` the matrix is
+#'   not symmetric (rows are actors, columns are recipients).
 #'
-#' @seealso [rel_new()] for the incremental version.
+#' @seealso [relatedness_metrics] for the measures of relatedness;
+#'   [rel_new()] for the incremental version.
 #'
 #' @examples
 #' ped <- data.frame(
@@ -67,6 +80,11 @@
 #' ## inbreeding coefficients (H and I are the offspring of a mother-son mating)
 #' diag(A) - 1
 #'
+#' ## other measures of relatedness (see ?relatedness_metrics)
+#' fastrel_ped(ped, metric = "kinship")
+#' fastrel_ped(ped, metric = "wright")
+#' fastrel_ped(ped, metric = "hamilton")
+#'
 #' ## the same from vectors
 #' all.equal(A, fastrel_vec(ped$id, dadid = ped$dad, momid = ped$mom))
 #'
@@ -77,16 +95,20 @@
 #' ## the same as twice the kinship matrix of the kinship2 package
 #' if (requireNamespace("kinship2", quietly = TRUE)) {
 #'   all.equal(A, 2 * kinship2::kinship(ped$id, dadid = ped$dad, momid = ped$mom))
+#'   all.equal(fastrel_ped(ped, metric = "kinship"),
+#'             kinship2::kinship(ped$id, dadid = ped$dad, momid = ped$mom))
 #' }
 #' @export
-fastrel_ped <- function(ped) {
+fastrel_ped <- function(ped, metric = "additive") {
   cols <- ped_columns(ped)
-  fastrel_vec(ped[[cols[1L]]], dadid = ped[[cols[3L]]], momid = ped[[cols[2L]]])
+  fastrel_vec(ped[[cols[1L]]], dadid = ped[[cols[3L]]], momid = ped[[cols[2L]]],
+              metric = metric)
 }
 
 #' @rdname fastrel_ped
 #' @export
-fastrel_vec <- function(id, dadid, momid, ...) {
+fastrel_vec <- function(id, dadid, momid, ..., metric = "additive") {
+  code <- metric_code(metric)
   chrtype <- list(...)[["chrtype"]]
   if (!is.null(chrtype) && !identical(tolower(chrtype), "autosome"))
     stop("only autosomes are supported (`chrtype = \"autosome\"`)")
@@ -100,7 +122,7 @@ fastrel_vec <- function(id, dadid, momid, ...) {
   if (length(momid) != n) stop("Invalid mother id")
   if (n == 0L) return(matrix(numeric(0), 0, 0))
 
-  A <- relatedness_cpp(mom = match(momid, id), dad = match(dadid, id))
+  A <- relatedness_cpp(mom = match(momid, id), dad = match(dadid, id), metric = code)
   dimnames(A) <- list(id, id)
   A
 }

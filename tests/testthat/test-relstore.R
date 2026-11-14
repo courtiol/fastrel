@@ -270,8 +270,8 @@ test_that("a store read back with readRDS is rejected with a clear message", {
 test_that("the C++ object rejects invalid slots and stays unchanged", {
   rel <- rel_new()
   rel_add(rel, data.frame(id = c("a", "b"), mom = NA, dad = NA))
-  expect_error(rel$ks$get(NA_integer_), "slot")
-  expect_error(rel$ks$get(3L), "slot")
+  expect_error(rel$ks$get(NA_integer_, 0L), "slot")
+  expect_error(rel$ks$get(3L, 0L), "slot")
   ## the second newborn has an invalid parent: nothing must be inserted
   expect_error(rel$ks$add(c(1L, 1L), c(2L, 7L)), "slot")
   expect_equal(rel$ks$size(), 2L)

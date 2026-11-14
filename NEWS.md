@@ -1,3 +1,34 @@
+# fastrel 0.6.0
+
+## New features
+
+* `fastrel_ped()`, `fastrel_vec()` and `rel_get()` gain an argument `metric`
+  to choose the measure of relatedness returned:
+  * `"additive"` (the default): the additive relationship `A = 2 * kinship`,
+    as before;
+  * `"kinship"`: the kinship coefficient, a probability of identity by descent
+    (what `kinship2::kinship()` returns);
+  * `"wright"`: Wright's coefficient of relationship, a correlation, the same
+    as `cov2cor(A)`;
+  * `"hamilton"`: the regression coefficient of relatedness used in Hamilton's
+    rule, `A[i, j] / A[i, i]`, which is not symmetric (rows are actors,
+    columns are recipients).
+
+  The conversion is done in C++, in place, in a single pass over the matrix:
+  no extra memory is used, `rel_get()` takes the same time whatever the
+  measure, and `fastrel_ped()` takes up to 20% longer (about 2 times faster
+  than calling `cov2cor()` on the result). In `fastrel_vec()`, `metric` comes
+  after `...` and must be named, so that calls written for
+  `kinship2::kinship()` keep working.
+
+## Documentation
+
+* New help page `?relatedness_metrics` defining the four measures, how they
+  relate to each other, their range of values and when to use them, with
+  references. It also shows that nobody is more related to another individual
+  than to itself (`A[i, j] <= min(A[i, i], A[j, j])`), which bounds all the
+  measures.
+
 # fastrel 0.5.1
 
 * The documentation now states the range of relatedness values (0 to 2, above

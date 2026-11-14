@@ -1,6 +1,7 @@
 // Created by Claude Sonnet 5.5 and revised with Fable 5.2 from Alex's prompts
 
 #include <Rcpp.h>
+#include "metrics.h"
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -112,8 +113,9 @@ public:
     mark_gone(ids);
   }
 
-  // Relatedness submatrix for the given slots (already on the A = 2*phi scale).
-  NumericMatrix get(IntegerVector slots) {
+  // Relatedness submatrix for the given slots, as the measure `metric` (see
+  // metrics.h; 0 = A = 2 * kinship, which is what the store holds).
+  NumericMatrix get(IntegerVector slots, int metric) {
     const int k = slots.size();
     // convert and validate the slots once, not inside the double loop
     std::vector<int> s(k);
@@ -128,6 +130,7 @@ public:
       const double* ca = col(s[a]);
       for (int b = 0; b < k; b++) o[b] = ca[s[b]];
     }
+    apply_metric(out.begin(), k, metric);
     return out;
   }
 

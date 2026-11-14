@@ -24,7 +24,7 @@ The functions have been written with Claude Sonnet 5.5 & Fable 5.2 in C++ and in
 
 The relatedness matrix is here technically defined as the additive relationship matrix, A = 2 × kinship, with diagonal 1 + F.
 Its values lie between 0 and 2: between individuals that are not inbred, relatedness is at most 1 (identical twins or clones; 0.5 for parent and offspring or full siblings), and it can only exceed 1 with inbreeding.
-Use `cov2cor(A)` for a measure that cannot exceed 1 whatever the inbreeding (see `?fastrel`).
+The kinship coefficient, Wright's coefficient of relationship and Hamilton's regression coefficient of relatedness can be returned instead (see [Measures of relatedness](#measures-of-relatedness)).
 
 | Task | Functions |
 |---|---|
@@ -116,6 +116,84 @@ whatever their order and their capitalisation, and ignore the other columns.
 The usual names are recognised (e.g. `id`, `focal` or `animal`; `mom`, `mum`,
 `mother` or `dam`; `dad`, `father` or `sire`; with or without `id`, as in
 `momid` or `mother_id`): see `?fastrel_ped` for the list.
+
+## Measures of relatedness
+
+By default, the package returns the additive relationship A = 2 × kinship
+(diagonal 1 + F, where F is the inbreeding coefficient). `fastrel_ped()`,
+`fastrel_vec()` and `rel_get()` can return three other measures with their
+argument `metric`, at no extra memory cost:
+
+| `metric` | Measure | Definition | Range | Typical use |
+|---|---|---|---|---|
+| `"additive"` (default) | additive (numerator) relationship | 2 × kinship | 0 to 2 | covariance of breeding values (animal models, heritability) |
+| `"kinship"` | kinship (coancestry) coefficient | probability that two alleles drawn at random, one from each individual, are identical by descent | 0 to 1 | probability of identity by descent; same as `kinship2::kinship()` |
+| `"wright"` | Wright's coefficient of relationship | correlation between genetic values, `cov2cor(A)` | 0 to 1 | genetic resemblance on a common scale, whatever the inbreeding |
+| `"hamilton"` | regression coefficient of relatedness | regression of the recipient's genetic value on the actor's, A[i, j] / A[i, i] | 0 to 1 | the *r* of Hamilton's rule (kin selection); not symmetric: rows are actors |
+
+Without inbreeding, all measures except the kinship coefficient are identical
+(0.5 for parent and offspring or full siblings, 0.25 for half siblings), and the
+kinship coefficient is half of them. The measures only differ with inbreeding,
+as in this pedigree where an individual (P) is obtained by selfing a founder (G),
+and two individuals (O1, O2) by selfing P:
+
+
+```r
+ped_selfing <- data.frame(id  = c("G", "P", "O1", "O2"),
+                          mom = c(NA, "G", "P", "P"),
+                          dad = c(NA, "G", "P", "P"))
+fastrel_ped(ped_selfing)                      # additive relationship
+```
+
+```
+##    G   P   O1   O2
+## G  1 1.0 1.00 1.00
+## P  1 1.5 1.50 1.50
+## O1 1 1.5 1.75 1.50
+## O2 1 1.5 1.50 1.75
+```
+
+```r
+fastrel_ped(ped_selfing, metric = "kinship")  # probabilities
+```
+
+```
+##      G    P    O1    O2
+## G  0.5 0.50 0.500 0.500
+## P  0.5 0.75 0.750 0.750
+## O1 0.5 0.75 0.875 0.750
+## O2 0.5 0.75 0.750 0.875
+```
+
+```r
+fastrel_ped(ped_selfing, metric = "wright")   # correlations
+```
+
+```
+##            G         P        O1        O2
+## G  1.0000000 0.8164966 0.7559289 0.7559289
+## P  0.8164966 1.0000000 0.9258201 0.9258201
+## O1 0.7559289 0.9258201 1.0000000 0.8571429
+## O2 0.7559289 0.9258201 0.8571429 1.0000000
+```
+
+```r
+fastrel_ped(ped_selfing, metric = "hamilton") # regressions (row = actor)
+```
+
+```
+##            G         P        O1        O2
+## G  1.0000000 1.0000000 1.0000000 1.0000000
+## P  0.6666667 1.0000000 1.0000000 1.0000000
+## O1 0.5714286 0.8571429 1.0000000 0.8571429
+## O2 0.5714286 0.8571429 0.8571429 1.0000000
+```
+
+See `?relatedness_metrics` for the definitions, their interpretation and the
+references: Malécot (1948) for the kinship coefficient; Wright (1922) for the
+coefficient of relationship; Henderson (1976) for the additive relationship
+matrix; Hamilton (1964, 1972) and Michod & Hamilton (1980) for relatedness in
+kin selection.
 
 ## Using the store in a simulation
 

@@ -17,19 +17,28 @@
 #' [sim_ped()] simulates a pedigree, and [sim_pop()] a population with births,
 #' deaths, emigration and immigration, for testing and benchmarking.
 #'
-#' @section Scale:
-#' All functions return relatedness, not kinship: \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 * phi[i,j]}.
-#' The diagonal is \eqn{1 + F_i}{1 + F[i]}, where \eqn{F_i}{F[i]} is the
-#' inbreeding coefficient, so `diag(A) - 1` gives the inbreeding coefficients.
-#' Founders (individuals with unknown parents) are assumed to be unrelated and
-#' non-inbred, and an unknown parent is treated as unrelated to everybody.
+#' @section Measures of relatedness:
+#' By default, all functions return the additive relationship
+#' \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 * phi[i,j]}, where \eqn{\phi_{ij}}{phi[i,j]}
+#' is the kinship coefficient. Its diagonal is \eqn{1 + F_i}{1 + F[i]}, where
+#' \eqn{F_i}{F[i]} is the inbreeding coefficient, so `diag(A) - 1` gives the
+#' inbreeding coefficients. Founders (individuals with unknown parents) are
+#' assumed to be unrelated and non-inbred, and an unknown parent is treated as
+#' unrelated to everybody.
+#'
+#' [fastrel_ped()], [fastrel_vec()] and [rel_get()] can instead return the
+#' kinship coefficient, Wright's coefficient of relationship or Hamilton's
+#' regression coefficient of relatedness, with their argument `metric`. These
+#' measures, what they mean and when to use them are described in
+#' [relatedness_metrics].
 #'
 #' @section Range of values:
-#' Relatedness values lie between 0 and 2, since a kinship coefficient lies
-#' between 0 and 1.
+#' The additive relationship lies between 0 and 2, since a kinship coefficient
+#' is a probability and lies between 0 and 1.
 #' * The diagonal goes from 1 (not inbred) to 2 (fully inbred).
-#' * The relatedness between two individuals is at most the geometric mean of
-#'   their diagonal values, \eqn{A_{ij} \le \sqrt{A_{ii} A_{jj}}}{A[i,j] <= sqrt(A[i,i] * A[j,j])}.
+#' * The relationship between two individuals is at most the smaller of their
+#'   two diagonal values, \eqn{A_{ij} \le \min(A_{ii}, A_{jj})}{A[i,j] <= min(A[i,i], A[j,j])}:
+#'   nobody is more related to another individual than to itself.
 #'   Between individuals that are not inbred it is therefore at most 1, the
 #'   value for identical twins or clones; usual values are 0.5 for parent and
 #'   offspring or for full siblings, and 0.25 for half siblings.
@@ -38,9 +47,9 @@
 #'   diagonal is 1.5, 1.75, 1.875, ... The maximum of 2 is approached but
 #'   never reached, since founders are assumed not to be inbred.
 #'
-#' For a measure that cannot exceed 1 whatever the inbreeding, divide each
-#' value by the geometric mean of the two diagonal values, which is what
-#' [stats::cov2cor()] does: `cov2cor(A)`.
+#' For a measure that cannot exceed 1 whatever the inbreeding, use
+#' `metric = "kinship"` (a probability) or `metric = "wright"` (a correlation,
+#' the same as `cov2cor(A)`): see [relatedness_metrics].
 #'
 #' @useDynLib fastrel, .registration = TRUE
 #' @importFrom Rcpp evalCpp loadModule

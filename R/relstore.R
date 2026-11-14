@@ -16,7 +16,8 @@
 #' * `rel_add()` adds individuals, given by a data frame with columns for the
 #'   focal individual, its mother and its father.
 #' * `rel_remove()` removes individuals.
-#' * `rel_get()` extracts the relatedness matrix among chosen individuals.
+#' * `rel_get()` extracts the relatedness matrix among chosen individuals, as
+#'   any of the measures described in [relatedness_metrics].
 #' * `rel_ids()` lists the individuals in the store.
 #' * `rel_size()` and `rel_capacity()` report the number of individuals in the
 #'   store and the number of slots allocated.
@@ -132,11 +133,15 @@
 #' @param ids Character vector (or coercible to it) of individual identifiers.
 #'   A data frame with a single column is taken as that column.
 #'   For `rel_get()`, the default is every individual in the store.
+#' @param metric The measure of relatedness returned by `rel_get()`:
+#'   `"additive"` (the default), `"kinship"`, `"wright"` or `"hamilton"`. See
+#'   [relatedness_metrics]. The store always holds the additive relationship,
+#'   and the conversion is done on the matrix extracted only.
 #'
 #' @return `rel_new()` returns the store. `rel_add()` and `rel_remove()` return
-#'   the store invisibly. `rel_get()` returns a symmetric matrix with `ids` as
-#'   dimnames (diagonal `1 + F`; see the section Range of values in
-#'   [fastrel-package]). `rel_ids()` returns a character vector, in
+#'   the store invisibly. `rel_get()` returns a matrix with `ids` as dimnames:
+#'   with the default `metric = "additive"`, it is symmetric with diagonal
+#'   `1 + F` (see [relatedness_metrics] for the other measures). `rel_ids()` returns a character vector, in
 #'   order of insertion. `rel_size()` and `rel_capacity()` return integers.
 #'
 #' @seealso [fastrel_ped()] to compute the whole matrix from a pedigree;
@@ -163,6 +168,7 @@
 #' A <- rel_get(rel)
 #' A
 #' diag(A) - 1   # inbreeding coefficients
+#' rel_get(rel, metric = "kinship")   # other measures: see ?relatedness_metrics
 #'
 #' ## two patches: one store, and the patch of each individual kept aside
 #' rel <- rel_new(remember_removed = TRUE)
@@ -273,12 +279,13 @@ rel_remove <- function(rel, ids) {
 
 #' @rdname relstore
 #' @export
-rel_get <- function(rel, ids = rel$ids) {
+rel_get <- function(rel, ids = rel$ids, metric = "additive") {
+  code <- metric_code(metric)
   check_store(rel)
   ids <- as.character(id_vector(ids, "ids"))
   i <- match(ids, rel$ids)
   if (anyNA(i)) stop("unknown IDs: ", paste(head(ids[is.na(i)], 5), collapse = ", "))
-  A <- rel$ks$get(rel$slots[i])
+  A <- rel$ks$get(rel$slots[i], code)
   dimnames(A) <- list(ids, ids)
   A
 }
