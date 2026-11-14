@@ -1,3 +1,8 @@
+# fastrel (development version)
+
+* The table of `?relatedness_metrics` is split in two, as it was too wide for
+  the PDF version of the manual.
+
 # fastrel 0.6.0
 
 ## Breaking changes
