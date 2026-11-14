@@ -4,11 +4,13 @@
 \name{fastrel-package}
 \alias{fastrel}
 \alias{fastrel-package}
-\title{fastrel: fast additive relatedness matrices from pedigrees}
+\title{fastrel: fast relatedness, relationship and kinship matrices from pedigrees}
 \description{
 Tools to compute the additive relationship ("relatedness") matrix
 \eqn{A = 2\phi}{A = 2 * phi}, where \eqn{\phi}{phi} is the kinship
-coefficient, for autosomal loci.
+coefficient, for autosomal loci, as well as the kinship coefficient itself,
+Wright's coefficient of relationship and Hamilton's regression coefficient
+of relatedness.
 }
 \details{
 Two interfaces are provided:
@@ -26,23 +28,43 @@ an individual-based simulation. \code{\link[=rel_ids]{rel_ids()}}, \code{\link[=
 \code{\link[=sim_ped]{sim_ped()}} simulates a pedigree, and \code{\link[=sim_pop]{sim_pop()}} a population with births,
 deaths, emigration and immigration, for testing and benchmarking.
 }
-\section{Scale}{
+\section{Measures of relatedness}{
 
-All functions return relatedness, not kinship: \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 * phi[i,j]}.
-The diagonal is \eqn{1 + F_i}{1 + F[i]}, where \eqn{F_i}{F[i]} is the
-inbreeding coefficient, so \code{diag(A) - 1} gives the inbreeding coefficients.
-Founders (individuals with unknown parents) are assumed to be unrelated and
-non-inbred, and an unknown parent is treated as unrelated to everybody.
+By default, all functions return the additive relationship
+\eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 * phi[i,j]}, where \eqn{\phi_{ij}}{phi[i,j]}
+is the kinship coefficient. The kinship coefficient is a probability: that
+of an allele drawn at random from \eqn{i} and an allele drawn at random from
+\eqn{j}, at the same locus, being identical by descent. The additive
+relationship is instead an expected count of alleles: \eqn{A_{ij}}{A[i,j]}
+is the expected number of the two alleles of \eqn{j} that are identical by
+descent with an allele drawn at random from \eqn{i}. This is why it lies
+between 0 and 2, and can exceed 1 (see the section Range of values). For
+example, an allele drawn from a parent is one of the two alleles of its
+offspring with probability 1/2, so their additive relationship is 0.5
+without inbreeding. Its diagonal is \eqn{1 + F_i}{1 + F[i]}, where
+\eqn{F_i}{F[i]} is the inbreeding coefficient, so \code{diag(A) - 1} gives the
+inbreeding coefficients. Founders (individuals with unknown parents) are
+assumed to be unrelated and non-inbred, and an unknown parent is treated as
+unrelated to everybody.
+
+\code{\link[=fastrel_ped]{fastrel_ped()}}, \code{\link[=fastrel_vec]{fastrel_vec()}} and \code{\link[=rel_get]{rel_get()}} can instead return the
+kinship coefficient, Wright's coefficient of relationship or Hamilton's
+regression coefficient of relatedness, with their argument \code{metric}. These
+measures, what they mean and when to use them are described in
+\link{relatedness_metrics}.
 }
 
 \section{Range of values}{
 
-Relatedness values lie between 0 and 2, since a kinship coefficient lies
-between 0 and 1.
+The additive relationship lies between 0 and 2, since it counts how many of
+the two alleles of an individual are identical by descent with an allele of
+another (equivalently, since a kinship coefficient is a probability and lies
+between 0 and 1).
 \itemize{
 \item The diagonal goes from 1 (not inbred) to 2 (fully inbred).
-\item The relatedness between two individuals is at most the geometric mean of
-their diagonal values, \eqn{A_{ij} \le \sqrt{A_{ii} A_{jj}}}{A[i,j] <= sqrt(A[i,i] * A[j,j])}.
+\item The relationship between two individuals is at most the smaller of their
+two diagonal values, \eqn{A_{ij} \le \min(A_{ii}, A_{jj})}{A[i,j] <= min(A[i,i], A[j,j])}:
+nobody is more related to another individual than to itself.
 Between individuals that are not inbred it is therefore at most 1, the
 value for identical twins or clones; usual values are 0.5 for parent and
 offspring or for full siblings, and 0.25 for half siblings.
@@ -52,9 +74,10 @@ diagonal is 1.5, 1.75, 1.875, ... The maximum of 2 is approached but
 never reached, since founders are assumed not to be inbred.
 }
 
-For a measure that cannot exceed 1 whatever the inbreeding, divide each
-value by the geometric mean of the two diagonal values, which is what
-\code{\link[stats:cov2cor]{stats::cov2cor()}} does: \code{cov2cor(A)}.
+For a measure that cannot exceed 1 whatever the inbreeding, use
+\code{metric = "kinship"} (a probability) or \code{metric = "wright"} (a correlation,
+where 1 means as similar as an individual is to itself,
+the same as \code{cov2cor(A)}): see \link{relatedness_metrics}.
 }
 
 \seealso{

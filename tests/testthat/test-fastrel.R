@@ -70,7 +70,7 @@ test_that("selfing, a self-parent, factor or numeric ids, and chrtype", {
   A0 <- fastrel_vec(p$id, dadid = p$dad, momid = p$mom)
   expect_equal(fastrel_vec(factor(p$id), dadid = factor(p$dad), momid = factor(p$mom)), A0)
   expect_error(fastrel_vec("a", dadid = "a", momid = NA), "own ancestor")
-  expect_equal(fastrel_vec(p$id, dadid = p$dad, momid = p$mom, sex = 1,
+  expect_equal(fastrel_vec(p$id, dadid = p$dad, momid = p$mom, sex = rep(1, 9),
                                 chrtype = "autosome"), A0)
   expect_error(fastrel_vec(p$id, dadid = p$dad, momid = p$mom, chrtype = "X"),
                "autosome")

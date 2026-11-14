@@ -18,7 +18,11 @@ rel_add(rel, ped)
 
 rel_remove(rel, ids)
 
-rel_get(rel, ids = rel$ids)
+rel_get(
+  rel,
+  ids = rel$ids,
+  metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")
+)
 
 rel_ids(rel)
 
@@ -48,16 +52,23 @@ in any order.}
 A data frame with a single column is taken as that column.
 For \code{rel_get()}, the default is every individual in the store.}
 
+\item{metric}{The measure of relatedness returned by \code{rel_get()}:
+\code{"additive"} (the default), \code{"kinship"}, \code{"wright"} (or \code{"Wright"}) or
+\code{"hamilton"} (or \code{"Hamilton"}). Abbreviations are accepted. See
+\link{relatedness_metrics}. The store always holds the additive relationship,
+and the conversion is done on the matrix extracted only.}
+
 \item{x}{A store created by \code{rel_new()}.}
 
 \item{...}{Ignored.}
 }
 \value{
 \code{rel_new()} returns the store. \code{rel_add()} and \code{rel_remove()} return
-the store invisibly. \code{rel_get()} returns a symmetric matrix with \code{ids} as
-dimnames (diagonal \code{1 + F}; see the section Range of values in
-\link{fastrel-package}). \code{rel_ids()} returns a character vector, in
-order of insertion. \code{rel_size()} and \code{rel_capacity()} return integers.
+the store invisibly. \code{rel_get()} returns a matrix with \code{ids} as dimnames:
+with the default \code{metric = "additive"}, it is symmetric with diagonal
+\code{1 + F} (see \link{relatedness_metrics} for the other measures). \code{rel_ids()}
+returns a character vector, in order of insertion. \code{rel_size()} and
+\code{rel_capacity()} return integers.
 }
 \description{
 A \emph{store} is an object that keeps the additive relationship matrix
@@ -78,7 +89,8 @@ The functions work as follows:
 \item \code{rel_add()} adds individuals, given by a data frame with columns for the
 focal individual, its mother and its father.
 \item \code{rel_remove()} removes individuals.
-\item \code{rel_get()} extracts the relatedness matrix among chosen individuals.
+\item \code{rel_get()} extracts the relatedness matrix among chosen individuals, as
+any of the measures described in \link{relatedness_metrics}.
 \item \code{rel_ids()} lists the individuals in the store.
 \item \code{rel_size()} and \code{rel_capacity()} report the number of individuals in the
 store and the number of slots allocated.
@@ -217,6 +229,7 @@ rel_add(rel, data.frame(id = "H", mom = "E", dad = "G"))
 A <- rel_get(rel)
 A
 diag(A) - 1   # inbreeding coefficients
+rel_get(rel, metric = "kinship")   # other measures: see ?relatedness_metrics
 
 ## two patches: one store, and the patch of each individual kept aside
 rel <- rel_new(remember_removed = TRUE)

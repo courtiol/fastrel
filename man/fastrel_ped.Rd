@@ -5,14 +5,30 @@
 \alias{fastrel_vec}
 \title{Relatedness matrix from a pedigree}
 \usage{
-fastrel_ped(ped)
+fastrel_ped(
+  ped,
+  metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")
+)
 
-fastrel_vec(id, dadid, momid, ...)
+fastrel_vec(
+  id,
+  dadid,
+  momid,
+  sex,
+  chrtype = "autosome",
+  metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")
+)
 }
 \arguments{
 \item{ped}{A data frame (or a tibble) with one row per individual and three columns giving
 the identifier of the individual, of its mother and of its father (\code{NA} if
 unknown). See the section Columns of \code{ped}.}
+
+\item{metric}{The measure of relatedness to return: \code{"additive"} (the
+default), \code{"kinship"}, \code{"wright"} (or \code{"Wright"}) or \code{"hamilton"} (or
+\code{"Hamilton"}). Abbreviations are accepted (e.g. \code{"kin"}). See
+\link{relatedness_metrics} for their definitions. In \code{fastrel_vec()} it comes
+after the arguments of \code{\link[kinship2:kinship]{kinship2::kinship()}}, so it is best given by name.}
 
 \item{id}{Vector of unique individual identifiers. For this argument and
 the next two, a data frame with a single column (what \code{x[, "id"]} returns
@@ -24,26 +40,35 @@ individual's father (\code{NA} if unknown).}
 \item{momid}{Vector of the same length as \code{id} with the identifier of each
 individual's mother (\code{NA} if unknown).}
 
-\item{...}{Ignored. Present so that calls written for \code{\link[kinship2:kinship]{kinship2::kinship()}}
-(e.g. with \code{sex} or \code{chrtype = "autosome"}) do not fail. Only autosomes are
-supported: any other \code{chrtype} raises an error.}
+\item{sex, chrtype}{Arguments of \code{\link[kinship2:kinship]{kinship2::kinship()}}, present so that
+calls written for that function work unchanged. \code{sex} is not used, as the
+sex of individuals does not matter for autosomes; if given, it must have
+one value per individual. \code{chrtype} must be \code{"autosome"}, the only type of
+chromosome supported: anything else raises an error.}
 }
 \value{
-A symmetric numeric matrix with one row and one column per
-individual, in the order given, and the identifiers as row and column
-names. The diagonal is \code{1 + F}, where \code{F} is the inbreeding coefficient.
-Values lie between 0 and 2, and exceed 1 only with inbreeding: see the
-section Range of values in \link{fastrel-package}.
+A numeric matrix with one row and one column per individual, in the
+order given, and the identifiers as row and column names. With the default
+\code{metric = "additive"}, the matrix is symmetric, its diagonal is \code{1 + F},
+where \code{F} is the inbreeding coefficient, and its values lie between 0 and
+2, exceeding 1 only with inbreeding. For the other measures, see
+\link{relatedness_metrics}; note that with \code{metric = "hamilton"} the matrix is
+not symmetric (rows are actors, columns are recipients).
 }
 \description{
-Compute the additive relationship matrix \eqn{A = 2\phi}{A = 2 * phi} of
-autosomal loci for all individuals of a pedigree, using the tabular method
-implemented in C++. The two functions do the same thing and differ only in
-how the pedigree is given:
+Compute a measure of relatedness of autosomal loci between all individuals
+of a pedigree, using the tabular method implemented in C++. By default, the
+measure is the additive relationship \eqn{A = 2\phi}{A = 2 * phi}, where
+\eqn{\phi}{phi} is the kinship coefficient; the argument \code{metric} gives the
+kinship coefficient itself, Wright's coefficient of relationship or
+Hamilton's regression coefficient of relatedness instead (see
+\link{relatedness_metrics}). The two functions do the same thing and differ only
+in how the pedigree is given:
 \itemize{
 \item \code{fastrel_ped()} takes a data frame;
 \item \code{fastrel_vec()} takes three vectors, as \code{\link[kinship2:kinship]{kinship2::kinship()}} does. It is a
-fast replacement for \code{2 * kinship2::kinship()}.
+fast replacement for \code{2 * kinship2::kinship()}, or for
+\code{kinship2::kinship()} with \code{metric = "kinship"}.
 }
 }
 \details{
@@ -88,6 +113,11 @@ A
 ## inbreeding coefficients (H and I are the offspring of a mother-son mating)
 diag(A) - 1
 
+## other measures of relatedness (see ?relatedness_metrics)
+fastrel_ped(ped, metric = "kinship")
+fastrel_ped(ped, metric = "wright")
+fastrel_ped(ped, metric = "hamilton")
+
 ## the same from vectors
 all.equal(A, fastrel_vec(ped$id, dadid = ped$dad, momid = ped$mom))
 
@@ -98,8 +128,11 @@ all.equal(A, fastrel_ped(ped2))
 ## the same as twice the kinship matrix of the kinship2 package
 if (requireNamespace("kinship2", quietly = TRUE)) {
   all.equal(A, 2 * kinship2::kinship(ped$id, dadid = ped$dad, momid = ped$mom))
+  all.equal(fastrel_ped(ped, metric = "kinship"),
+            kinship2::kinship(ped$id, dadid = ped$dad, momid = ped$mom))
 }
 }
 \seealso{
+\link{relatedness_metrics} for the measures of relatedness;
 \code{\link[=rel_new]{rel_new()}} for the incremental version.
 }

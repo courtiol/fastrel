@@ -75,6 +75,9 @@ record("fastrel_ped(), rows in birth order: peak / result",
 shuffled <- ped[sample(n), ]
 record("fastrel_ped(), rows shuffled: peak / result",
        1, peak_during(fastrel_ped(shuffled)) / (8 * n^2 / MB), tolerance = 0.05)
+for (m in c("kinship", "wright", "hamilton"))      # converted in place
+  record(paste0("fastrel_ped(metric = \"", m, "\"): peak / result"),
+         1, peak_during(fastrel_ped(shuffled, metric = m)) / (8 * n^2 / MB), tolerance = 0.05)
 rm(A)
 
 ## 3. A store uses 8 * capacity^2 bytes --------------------------------------

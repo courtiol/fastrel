@@ -1,6 +1,7 @@
 // Created by Claude Sonnet 5.5 and revised with Fable 5.2 from Alex's prompts
 
 #include <Rcpp.h>
+#include "metrics.h"
 #include <vector>
 using namespace Rcpp;
 
@@ -19,6 +20,7 @@ using namespace Rcpp;
 //
 // Arguments:
 //   mom, dad: 1-based row indices of each individual's parents, NA = unknown
+//   metric: measure to return, see metrics.h (0 = A itself)
 //
 // Implementation notes (speed):
 //   * Individuals are processed in an order where parents come first, so when
@@ -31,7 +33,7 @@ using namespace Rcpp;
 //     to neighbouring memory. If the pedigree was not already sorted, the
 //     matrix is relabelled in place at the end, which needs no second matrix.
 // [[Rcpp::export]]
-NumericMatrix relatedness_cpp(IntegerVector mom, IntegerVector dad) {
+NumericMatrix relatedness_cpp(IntegerVector mom, IntegerVector dad, int metric = 0) {
   const int n = mom.size();
   if (dad.size() != n) stop("mom and dad must have the same length");
 
@@ -156,5 +158,7 @@ NumericMatrix relatedness_cpp(IntegerVector mom, IntegerVector dad) {
       std::copy(buf.begin(), buf.end(), p + (size_t)cur * n);
     }
   }
+  // Step 4: the measure requested, in place
+  apply_metric(p, n, metric);
   return A;
 }

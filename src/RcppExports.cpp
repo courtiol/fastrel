@@ -11,14 +11,15 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // relatedness_cpp
-NumericMatrix relatedness_cpp(IntegerVector mom, IntegerVector dad);
-RcppExport SEXP _fastrel_relatedness_cpp(SEXP momSEXP, SEXP dadSEXP) {
+NumericMatrix relatedness_cpp(IntegerVector mom, IntegerVector dad, int metric);
+RcppExport SEXP _fastrel_relatedness_cpp(SEXP momSEXP, SEXP dadSEXP, SEXP metricSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< IntegerVector >::type mom(momSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type dad(dadSEXP);
-    rcpp_result_gen = Rcpp::wrap(relatedness_cpp(mom, dad));
+    Rcpp::traits::input_parameter< int >::type metric(metricSEXP);
+    rcpp_result_gen = Rcpp::wrap(relatedness_cpp(mom, dad, metric));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -26,7 +27,7 @@ END_RCPP
 RcppExport SEXP _rcpp_module_boot_relstore();
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_fastrel_relatedness_cpp", (DL_FUNC) &_fastrel_relatedness_cpp, 2},
+    {"_fastrel_relatedness_cpp", (DL_FUNC) &_fastrel_relatedness_cpp, 3},
     {"_rcpp_module_boot_relstore", (DL_FUNC) &_rcpp_module_boot_relstore, 0},
     {NULL, NULL, 0}
 };
