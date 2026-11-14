@@ -18,7 +18,11 @@ rel_add(rel, ped)
 
 rel_remove(rel, ids)
 
-rel_get(rel, ids = rel$ids, metric = "additive")
+rel_get(
+  rel,
+  ids = rel$ids,
+  metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")
+)
 
 rel_ids(rel)
 
@@ -49,7 +53,8 @@ A data frame with a single column is taken as that column.
 For \code{rel_get()}, the default is every individual in the store.}
 
 \item{metric}{The measure of relatedness returned by \code{rel_get()}:
-\code{"additive"} (the default), \code{"kinship"}, \code{"wright"} or \code{"hamilton"}. See
+\code{"additive"} (the default), \code{"kinship"}, \code{"wright"} (or \code{"Wright"}) or
+\code{"hamilton"} (or \code{"Hamilton"}). Abbreviations are accepted. See
 \link{relatedness_metrics}. The store always holds the additive relationship,
 and the conversion is done on the matrix extracted only.}
 

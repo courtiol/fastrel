@@ -187,17 +187,8 @@
 #' @name relatedness_metrics
 NULL
 
-## names of the measures, in the order of their codes in src/metrics.h
-metric_names <- c("additive", "kinship", "wright", "hamilton")
-
-## integer code of a measure, for the C++ side
+## Integer code of a measure already matched by match.arg(), for the C++ side
+## (the codes are those of the enum Metric in src/metrics.h).
 metric_code <- function(metric) {
-  if (!is.character(metric) || length(metric) != 1L || is.na(metric))
-    stop("`metric` must be one of: ", paste0('"', metric_names, '"', collapse = ", "))
-  code <- pmatch(tolower(metric), metric_names)
-  if (is.na(code))
-    stop("unknown `metric` \"", metric, "\": must be one of ",
-         paste0('"', metric_names, '"', collapse = ", "),
-         ". See ?relatedness_metrics.")
-  code - 1L
+  switch(tolower(metric), additive = 0L, kinship = 1L, wright = 2L, hamilton = 3L)
 }

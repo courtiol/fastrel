@@ -5,9 +5,18 @@
 \alias{fastrel_vec}
 \title{Relatedness matrix from a pedigree}
 \usage{
-fastrel_ped(ped, metric = "additive")
+fastrel_ped(
+  ped,
+  metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")
+)
 
-fastrel_vec(id, dadid, momid, ..., metric = "additive")
+fastrel_vec(
+  id,
+  dadid,
+  momid,
+  ...,
+  metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")
+)
 }
 \arguments{
 \item{ped}{A data frame (or a tibble) with one row per individual and three columns giving
@@ -15,7 +24,8 @@ the identifier of the individual, of its mother and of its father (\code{NA} if
 unknown). See the section Columns of \code{ped}.}
 
 \item{metric}{The measure of relatedness to return: \code{"additive"} (the
-default), \code{"kinship"}, \code{"wright"} or \code{"hamilton"}. See
+default), \code{"kinship"}, \code{"wright"} (or \code{"Wright"}) or \code{"hamilton"} (or
+\code{"Hamilton"}). Abbreviations are accepted (e.g. \code{"kin"}). See
 \link{relatedness_metrics} for their definitions. For \code{fastrel_vec()}, it must
 be named (it comes after \code{...}, so that calls written for
 \code{\link[kinship2:kinship]{kinship2::kinship()}} keep working); a measure given without its name

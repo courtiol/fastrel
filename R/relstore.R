@@ -134,7 +134,8 @@
 #'   A data frame with a single column is taken as that column.
 #'   For `rel_get()`, the default is every individual in the store.
 #' @param metric The measure of relatedness returned by `rel_get()`:
-#'   `"additive"` (the default), `"kinship"`, `"wright"` or `"hamilton"`. See
+#'   `"additive"` (the default), `"kinship"`, `"wright"` (or `"Wright"`) or
+#'   `"hamilton"` (or `"Hamilton"`). Abbreviations are accepted. See
 #'   [relatedness_metrics]. The store always holds the additive relationship,
 #'   and the conversion is done on the matrix extracted only.
 #'
@@ -279,7 +280,9 @@ rel_remove <- function(rel, ids) {
 
 #' @rdname relstore
 #' @export
-rel_get <- function(rel, ids = rel$ids, metric = "additive") {
+rel_get <- function(rel, ids = rel$ids,
+                    metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")) {
+  metric <- match.arg(metric)
   code <- metric_code(metric)
   check_store(rel)
   ids <- as.character(id_vector(ids, "ids"))

@@ -83,12 +83,15 @@ test_that("metric: partial matching, case and invalid values", {
   A <- fastrel_ped(ped)
   expect_equal(fastrel_ped(ped, metric = "kin"), A / 2)
   expect_equal(fastrel_ped(ped, metric = "Wright"), cov2cor(A))
-  expect_error(fastrel_ped(ped, metric = "foo"), "unknown `metric`")
-  expect_error(fastrel_ped(ped, metric = c("kinship", "wright")), "must be one of")
-  expect_error(fastrel_ped(ped, metric = NA), "must be one of")
+  expect_equal(fastrel_ped(ped, metric = "Hamilton"), A / diag(A))
+  expect_error(fastrel_ped(ped, metric = "foo"), "should be one of")
+  expect_error(fastrel_ped(ped, metric = "WRIGHT"), "should be one of")
+  expect_error(fastrel_ped(ped, metric = c("kinship", "wright")), "length 1")
+  expect_error(fastrel_ped(ped, metric = NA), "character vector")
   rel <- rel_new()
   rel_add(rel, ped)
-  expect_error(rel_get(rel, metric = "foo"), "unknown `metric`")
+  expect_error(rel_get(rel, metric = "foo"), "should be one of")
+  expect_equal(rel_get(rel, ped$id, metric = "Wright"), cov2cor(A))
   expect_equal(dim(fastrel_ped(ped[0, ], metric = "wright")), c(0L, 0L))
   ## a fourth positional argument, as for kinship2::kinship(id, dadid, momid, sex),
   ## is ignored rather than taken as the metric
@@ -109,4 +112,14 @@ test_that("kinship matches kinship2 when available", {
   ped <- sim_ped(200, n_founders = 20, window = 50)
   expect_equal(fastrel_ped(ped, metric = "kinship"),
                kinship2::kinship(ped$id, dadid = ped$dadid, momid = ped$momid))
+})
+
+test_that("the three functions offer the same measures, in the order of the C++ codes", {
+  choices <- eval(formals(fastrel_vec)$metric)
+  expect_identical(eval(formals(fastrel_ped)$metric), choices)
+  expect_identical(eval(formals(rel_get)$metric), choices)
+  expect_identical(choices[1], "additive")                      # the default
+  ## codes of src/metrics.h: ADDITIVE = 0, KINSHIP = 1, WRIGHT = 2, HAMILTON = 3
+  expect_identical(vapply(choices, fastrel:::metric_code, 0L, USE.NAMES = FALSE),
+                   c(0L, 1L, 2L, 3L, 2L, 3L))
 })

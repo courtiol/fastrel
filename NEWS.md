@@ -14,6 +14,9 @@
     rule, `A[i, j] / A[i, i]`, which is not symmetric (rows are actors,
     columns are recipients).
 
+  The choices are listed in the usage of each function; `"Wright"` and
+  `"Hamilton"` are also accepted, as well as abbreviations (e.g. `"kin"`).
+
   The conversion is done in C++, in place, in a single pass over the matrix:
   no extra memory is used, `rel_get()` takes the same time whatever the
   measure, and `fastrel_ped()` takes up to 20% longer (about 2 times faster

@@ -53,7 +53,8 @@
 #'   (e.g. with `sex` or `chrtype = "autosome"`) do not fail. Only autosomes are
 #'   supported: any other `chrtype` raises an error.
 #' @param metric The measure of relatedness to return: `"additive"` (the
-#'   default), `"kinship"`, `"wright"` or `"hamilton"`. See
+#'   default), `"kinship"`, `"wright"` (or `"Wright"`) or `"hamilton"` (or
+#'   `"Hamilton"`). Abbreviations are accepted (e.g. `"kin"`). See
 #'   [relatedness_metrics] for their definitions. For `fastrel_vec()`, it must
 #'   be named (it comes after `...`, so that calls written for
 #'   [kinship2::kinship()] keep working); a measure given without its name
@@ -100,7 +101,9 @@
 #'             kinship2::kinship(ped$id, dadid = ped$dad, momid = ped$mom))
 #' }
 #' @export
-fastrel_ped <- function(ped, metric = "additive") {
+fastrel_ped <- function(ped,
+                        metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")) {
+  metric <- match.arg(metric)
   cols <- ped_columns(ped)
   fastrel_vec(ped[[cols[1L]]], dadid = ped[[cols[3L]]], momid = ped[[cols[2L]]],
               metric = metric)
@@ -117,7 +120,7 @@ check_unnamed_metric <- function(dots) {
   for (k in unnamed) {
     x <- dots[[k]]
     if (is.character(x) && length(x) == 1L && !is.na(x) &&
-        !is.na(pmatch(tolower(x), metric_names)))
+        !is.na(pmatch(x, eval(formals(fastrel_vec)$metric))))
       stop("`metric` must be named in fastrel_vec(): use `metric = \"", x,
            "\"`, not \"", x, "\" alone (unnamed arguments after `momid` are ",
            "ignored, as in kinship2::kinship())")
@@ -127,9 +130,11 @@ check_unnamed_metric <- function(dots) {
 
 #' @rdname fastrel_ped
 #' @export
-fastrel_vec <- function(id, dadid, momid, ..., metric = "additive") {
+fastrel_vec <- function(id, dadid, momid, ...,
+                        metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")) {
   dots <- list(...)
   check_unnamed_metric(dots)
+  metric <- match.arg(metric)
   code <- metric_code(metric)
   chrtype <- dots[["chrtype"]]
   if (!is.null(chrtype) && !identical(tolower(chrtype), "autosome"))
