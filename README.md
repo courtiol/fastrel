@@ -2,8 +2,8 @@
 
 
 
-**fast** **rel**atedness (aka `fastrel`) is an R package to compute relatedness
-from a pedigree quickly.
+**fast** **rel**atedness (aka `fastrel`) is an R package to compute relatedness,
+relationship or kinship from a pedigree quickly.
 
 This package offers four main sets of functionalities:
 
