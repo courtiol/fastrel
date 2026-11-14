@@ -1,5 +1,7 @@
 # fastrel
 
+
+
 **fast** **rel**atedness (aka `fastrel`) is an R package to compute relatedness
 from a pedigree quickly.
 
@@ -173,10 +175,14 @@ for (t in 0:1000) {
   mean_relatedness[mean_relatedness$step == t, "mean_rel"] <- mean(A[upper.tri(A)])
 }
 plot(mean_rel ~ step, data = mean_relatedness,
-     type = "l", ylab = "Mean relatedness", xlab = "Time step")
+     type = "l", las = 1,
+     ylab = "Mean relatedness", xlab = "Time step")
 ```
 
-![plot of chunk simulation](figure/simulation-1.png)
+<div class="figure" style="text-align: center">
+<img src=".github/figures/simulation-1.png" alt="plot of chunk simulation"  />
+<p class="caption">plot of chunk simulation</p>
+</div>
 
 Although 27150 individuals were simulated in total, the store never
 held more than a few hundred of them at once:
@@ -188,14 +194,6 @@ rel_size(rel)     # individuals currently in the store
 
 ```
 ## [1] 241
-```
-
-``` r
-rel_capacity(rel) # rows and columns allocated (memory used: 8 * capacity^2 bytes)
-```
-
-```
-## [1] 301
 ```
 
 ### Metapopulations
@@ -284,10 +282,10 @@ microbenchmark(ggroups = buildA(ped_ggroups),
 ```
 
 ```
-## Unit: milliseconds
-##     expr        min         lq       mean     median         uq        max neval
-##  ggroups 201.883894 211.044996 222.367009 215.600118 220.184972 445.463085   100
-##  fastrel   1.614917   2.219615   3.878631   2.410373   5.347473   9.224892   100
+## Unit: microseconds
+##     expr        min         lq       mean     median         uq       max neval
+##  ggroups 103988.653 105925.242 114325.718 110122.300 111931.408 270305.45   100
+##  fastrel    742.844    802.056   2139.477   1017.964   1957.469  11448.92   100
 ##  cld
 ##   a 
 ##    b
@@ -311,7 +309,6 @@ After editing README.Rmd, do:
 
 
 ``` r
-unlink("figure", recursive = TRUE)
 knitr::knit("README.Rmd")
 ```
 
@@ -319,7 +316,7 @@ After editing C++ attributes, do:
 
 
 ``` r
-Rcpp::compileAttributes()
+Rcpp::compileAttributes() # or "Build/Document" in RStudio 
 ```
 
 ## Thanks

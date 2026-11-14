@@ -1,5 +1,10 @@
 # fastrel
 
+```{r settings, echo = FALSE}
+unlink(".github/figures", recursive = TRUE)
+dir.create(".github/figures")
+```
+
 **fast** **rel**atedness (aka `fastrel`) is an R package to compute relatedness
 from a pedigree quickly.
 
@@ -45,7 +50,7 @@ compiler installed:
 or equivalent.
 
 You may then use [pak](https://pak.r-lib.org/) to install the package simply:
-```{r, eval = FALSE}
+```{r installation, eval = FALSE}
 if (!requireNamespace("pak")) {
   install.packages("pak")
 }
@@ -56,7 +61,7 @@ pak::pkg_install("courtiol/fastrel")
 
 ### Compute the relatedness of a whole pedigree at once
 
-```{r}
+```{r fastrel_ped}
 library(fastrel)
 set.seed(1) # for reproducibility
 ped <- sim_ped(1000)
@@ -68,7 +73,7 @@ max(diag(A) - 1)   # maximum inbreeding coefficients
 
 ### Compute the relatedness incrementally (for simulations)
 
-```{r}
+```{r rel_new}
 rel <- rel_new() # initialize the store (once per simulation)
 rel_add(rel, data.frame(id = c("A", "B"), mom = NA, dad = NA)) # add founders
 rel_add(rel, data.frame(id = c("C", "D"), mom = c("A", "A"), dad = c(NA, "B"))) # add births
@@ -113,7 +118,7 @@ immigration, and returns the step at which each individual arrives and leaves.
 Here we replay it with a store, adding the arrivals and removing the departures
 at each step, and we record the mean relatedness among the individuals present:
 
-```{r, simulation}
+```{r simulation, fig.align='center', fig.path=".github/figures/"}
 rel <- rel_new()
 set.seed(1)
 pop <- sim_pop(n_steps = 1000, n_init = 200) # simulate pop (fine tuning the life history is possible)
@@ -126,15 +131,15 @@ for (t in 0:1000) {
   mean_relatedness[mean_relatedness$step == t, "mean_rel"] <- mean(A[upper.tri(A)])
 }
 plot(mean_rel ~ step, data = mean_relatedness,
-     type = "l", ylab = "Mean relatedness", xlab = "Time step")
+     type = "l", las = 1,
+     ylab = "Mean relatedness", xlab = "Time step")
 ```
 
 Although `r nrow(pop)` individuals were simulated in total, the store never
 held more than a few hundred of them at once:
 
-```{r}
+```{r reel_size}
 rel_size(rel)     # individuals currently in the store
-rel_capacity(rel) # rows and columns allocated (memory used: 8 * capacity^2 bytes)
 ```
 
 ### Metapopulations
@@ -146,7 +151,7 @@ side, and extract a patch with `rel_get(rel, ids_of_the_patch)`. Migrants then
 keep their relatedness with the relatives they left behind and with the
 offspring they produce elsewhere.
 
-```{r}
+```{r metapop}
 rel <- rel_new(remember_removed = TRUE)
 rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
 patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B") # the patch of each individual
@@ -170,14 +175,14 @@ the length of the pedigree. See `?rel_new` for details.
 Since the store is a C++ object, you need to use specific functions to save and
 restore it:
 
-```{r, eval = FALSE}
+```{r saving, eval = FALSE}
 rel_save(rel, "store.rds")
 rel <- rel_load("store.rds") # a working store again
 ```
 
 ## Benchmarks
 
-```{r}
+```{r benchmark}
 library(microbenchmark)
 library(ggroups)
 
@@ -202,7 +207,7 @@ As you can see `fastrel::fastrel_vec()` is much faster than `ggroups::buildA()` 
 
 You can also run the integrated benchmarks as follows:
 
-```{r, eval = FALSE}
+```{r more_benchmarks, eval = FALSE}
 source(system.file("benchmarks/relstore_benchmark.R", package = "fastrel"))
 source(system.file("benchmarks/sim_pop_benchmark.R", package = "fastrel"))
 source(system.file("benchmarks/memory_benchmark.R", package = "fastrel")) # memory used (needs lobstr)
@@ -213,15 +218,14 @@ source(system.file("benchmarks/memory_benchmark.R", package = "fastrel")) # memo
 
 After editing README.Rmd, do:
 
-```{r, eval = FALSE}
-unlink("figure", recursive = TRUE)
+```{r knit, eval = FALSE}
 knitr::knit("README.Rmd")
 ```
 
 After editing C++ attributes, do:
 
-```{r, eval = FALSE}
-Rcpp::compileAttributes()
+```{r Rcpp, eval = FALSE}
+Rcpp::compileAttributes() # or "Build/Document" in RStudio 
 ```
 
 ## Thanks

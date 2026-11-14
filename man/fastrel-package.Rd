@@ -54,7 +54,7 @@ never reached, since founders are assumed not to be inbred.
 
 For a measure that cannot exceed 1 whatever the inbreeding, divide each
 value by the geometric mean of the two diagonal values, which is what
-\code{\link[stats:cor]{stats::cov2cor()}} does: \code{cov2cor(A)}.
+\code{\link[stats:cov2cor]{stats::cov2cor()}} does: \code{cov2cor(A)}.
 }
 
 \seealso{
