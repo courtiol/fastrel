@@ -61,8 +61,8 @@ what animal and plant breeders call the numerator relationship matrix
 (Henderson 1976), computed here with the tabular method (Emik and Terrill
 1949). It is not a probability but an expected count: \eqn{A_{ij}}{A[i,j]}
 is the expected number of the two alleles of \eqn{j} that are identical by
-descent with an allele drawn at random from \eqn{i}. It therefore lies
-between 0 and 2, and exceeds 1 only with inbreeding. For example, two
+descent with an allele drawn at random from \eqn{i}, which is why it can
+exceed 1 (see the section Range of values). For example, two
 offspring obtained by selfing an individual that was itself obtained by
 selfing have an additive relationship of 1.5 (and a kinship of 0.75).
 
@@ -83,7 +83,7 @@ between the genetic values of two individuals, which is obtained by dividing
 the covariance \eqn{A_{ij}}{A[i,j]} by the product of the two standard
 deviations:
 \deqn{r_{ij} = \frac{A_{ij}}{\sqrt{A_{ii} A_{jj}}} = \frac{2\phi_{ij}}{\sqrt{(1 + F_i)(1 + F_j)}}}{r[i,j] = A[i,j] / sqrt(A[i,i] * A[j,j]) = 2 phi[i,j] / sqrt((1 + F[i]) * (1 + F[j]))}
-This is what \code{\link[stats:cov2cor]{stats::cov2cor()}} computes from the additive relationship
+This is what \code{\link[stats:cor]{stats::cov2cor()}} computes from the additive relationship
 matrix. Being a correlation, it lies between 0 and 1 (the Cauchy-Schwarz
 inequality guarantees that
 \eqn{A_{ij} \le \sqrt{A_{ii} A_{jj}}}{A[i,j] <= sqrt(A[i,i] * A[j,j])}), and
@@ -114,7 +114,7 @@ where \eqn{i} is the actor and \eqn{j} the recipient. In the matrix
 returned, \strong{rows are actors and columns are recipients}: \code{R[i, j]} is the
 relatedness of recipient \code{j} from the point of view of actor \code{i}. The
 matrix is not symmetric when individuals differ in their inbreeding
-coefficients. Its values lie between 0 and 1 (see the section Bounds), and
+coefficients. Its values lie between 0 and 1 (see the section Range of values), and
 all individuals have a relatedness of 1 with themselves. Its interpretation
 is similar to that of Wright's coefficient, but from the point of view of
 the actor only: \code{R[i, j] = 1} means that, as far as the genes of the actor
@@ -122,17 +122,29 @@ the actor only: \code{R[i, j] = 1} means that, as far as the genes of the actor
 itself.
 }
 
-\section{Bounds}{
+\section{Range of values}{
 
-In a pedigree, nobody is more related to another individual than to itself:
+The ranges given in the second table all follow from one property: in a
+pedigree, nobody is more related to another individual than to itself,
 \deqn{A_{ij} \le \min(A_{ii}, A_{jj})}{A[i,j] <= min(A[i,i], A[j,j])}
-All the bounds of the table follow from this: the off-diagonal values of
-the additive relationship are at most 2 and those of the kinship at most 1,
-and Wright's coefficient (the additive relationship divided by the geometric
-mean of the two diagonal values) and Hamilton's coefficient (divided by the
-diagonal value of the actor) are at most 1.
+Consequently:
+\itemize{
+\item The off-diagonal values of the additive relationship are at most 2 and
+those of the kinship at most 1, while Wright's coefficient (the additive
+relationship divided by the geometric mean of the two diagonal values)
+and Hamilton's coefficient (divided by the diagonal value of the actor)
+are at most 1.
+\item Without inbreeding, every diagonal value of the additive relationship is
+1, so the additive relationship between two individuals is then at most
+1, the value for identical twins or clones.
+\item Values of the additive relationship above 1 therefore only occur with
+inbreeding. For example, after \code{n} generations of selfing the inbreeding
+coefficient is \code{1 - (1/2)^n}, so the diagonal is 1.5, 1.75, 1.875, ...
+The maximum of 2 (a kinship of 1) is approached but never reached, since
+founders are assumed not to be inbred.
+}
 
-Here is why it holds. Take two individuals, and call \eqn{i} the one that
+Here is why the property holds. Take two individuals, and call \eqn{i} the one that
 is not an ancestor of the other, \eqn{j}; let \eqn{m} and \eqn{d} be the
 parents of \eqn{i}, so that
 \eqn{A_{ij} = (A_{mj} + A_{dj})/2}{A[i,j] = (A[m,j] + A[d,j]) / 2} and
