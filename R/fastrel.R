@@ -49,16 +49,16 @@
 #'   individual's father (`NA` if unknown).
 #' @param momid Vector of the same length as `id` with the identifier of each
 #'   individual's mother (`NA` if unknown).
-#' @param ... Ignored. Present so that calls written for [kinship2::kinship()]
-#'   (e.g. with `sex` or `chrtype = "autosome"`) do not fail. Only autosomes are
-#'   supported: any other `chrtype` raises an error.
+#' @param sex,chrtype Arguments of [kinship2::kinship()], present so that
+#'   calls written for that function work unchanged. `sex` is not used, as the
+#'   sex of individuals does not matter for autosomes; if given, it must have
+#'   one value per individual. `chrtype` must be `"autosome"`, the only type of
+#'   chromosome supported: anything else raises an error.
 #' @param metric The measure of relatedness to return: `"additive"` (the
 #'   default), `"kinship"`, `"wright"` (or `"Wright"`) or `"hamilton"` (or
 #'   `"Hamilton"`). Abbreviations are accepted (e.g. `"kin"`). See
-#'   [relatedness_metrics] for their definitions. For `fastrel_vec()`, it must
-#'   be named (it comes after `...`, so that calls written for
-#'   [kinship2::kinship()] keep working); a measure given without its name
-#'   raises an error rather than being ignored.
+#'   [relatedness_metrics] for their definitions. In `fastrel_vec()` it comes
+#'   after the arguments of [kinship2::kinship()], so it is best given by name.
 #'
 #' @return A numeric matrix with one row and one column per individual, in the
 #'   order given, and the identifiers as row and column names. With the default
@@ -109,36 +109,14 @@ fastrel_ped <- function(ped,
               metric = metric)
 }
 
-## `metric` comes after `...` in fastrel_vec(), so a measure given without its
-## name, e.g. fastrel_vec(id, dadid, momid, "kinship"), would land in `...` and
-## be silently ignored. Refuse an unnamed argument of `...` that looks like a
-## measure: a single string of at least 3 characters that matches one of the
-## choices. (A `sex` vector given in fourth position, as for
-## kinship2::kinship(), is left alone, including a single code such as "h".)
-check_unnamed_metric <- function(dots) {
-  nm <- names(dots)
-  unnamed <- if (is.null(nm)) seq_along(dots) else which(nm == "")
-  for (k in unnamed) {
-    x <- dots[[k]]
-    if (is.character(x) && length(x) == 1L && !is.na(x) && nchar(x) >= 3L &&
-        !is.na(pmatch(x, eval(formals(fastrel_vec)$metric))))
-      stop("`metric` must be named in fastrel_vec(): use `metric = \"", x,
-           "\"`, not \"", x, "\" alone (unnamed arguments after `momid` are ",
-           "ignored, as in kinship2::kinship())")
-  }
-  invisible(TRUE)
-}
-
 #' @rdname fastrel_ped
 #' @export
-fastrel_vec <- function(id, dadid, momid, ...,
+fastrel_vec <- function(id, dadid, momid, sex, chrtype = "autosome",
                         metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")) {
-  dots <- list(...)
-  check_unnamed_metric(dots)
   metric <- match.arg(metric)
   code <- metric_code(metric)
-  chrtype <- dots[["chrtype"]]
-  if (!is.null(chrtype) && !identical(tolower(chrtype), "autosome"))
+  if (!is.character(chrtype) || length(chrtype) != 1L ||
+      !identical(tolower(chrtype), "autosome"))
     stop("only autosomes are supported (`chrtype = \"autosome\"`)")
   id    <- id_vector(id, "id")
   dadid <- id_vector(dadid, "dadid")
@@ -148,6 +126,10 @@ fastrel_vec <- function(id, dadid, momid, ...,
   n <- length(id)
   if (length(dadid) != n) stop("Invalid father id")
   if (length(momid) != n) stop("Invalid mother id")
+  if (!missing(sex) && length(sex) != n)
+    stop("`sex` must have one value per individual (it is not used, since ",
+         "only autosomes are supported). To choose the measure returned, use ",
+         "`metric = `.")
   if (n == 0L) return(matrix(numeric(0), 0, 0))
 
   A <- relatedness_cpp(mom = match(momid, id), dad = match(dadid, id), metric = code)

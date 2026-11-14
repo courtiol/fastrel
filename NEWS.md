@@ -1,5 +1,13 @@
 # fastrel 0.6.0
 
+## Breaking changes
+
+* `fastrel_vec()` no longer has `...`: it now has the arguments `sex` and
+  `chrtype` of `kinship2::kinship()` instead, so calls written for that
+  function still work. `sex` is not used but must have one value per
+  individual if given, and `chrtype` must be `"autosome"`. Any other argument
+  now raises an error instead of being ignored.
+
 ## New features
 
 * `fastrel_ped()`, `fastrel_vec()` and `rel_get()` gain an argument `metric`
@@ -18,12 +26,8 @@
   `"Hamilton"` are also accepted, as well as abbreviations (e.g. `"kin"`).
 
   The conversion is done in C++, in place, in a single pass over the matrix:
-  no extra memory is used, `rel_get()` takes the same time whatever the
-  measure, and `fastrel_ped()` takes 10 to 15% longer (0.26 s instead of 0.23 s
-  for 5000 individuals, where `cov2cor()` on the result takes 0.68 s more). In
-  `fastrel_vec()`, `metric` comes after `...` and must be named, so that calls
-  written for `kinship2::kinship()` keep working; a measure given without its
-  name raises an error.
+  it uses no extra memory and adds little time compared with computing the
+  matrix itself, and much less than converting the result in R.
 
 ## Documentation
 

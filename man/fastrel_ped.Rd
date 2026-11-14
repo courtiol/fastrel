@@ -14,7 +14,8 @@ fastrel_vec(
   id,
   dadid,
   momid,
-  ...,
+  sex,
+  chrtype = "autosome",
   metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")
 )
 }
@@ -26,10 +27,8 @@ unknown). See the section Columns of \code{ped}.}
 \item{metric}{The measure of relatedness to return: \code{"additive"} (the
 default), \code{"kinship"}, \code{"wright"} (or \code{"Wright"}) or \code{"hamilton"} (or
 \code{"Hamilton"}). Abbreviations are accepted (e.g. \code{"kin"}). See
-\link{relatedness_metrics} for their definitions. For \code{fastrel_vec()}, it must
-be named (it comes after \code{...}, so that calls written for
-\code{\link[kinship2:kinship]{kinship2::kinship()}} keep working); a measure given without its name
-raises an error rather than being ignored.}
+\link{relatedness_metrics} for their definitions. In \code{fastrel_vec()} it comes
+after the arguments of \code{\link[kinship2:kinship]{kinship2::kinship()}}, so it is best given by name.}
 
 \item{id}{Vector of unique individual identifiers. For this argument and
 the next two, a data frame with a single column (what \code{x[, "id"]} returns
@@ -41,9 +40,11 @@ individual's father (\code{NA} if unknown).}
 \item{momid}{Vector of the same length as \code{id} with the identifier of each
 individual's mother (\code{NA} if unknown).}
 
-\item{...}{Ignored. Present so that calls written for \code{\link[kinship2:kinship]{kinship2::kinship()}}
-(e.g. with \code{sex} or \code{chrtype = "autosome"}) do not fail. Only autosomes are
-supported: any other \code{chrtype} raises an error.}
+\item{sex, chrtype}{Arguments of \code{\link[kinship2:kinship]{kinship2::kinship()}}, present so that
+calls written for that function work unchanged. \code{sex} is not used, as the
+sex of individuals does not matter for autosomes; if given, it must have
+one value per individual. \code{chrtype} must be \code{"autosome"}, the only type of
+chromosome supported: anything else raises an error.}
 }
 \value{
 A numeric matrix with one row and one column per individual, in the

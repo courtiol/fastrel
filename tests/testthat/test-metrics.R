@@ -93,18 +93,19 @@ test_that("metric: partial matching, case and invalid values", {
   expect_error(rel_get(rel, metric = "foo"), "should be one of")
   expect_equal(rel_get(rel, ped$id, metric = "Wright"), cov2cor(A))
   expect_equal(dim(fastrel_ped(ped[0, ], metric = "wright")), c(0L, 0L))
-  ## a fourth positional argument, as for kinship2::kinship(id, dadid, momid, sex),
-  ## is ignored rather than taken as the metric
+  ## the arguments of kinship2::kinship(id, dadid, momid, sex, chrtype) are accepted
   expect_equal(fastrel_vec(ped$id, ped$dad, ped$mom, c(1, 2, 1, 2)), A)
   expect_equal(fastrel_vec(ped$id, ped$dad, ped$mom, c("m", "f", "m", "f"), "autosome"), A)
-  ## ... but a measure given without its name is refused, not ignored
-  expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, "kinship"), "must be named")
-  expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, c(1, 2, 1, 2), "Wright"), "must be named")
-  expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, "ham"), "must be named")
-  expect_equal(fastrel_vec(ped$id, ped$dad, ped$mom, sex = "kinship"), A)   # named: not a measure
-  ## a single short code, e.g. the sex of a single individual, is not a measure
-  expect_equal(unname(fastrel_vec("x", NA, NA, "h")), matrix(1))
-  expect_equal(unname(fastrel_vec("x", NA, NA, "a", "w")), matrix(1))
+  expect_equal(fastrel_vec(ped$id, ped$dad, ped$mom, sex = c(1, 2, 1, 2), chrtype = "Autosome",
+                           metric = "kinship"), A / 2)
+  expect_equal(fastrel_vec(ped$id, ped$dad, ped$mom, c(1, 2, 1, 2), "autosome", "wright"),
+               cov2cor(A))
+  ## ... and checked: a measure given in the place of sex or chrtype is refused
+  expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, "kinship"), "`sex` must have one value")
+  expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, c(1, 2, 1, 2), "Wright"), "autosome")
+  expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, chrtype = "X"), "autosome")
+  expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, chrtype = NA), "autosome")
+  expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, foo = 1), "unused argument")
   ## internal calls pass it by name
   expect_equal(fastrel_ped(ped, "kinship"), A / 2)
 })
