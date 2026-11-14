@@ -118,7 +118,7 @@ immigration, and returns the step at which each individual arrives and leaves.
 Here we replay it with a store, adding the arrivals and removing the departures
 at each step, and we record the mean relatedness among the individuals present:
 
-```{r simulation, fig.align='center', fig.path=".github/figures/"}
+```{r simulation, fig.align='center', fig.path=".github/figures/", fig.width=8}
 rel <- rel_new()
 set.seed(1)
 pop <- sim_pop(n_steps = 1000, n_init = 200) # simulate pop (fine tuning the life history is possible)

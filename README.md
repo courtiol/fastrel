@@ -283,12 +283,9 @@ microbenchmark(ggroups = buildA(ped_ggroups),
 
 ```
 ## Unit: microseconds
-##     expr        min         lq       mean     median         uq       max neval
-##  ggroups 103988.653 105925.242 114325.718 110122.300 111931.408 270305.45   100
-##  fastrel    742.844    802.056   2139.477   1017.964   1957.469  11448.92   100
-##  cld
-##   a 
-##    b
+##     expr        min         lq     mean     median         uq      max neval cld
+##  ggroups 103992.961 106789.726 116258.0 110862.554 113778.169 356624.1   100  a 
+##  fastrel    741.301    807.782   5210.5   1068.124   1843.715 173609.9   100   b
 ```
 As you can see `fastrel::fastrel_vec()` is much faster than `ggroups::buildA()` on our machine, for 1000 individuals.
 
