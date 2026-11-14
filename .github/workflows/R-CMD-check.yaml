@@ -1,8 +1,5 @@
-# Checks the package (R CMD check, including the tests) on each push to main
-# and on each pull request.
+# Checks the package (R CMD check, including the tests) on each pull request.
 on:
-  push:
-    branches: [main, master]
   pull_request:
 
 name: R-CMD-check
