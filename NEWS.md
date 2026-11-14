@@ -1,4 +1,4 @@
-# fastrel (development version)
+# fastrel 0.6.2
 
 * The results are now validated in the tests against `kinship2` and `ggroups`,
   two independent implementations, for all four measures and on pedigrees of
