@@ -20,7 +20,7 @@ the population is at its demographic equilibrium
 - a function to simulate a population with its pedigree, deaths, births,
 immigrations and emigrations.
 
-The functions have been written with Claude Sonnet 5.5 & Fable 5.2 in C++ and interfaced with R.
+The functions have been written with Claude in C++ and interfaced with R.
 
 The relatedness matrix is here technically defined as the additive relationship matrix, A = 2 × kinship, with diagonal 1 + F.
 Its values lie between 0 and 2: between individuals that are not inbred, relatedness is at most 1 (identical twins or clones; 0.5 for parent and offspring or full siblings), and it can only exceed 1 with inbreeding.
@@ -360,12 +360,9 @@ microbenchmark(ggroups = buildA(ped_ggroups),
 
 ```
 ## Unit: microseconds
-##     expr        min          lq       mean     median         uq        max
-##  ggroups 111205.772 113828.2030 119973.909 117763.897 119341.298 270618.814
-##  fastrel    716.955    809.2245   2213.579   1760.452   1999.975   8019.776
-##  neval cld
-##    100  a 
-##    100   b
+##     expr        min          lq       mean      median         uq      max neval cld
+##  ggroups 104616.119 106540.5105 111360.512 110536.2020 112471.380 266173.4   100  a 
+##  fastrel    750.829    817.9715   3196.539    858.0915   1868.606 158152.7   100   b
 ```
 As you can see `fastrel::fastrel_vec()` is much faster than `ggroups::buildA()` on our machine, for 1000 individuals.
 
