@@ -28,7 +28,7 @@
 #' relationship is instead an expected count of alleles: \eqn{A_{ij}}{A[i,j]}
 #' is the expected number of the two alleles of \eqn{j} that are identical by
 #' descent with an allele drawn at random from \eqn{i}. This is why it lies
-#' between 0 and 2, and can exceed 1 (see the section Range of values). For
+#' between 0 and 2, and can exceed 1 (see [relatedness_metrics]). For
 #' example, an allele drawn from a parent is one of the two alleles of its
 #' offspring with probability 1/2, so their additive relationship is 0.5
 #' without inbreeding. Its diagonal is \eqn{1 + F_i}{1 + F[i]}, where
@@ -42,28 +42,6 @@
 #' regression coefficient of relatedness, with their argument `metric`. These
 #' measures, what they mean and when to use them are described in
 #' [relatedness_metrics].
-#'
-#' @section Range of values:
-#' The additive relationship lies between 0 and 2, since it counts how many of
-#' the two alleles of an individual are identical by descent with an allele of
-#' another (equivalently, since a kinship coefficient is a probability and lies
-#' between 0 and 1).
-#' * The diagonal goes from 1 (not inbred) to 2 (fully inbred).
-#' * The relationship between two individuals is at most the smaller of their
-#'   two diagonal values, \eqn{A_{ij} \le \min(A_{ii}, A_{jj})}{A[i,j] <= min(A[i,i], A[j,j])}:
-#'   nobody is more related to another individual than to itself.
-#'   Between individuals that are not inbred it is therefore at most 1, the
-#'   value for identical twins or clones; usual values are 0.5 for parent and
-#'   offspring or for full siblings, and 0.25 for half siblings.
-#' * Values above 1 thus only occur with inbreeding. For example, after `n`
-#'   generations of selfing the inbreeding coefficient is `1 - (1/2)^n`, so the
-#'   diagonal is 1.5, 1.75, 1.875, ... The maximum of 2 is approached but
-#'   never reached, since founders are assumed not to be inbred.
-#'
-#' For a measure that cannot exceed 1 whatever the inbreeding, use
-#' `metric = "kinship"` (a probability) or `metric = "wright"` (a correlation,
-#' where 1 means as similar as an individual is to itself,
-#' the same as `cov2cor(A)`): see [relatedness_metrics].
 #'
 #' @useDynLib fastrel, .registration = TRUE
 #' @importFrom Rcpp evalCpp loadModule

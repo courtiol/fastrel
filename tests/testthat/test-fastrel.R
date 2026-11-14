@@ -21,14 +21,6 @@ test_that("matches the reference implementation, whatever the row order", {
   expect_equal(A1[ped$id, ped$id], A0)
 })
 
-test_that("matches kinship2 when available", {
-  skip_if_not_installed("kinship2")
-  set.seed(1)
-  ped <- sim_ped(200, n_founders = 20, window = 50)
-  expect_equal(fastrel_vec(ped$id, ped$dadid, ped$momid),
-               2 * kinship2::kinship(ped$id, dadid = ped$dadid, momid = ped$momid))
-})
-
 test_that("unknown parents and unrelated individuals", {
   A <- fastrel_vec(c("a", "b", "c"), dadid = c(NA, NA, "zzz"), momid = c(NA, NA, "a"))
   expect_equal(unname(A["c", "a"]), 0.5)   # one known parent

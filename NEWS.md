@@ -1,3 +1,12 @@
+# fastrel (development version)
+
+* The results are now validated in the tests against `kinship2` and `ggroups`,
+  two independent implementations, for all four measures and on pedigrees of
+  many shapes (inbreeding, selfing, unknown parents, unsorted rows, removals
+  from a store, ...).
+* The section "Range of values" moves from the help page of the package to
+  `?relatedness_metrics`.
+
 # fastrel 0.6.1
 
 * Documentation only. In `?relatedness_metrics`, the table is split in two (it

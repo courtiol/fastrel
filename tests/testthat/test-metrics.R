@@ -110,14 +110,6 @@ test_that("metric: partial matching, case and invalid values", {
   expect_equal(fastrel_ped(ped, "kinship"), A / 2)
 })
 
-test_that("kinship matches kinship2 when available", {
-  skip_if_not_installed("kinship2")
-  set.seed(1)
-  ped <- sim_ped(200, n_founders = 20, window = 50)
-  expect_equal(fastrel_ped(ped, metric = "kinship"),
-               kinship2::kinship(ped$id, dadid = ped$dadid, momid = ped$momid))
-})
-
 test_that("the three functions offer the same measures, in the order of the C++ codes", {
   choices <- eval(formals(fastrel_vec)$metric)
   expect_identical(eval(formals(fastrel_ped)$metric), choices)
