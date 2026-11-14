@@ -1,183 +1,73 @@
-# fastrel (development version)
+# fastrel 0.6.1
 
-* The table of `?relatedness_metrics` is split in two, as it was too wide for
-  the PDF version of the manual.
+* Documentation only. In `?relatedness_metrics`, the table is split in two (it
+  was too wide for the PDF manual) and the link to `cov2cor()` is fixed. The
+  README is refreshed and explains how to build the manual.
 
 # fastrel 0.6.0
 
-## Breaking changes
-
-* `fastrel_vec()` no longer has `...`: it now has the arguments `sex` and
-  `chrtype` of `kinship2::kinship()` instead, so calls written for that
-  function still work. `sex` is not used but must have one value per
-  individual if given, and `chrtype` must be `"autosome"`. Any other argument
-  now raises an error instead of being ignored.
-
-## New features
-
 * `fastrel_ped()`, `fastrel_vec()` and `rel_get()` gain an argument `metric`
-  to choose the measure of relatedness returned:
-  * `"additive"` (the default): the additive relationship `A = 2 * kinship`,
-    as before;
-  * `"kinship"`: the kinship coefficient, a probability of identity by descent
-    (what `kinship2::kinship()` returns);
-  * `"wright"`: Wright's coefficient of relationship, a correlation, the same
-    as `cov2cor(A)`;
-  * `"hamilton"`: the regression coefficient of relatedness used in Hamilton's
-    rule, `A[i, j] / A[i, i]`, which is not symmetric (rows are actors,
-    columns are recipients).
-
-  The choices are listed in the usage of each function; `"Wright"` and
-  `"Hamilton"` are also accepted, as well as abbreviations (e.g. `"kin"`).
-
-  The conversion is done in C++, in place, in a single pass over the matrix:
-  it uses no extra memory and adds little time compared with computing the
-  matrix itself, and much less than converting the result in R.
-
-## Documentation
-
-* New help page `?relatedness_metrics` defining the four measures, how they
-  relate to each other, their range of values and when to use them, with
-  references. It also shows that nobody is more related to another individual
-  than to itself (`A[i, j] <= min(A[i, i], A[j, j])`), which bounds all the
-  measures.
+  to return, besides the additive relationship (`"additive"`, the default),
+  the kinship coefficient (`"kinship"`), Wright's coefficient of relationship
+  (`"wright"`) or Hamilton's regression coefficient of relatedness
+  (`"hamilton"`). The conversion uses no extra memory and adds little time.
+* New help page `?relatedness_metrics` defining these measures, with
+  references.
+* Breaking: `fastrel_vec()` has the arguments `sex` and `chrtype` of
+  `kinship2::kinship()` instead of `...`; any other argument is now an error.
 
 # fastrel 0.5.1
 
-* The documentation now states the range of relatedness values (0 to 2, above
-  1 only with inbreeding) and how to rescale them with `cov2cor()`: see the
-  section Range of values in `?fastrel`.
+* The documentation states the range of relatedness values (0 to 2, above 1
+  only with inbreeding).
 
 # fastrel 0.5.0
 
-## Bug fixes
-
-* `fastrel_vec()` returned a wrong 1 x 1 matrix when given data frames with a
-  single column instead of vectors, which is what `x[, "id"]` returns when `x`
-  is a tibble. `rel_get()` failed with a misleading "unknown IDs" error in the
-  same situation.
-
-## New features
-
-* Tibbles are supported and tested: `fastrel_vec()`, `rel_get()` and
-  `rel_remove()` take a data frame with a single column as that column where a
-  vector is expected, and `fastrel_ped()` and `rel_add()` accept a tibble as
-  `ped`.
-* `fastrel_vec()`, `rel_get()` and `rel_remove()` now raise a clear error when
-  given something that cannot be a vector of identifiers (a data frame with
-  several columns, a list), instead of treating it as a single identifier.
+* Tibbles are supported. This fixes `fastrel_vec()`, which returned a wrong
+  1 x 1 matrix when given tibbles with one column instead of vectors.
+* Inputs that cannot be a vector of identifiers now raise a clear error.
 
 # fastrel 0.4.0
 
-## Breaking changes
-
-* `relatedness_fast()` is replaced by two functions: `fastrel_vec()`, which is
-  the same function under a new name, and `fastrel_ped()`, which takes the
-  pedigree as a data frame.
-* The argument `carrying` of `sim_pop()` is now called `K`.
-* `rel_add()` now finds the columns of `ped` by their names (see below). A data
-  frame in which only some of the three columns have a recognised name (e.g.
-  `id`, `m`, `d`) used to be read by position and is now refused.
-
-## New features
-
-* `fastrel_ped()` and `rel_add()` find the columns for the focal individual,
-  its mother and its father by their names, whatever their order and their
-  capitalisation, and ignore the other columns. Usual names are recognised
-  (`id`, `focal`, `animal`, ...; `mom`, `mum`, `mother`, `dam`, ...; `dad`,
-  `father`, `sire`, ...; with or without `id`, as in `momid` or `mother_id`).
-  If no column has a recognised name, the first three columns are used as
-  before. The data frames returned by `sim_ped()` and `sim_pop()` can thus be
-  passed as they are.
-* New benchmark `inst/benchmarks/memory_benchmark.R` measuring the memory used
-  against what the documentation says (needs the package lobstr).
-
-## Documentation
-
-* The words "store" and "slot" are now defined, and the help page explains what
-  a store is made of: an R environment that points to a C++ object holding the
-  matrix.
-* Memory figures were corrected after measuring them: `remember_removed = TRUE`
-  costs about 30 bytes per individual removed (not 11 to 23), and a store that
-  grew in small steps made the R process use about 20% more than its matrix.
+* Breaking: `relatedness_fast()` is replaced by `fastrel_vec()` (same
+  function) and `fastrel_ped()`, which takes the pedigree as a data frame; the
+  argument `carrying` of `sim_pop()` is now `K`.
+* `fastrel_ped()` and `rel_add()` find the columns for the individual, its
+  mother and its father by their names (`id`, `mom`, `dad`, `sire`, `dam`,
+  ...), whatever their order; the other columns are ignored.
+* New benchmark of memory use, `inst/benchmarks/memory_benchmark.R`.
+* The documentation defines "store" and "slot", and its memory figures were
+  corrected after measuring them.
 
 # fastrel 0.3.1
 
-* New argument `rel_new(remember_removed = TRUE)`: the store then keeps a trace
-  of the individuals removed and `rel_add()` refuses to add them again. Such an
-  individual otherwise comes back as an unrelated founder, which is silently
-  wrong for its relatives. It is off by default because it costs 11 to 23 bytes
-  per individual removed, so the memory used then grows with the length of the
-  pedigree; it is recommended for metapopulations. `rel_save()` / `rel_load()`
-  keep the setting and the trace.
-* The help page of the store and the README explain how to handle a
-  metapopulation: a single store for all the patches, in which migrants are
-  kept.
+* New argument `rel_new(remember_removed = TRUE)` to refuse adding again an
+  individual that was removed from a store, which would otherwise come back
+  as unrelated to its relatives. Recommended for metapopulations, whose
+  handling is now documented.
 
 # fastrel 0.3.0
 
-## Breaking changes
-
-* `rel_new()` no longer has a `capacity` argument: the store allocates and
-  enlarges its matrix by itself. It now grows by half instead of doubling (or
-  straight to the size needed by a large `rel_add()`), so the matrix stays
-  within about 1.5 times the peak number of individuals held, where the former
-  default started at 1000 slots and doubling could overshoot by a factor 2.
-  `rel_capacity()` still reports the number of slots.
-* `sim_ped()` and `sim_pop()` no longer have a `seed` argument and no longer
-  call `set.seed()`: call `set.seed()` yourself beforehand. `set.seed(1)`
-  followed by a call gives the same result as the former default.
-* `relatedness_fast()` now refuses a `chrtype` other than `"autosome"` (the
-  autosomal matrix was returned silently).
-
-## New features
-
-* New `rel_ids()` listing the individuals in a store, to be used instead of
-  `rel$ids`.
+* Breaking: `rel_new()` no longer has a `capacity` argument, as the store now
+  sizes itself; `sim_ped()` and `sim_pop()` no longer have a `seed` argument
+  (call `set.seed()` beforehand).
+* Much faster `relatedness_fast()`, `rel_add()`, `rel_remove()` and
+  `sim_pop()`, without using more memory.
+* New `rel_ids()` listing the individuals in a store.
+* Bug fixes: `rel_add()` leaves the store unchanged when it fails; `NA`
+  identifiers, invalid arguments of the simulators and stores read back with
+  `readRDS()` now raise clear errors instead of giving wrong results.
 * The package is checked on GitHub Actions.
-
-## Performance
-
-* `relatedness_fast()` is 2 to 4 times faster: each pair of individuals is now
-  computed once instead of twice, and pedigrees whose rows are not in birth
-  order no longer pay a cache penalty. Memory use is unchanged.
-* `rel_add()` and `rel_remove()` are faster: they only touch the slots that have
-  been in use, not all the slots allocated; adding founders or immigrants takes
-  constant time; and the store is looked up once per call instead of six times.
-  `rel_get()` no longer zero-fills the matrix before writing it.
-* `sim_pop()` is about 10 times faster.
-
-## Bug fixes
-
-* `rel_add()` leaves the store unchanged when it fails, whether because of a
-  cycle among the new individuals (some of them could already have been
-  inserted) or because memory ran out while the store was growing.
-* `relatedness_fast()` now refuses `NA` in `id` (unknown parents were matched
-  to that individual, which could give a wrong matrix).
-* `sim_ped()` refuses `n_founders` or `window` below 1, which could silently
-  make an individual its own parent, and `p_unknown` outside `[0, 1]`.
-* A store read back with `readRDS()` or `load()` is now reported as such, with
-  a pointer to `rel_save()` and `rel_load()`, instead of failing inside Rcpp.
-* More input checks: `n_steps`, `n_init` and `maturity` in `sim_pop()`; the
-  `format` of a saved store in `rel_load()`; `NA` slots in the C++ object.
-
-## Documentation and packaging
-
-* The help pages of the store and of the package now mention `rel_save()`,
-  `rel_load()`, `sim_pop()`, `rel_size()` and `rel_capacity()`.
-* Benchmarks: the store is now also timed on a full build, not only on
-  extraction.
-* `stats` and `utils` are now declared in `Imports`.
 
 # fastrel 0.2.1
 
-* Revised README
+* Revised README.
 
 # fastrel 0.2.0
 
-* New `rel_save()` and `rel_load()` to checkpoint and restore a store.
-* New `sim_pop()` simulating a pedigree with deaths, emigration and immigration,
-  to benchmark `rel_remove()` (see `inst/benchmarks/sim_pop_benchmark.R`).
+* New `rel_save()` and `rel_load()` to save and restore a store.
+* New `sim_pop()` simulating a population with births, deaths, emigration and
+  immigration.
 
 # fastrel 0.1.0
 
