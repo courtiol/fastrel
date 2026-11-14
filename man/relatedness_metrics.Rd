@@ -83,7 +83,7 @@ between the genetic values of two individuals, which is obtained by dividing
 the covariance \eqn{A_{ij}}{A[i,j]} by the product of the two standard
 deviations:
 \deqn{r_{ij} = \frac{A_{ij}}{\sqrt{A_{ii} A_{jj}}} = \frac{2\phi_{ij}}{\sqrt{(1 + F_i)(1 + F_j)}}}{r[i,j] = A[i,j] / sqrt(A[i,i] * A[j,j]) = 2 phi[i,j] / sqrt((1 + F[i]) * (1 + F[j]))}
-This is what \code{\link[stats:cor]{stats::cov2cor()}} computes from the additive relationship
+This is what \code{\link[stats:cov2cor]{stats::cov2cor()}} computes from the additive relationship
 matrix. Being a correlation, it lies between 0 and 1 (the Cauchy-Schwarz
 inequality guarantees that
 \eqn{A_{ij} \le \sqrt{A_{ii} A_{jj}}}{A[i,j] <= sqrt(A[i,i] * A[j,j])}), and

@@ -138,7 +138,7 @@ as in this pedigree where an individual (P) is obtained by selfing a founder (G)
 and two individuals (O1, O2) by selfing P:
 
 
-```r
+``` r
 ped_selfing <- data.frame(id  = c("G", "P", "O1", "O2"),
                           mom = c(NA, "G", "P", "P"),
                           dad = c(NA, "G", "P", "P"))
@@ -153,7 +153,7 @@ fastrel_ped(ped_selfing)                      # additive relationship
 ## O2 1 1.5 1.50 1.75
 ```
 
-```r
+``` r
 fastrel_ped(ped_selfing, metric = "kinship")  # probabilities
 ```
 
@@ -165,7 +165,7 @@ fastrel_ped(ped_selfing, metric = "kinship")  # probabilities
 ## O2 0.5 0.75 0.750 0.875
 ```
 
-```r
+``` r
 fastrel_ped(ped_selfing, metric = "wright")   # correlations
 ```
 
@@ -177,7 +177,7 @@ fastrel_ped(ped_selfing, metric = "wright")   # correlations
 ## O2 0.7559289 0.9258201 0.8571429 1.0000000
 ```
 
-```r
+``` r
 fastrel_ped(ped_selfing, metric = "hamilton") # regressions (row = actor)
 ```
 
@@ -360,12 +360,12 @@ microbenchmark(ggroups = buildA(ped_ggroups),
 
 ```
 ## Unit: microseconds
-##     expr        min          lq       mean    median         uq      max neval
-##  ggroups 103148.174 105605.3880 108558.231 108414.44 111327.202 114476.5   100
-##  fastrel    733.005    795.5185   3626.973    907.33   2062.118 153596.2   100
-##  cld
-##   a 
-##    b
+##     expr        min          lq       mean     median         uq        max
+##  ggroups 111205.772 113828.2030 119973.909 117763.897 119341.298 270618.814
+##  fastrel    716.955    809.2245   2213.579   1760.452   1999.975   8019.776
+##  neval cld
+##    100  a 
+##    100   b
 ```
 As you can see `fastrel::fastrel_vec()` is much faster than `ggroups::buildA()` on our machine, for 1000 individuals.
 
@@ -395,6 +395,13 @@ After editing C++ attributes, do:
 ``` r
 Rcpp::compileAttributes() # or "Build/Document" in RStudio 
 ```
+
+To generate the manual, do:
+
+``` r
+devtools::build_manual()
+```
+
 
 ## Thanks
 
