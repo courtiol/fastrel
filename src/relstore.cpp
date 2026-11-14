@@ -1,5 +1,3 @@
-// Created by Claude Sonnet 5.5 and revised with Fable 5.2 from Alex's prompts
-
 #include <Rcpp.h>
 #include "metrics.h"
 #include <vector>

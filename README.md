@@ -20,8 +20,6 @@ the population is at its demographic equilibrium
 - a function to simulate a population with its pedigree, deaths, births,
 immigrations and emigrations.
 
-The functions have been written with Claude in C++ and interfaced with R.
-
 The relatedness matrix is here technically defined as the additive relationship matrix, A = 2 × kinship, with diagonal 1 + F.
 Its values lie between 0 and 2: between individuals that are not inbred, relatedness is at most 1 (identical twins or clones; 0.5 for parent and offspring or full siblings), and it can only exceed 1 with inbreeding.
 The kinship coefficient, Wright's coefficient of relationship and Hamilton's regression coefficient of relatedness can be returned instead (see [Measures of relatedness](#measures-of-relatedness)).
@@ -360,9 +358,9 @@ microbenchmark(ggroups = buildA(ped_ggroups),
 
 ```
 ## Unit: microseconds
-##     expr        min          lq       mean      median         uq      max neval cld
-##  ggroups 104616.119 106540.5105 111360.512 110536.2020 112471.380 266173.4   100  a 
-##  fastrel    750.829    817.9715   3196.539    858.0915   1868.606 158152.7   100   b
+##     expr        min          lq       mean    median         uq      max neval cld
+##  ggroups 103449.153 105918.7050 110732.814 109941.73 111587.553 263501.8   100  a 
+##  fastrel    741.952    795.9945   3701.444   1000.15   1923.821 168181.2   100   b
 ```
 As you can see `fastrel::fastrel_vec()` is much faster than `ggroups::buildA()` on our machine, for 1000 individuals.
 
@@ -378,6 +376,17 @@ source(system.file("benchmarks/memory_benchmark.R", package = "fastrel")) # memo
 
 
 ## Development
+
+### AI/LLMs disclaimer
+
+Most of this package was written with the help of large language models (LLMs),
+such as Claude Fable 5.2. The increase in computational speed has been achieved
+by relying heavily on a C++ implementation (rather than pure R code). The
+results have been cross-checked using alternative LLMs and compared to the
+output of established packages (e.g. `kinship2`). Many tests have also been
+implemented to ensure the results are accurate.
+
+### Tips for developers
 
 After editing README.Rmd, do:
 
