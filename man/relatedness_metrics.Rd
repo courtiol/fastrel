@@ -27,16 +27,18 @@ half siblings, 0.125 for first cousins. They differ only with inbreeding.
 \section{Kinship coefficient (\code{"kinship"})}{
 
 The kinship coefficient \eqn{\phi_{ij}}{phi[i,j]} (Malécot 1948, who called
-it the coefficient of coancestry) is the probability that an allele drawn at
+it the \emph{coefficient de parenté}; it is also known as the coefficient of
+coancestry) is the probability that an allele drawn at
 random from \eqn{i} and an allele drawn at random from \eqn{j}, at the same
 autosomal locus, are identical by descent, i.e. copies of a single allele of
 a common ancestor. Being a probability, it lies between 0 and 1. This is
 what \code{\link[kinship2:kinship]{kinship2::kinship()}} returns (Sinnwell et al. 2014).
 
-Two related quantities follow. The inbreeding coefficient \eqn{F_i}{F[i]}
-(Wright 1922) is the probability that the two alleles of \eqn{i} are
-identical by descent; it equals the kinship coefficient between the parents
-of \eqn{i}. The kinship of an individual with itself is
+Two related quantities follow. The inbreeding coefficient \eqn{F_i}{F[i]},
+introduced by Wright (1922) as a correlation between the gametes that unite
+to form \eqn{i} and reinterpreted by Malécot (1948) as a probability, is the
+probability that the two alleles of \eqn{i} are identical by descent; it
+equals the kinship coefficient between the parents of \eqn{i}. The kinship of an individual with itself is
 \eqn{\phi_{ii} = (1 + F_i)/2}{phi[i,i] = (1 + F[i]) / 2}: when two alleles
 are drawn from \eqn{i} with replacement, the same allele is drawn twice with
 probability 1/2, and otherwise the two alleles are identical by descent with
@@ -86,8 +88,8 @@ that they are half as similar. It does not remove the effect of inbreeding
 on resemblance, it measures resemblance against that reference, which is
 why it stays between 0 and 1 whatever the inbreeding. In the selfing example
 above, the two offspring have \eqn{A = 1.5} but
-\eqn{r = 1.5 / 1.75 \approx 0.86}{r = 1.5 / 1.75 = 0.86}: they are 86\\% as
-similar to each other as each of them is to itself.
+\eqn{r = 1.5 / 1.75 \approx 0.86}{r = 1.5 / 1.75 = 0.86}: they are 86
+percent as similar to each other as each of them is to itself.
 }
 
 \section{Hamilton's regression coefficient of relatedness (\code{"hamilton"})}{
@@ -115,19 +117,34 @@ itself.
 
 In a pedigree, nobody is more related to another individual than to itself:
 \deqn{A_{ij} \le \min(A_{ii}, A_{jj})}{A[i,j] <= min(A[i,i], A[j,j])}
-This holds because, when \eqn{i} is added after its parents \eqn{m} and
-\eqn{d}, \eqn{A_{ij} = (A_{mj} + A_{dj})/2}{A[i,j] = (A[m,j] + A[d,j]) / 2}
-and \eqn{A_{ii} = 1 + A_{md}/2}{A[i,i] = 1 + A[m,d] / 2}. Each allele of
-\eqn{j} can be identical by descent with an allele drawn from \eqn{m} and
-with an allele drawn from \eqn{d} only if these two are themselves
-identical by descent, so \eqn{A_{mj} + A_{dj} \le 2 + A_{md}}{A[m,j] + A[d,j] <= 2 + A[m,d]},
-which gives \eqn{A_{ij} \le A_{ii}}{A[i,j] <= A[i,i]}; and
-\eqn{A_{ij} \le A_{jj}}{A[i,j] <= A[j,j]} follows, by induction, from the
-same property for the parents. The bounds of the table follow: the
-off-diagonal values of the additive relationship are at most 2 and those of
-the kinship at most 1, Wright's coefficient (bounded by the geometric mean
-of the two diagonal values) and Hamilton's coefficient (bounded by the
+All the bounds of the table follow from this: the off-diagonal values of
+the additive relationship are at most 2 and those of the kinship at most 1,
+and Wright's coefficient (the additive relationship divided by the geometric
+mean of the two diagonal values) and Hamilton's coefficient (divided by the
 diagonal value of the actor) are at most 1.
+
+Here is why it holds. Take two individuals, and call \eqn{i} the one that
+is not an ancestor of the other, \eqn{j}; let \eqn{m} and \eqn{d} be the
+parents of \eqn{i}, so that
+\eqn{A_{ij} = (A_{mj} + A_{dj})/2}{A[i,j] = (A[m,j] + A[d,j]) / 2} and
+\eqn{A_{ii} = 1 + A_{md}/2}{A[i,i] = 1 + A[m,d] / 2}.
+\itemize{
+\item Draw one allele at random from each of \eqn{j}, \eqn{m} and \eqn{d}. If
+the allele of \eqn{j} is identical by descent both with that of \eqn{m}
+and with that of \eqn{d}, then these two are identical by descent with
+each other. In terms of probabilities,
+\eqn{\phi_{mj} + \phi_{dj} \le 1 + \phi_{md}}{phi[m,j] + phi[d,j] <= 1 + phi[m,d]},
+i.e. \eqn{A_{mj} + A_{dj} \le 2 + A_{md}}{A[m,j] + A[d,j] <= 2 + A[m,d]},
+which is \eqn{A_{ij} \le A_{ii}}{A[i,j] <= A[i,i]}.
+\item \eqn{A_{ij}}{A[i,j]} is the mean of \eqn{A_{mj}}{A[m,j]} and
+\eqn{A_{dj}}{A[d,j]}. If neither exceeds \eqn{A_{jj}}{A[j,j]}, their
+mean does not either. As \eqn{m} and \eqn{d} come before \eqn{i} in the
+pedigree, the result follows step by step from the founders, which are
+related to nobody but themselves.
+}
+
+An unknown parent counts as a founder that appears nowhere else in the
+pedigree, so the same reasoning applies.
 }
 
 \section{Assumptions}{

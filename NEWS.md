@@ -19,10 +19,11 @@
 
   The conversion is done in C++, in place, in a single pass over the matrix:
   no extra memory is used, `rel_get()` takes the same time whatever the
-  measure, and `fastrel_ped()` takes up to 20% longer (about 2 times faster
-  than calling `cov2cor()` on the result). In `fastrel_vec()`, `metric` comes
-  after `...` and must be named, so that calls written for
-  `kinship2::kinship()` keep working.
+  measure, and `fastrel_ped()` takes 10 to 15% longer (0.26 s instead of 0.23 s
+  for 5000 individuals, where `cov2cor()` on the result takes 0.68 s more). In
+  `fastrel_vec()`, `metric` comes after `...` and must be named, so that calls
+  written for `kinship2::kinship()` keep working; a measure given without its
+  name raises an error.
 
 ## Documentation
 

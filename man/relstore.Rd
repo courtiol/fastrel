@@ -66,8 +66,9 @@ and the conversion is done on the matrix extracted only.}
 \code{rel_new()} returns the store. \code{rel_add()} and \code{rel_remove()} return
 the store invisibly. \code{rel_get()} returns a matrix with \code{ids} as dimnames:
 with the default \code{metric = "additive"}, it is symmetric with diagonal
-\code{1 + F} (see \link{relatedness_metrics} for the other measures). \code{rel_ids()} returns a character vector, in
-order of insertion. \code{rel_size()} and \code{rel_capacity()} return integers.
+\code{1 + F} (see \link{relatedness_metrics} for the other measures). \code{rel_ids()}
+returns a character vector, in order of insertion. \code{rel_size()} and
+\code{rel_capacity()} return integers.
 }
 \description{
 A \emph{store} is an object that keeps the additive relationship matrix

@@ -102,6 +102,9 @@ test_that("metric: partial matching, case and invalid values", {
   expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, c(1, 2, 1, 2), "Wright"), "must be named")
   expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, "ham"), "must be named")
   expect_equal(fastrel_vec(ped$id, ped$dad, ped$mom, sex = "kinship"), A)   # named: not a measure
+  ## a single short code, e.g. the sex of a single individual, is not a measure
+  expect_equal(unname(fastrel_vec("x", NA, NA, "h")), matrix(1))
+  expect_equal(unname(fastrel_vec("x", NA, NA, "a", "w")), matrix(1))
   ## internal calls pass it by name
   expect_equal(fastrel_ped(ped, "kinship"), A / 2)
 })
@@ -122,4 +125,19 @@ test_that("the three functions offer the same measures, in the order of the C++ 
   ## codes of src/metrics.h: ADDITIVE = 0, KINSHIP = 1, WRIGHT = 2, HAMILTON = 3
   expect_identical(vapply(choices, fastrel:::metric_code, 0L, USE.NAMES = FALSE),
                    c(0L, 1L, 2L, 3L, 2L, 3L))
+})
+
+test_that("symmetry is exact, and repeated individuals are handled", {
+  set.seed(6)
+  ped <- sim_ped(300, n_founders = 3, window = 5)
+  for (m in c("additive", "kinship", "wright"))
+    expect_true(isSymmetric(unname(fastrel_ped(ped, metric = m)), tol = 0))
+  ## the same individual asked twice: related to itself in both positions
+  rel <- rel_new()
+  rel_add(rel, ped)
+  ids <- ped$id[c(300, 300, 150)]
+  for (m in c("kinship", "wright", "hamilton"))
+    expect_equal(rel_get(rel, ids, metric = m), fastrel_ped(ped, metric = m)[ids, ids])
+  expect_equal(unname(rel_get(rel, ids, metric = "wright")[1:2, 1:2]), matrix(1, 2, 2))
+  expect_equal(unname(rel_get(rel, ids, metric = "hamilton")[1:2, 1:2]), matrix(1, 2, 2))
 })

@@ -112,14 +112,15 @@ fastrel_ped <- function(ped,
 ## `metric` comes after `...` in fastrel_vec(), so a measure given without its
 ## name, e.g. fastrel_vec(id, dadid, momid, "kinship"), would land in `...` and
 ## be silently ignored. Refuse an unnamed argument of `...` that looks like a
-## measure. (A `sex` vector given in fourth position, as for kinship2::kinship(),
-## is left alone.)
+## measure: a single string of at least 3 characters that matches one of the
+## choices. (A `sex` vector given in fourth position, as for
+## kinship2::kinship(), is left alone, including a single code such as "h".)
 check_unnamed_metric <- function(dots) {
   nm <- names(dots)
   unnamed <- if (is.null(nm)) seq_along(dots) else which(nm == "")
   for (k in unnamed) {
     x <- dots[[k]]
-    if (is.character(x) && length(x) == 1L && !is.na(x) &&
+    if (is.character(x) && length(x) == 1L && !is.na(x) && nchar(x) >= 3L &&
         !is.na(pmatch(x, eval(formals(fastrel_vec)$metric))))
       stop("`metric` must be named in fastrel_vec(): use `metric = \"", x,
            "\"`, not \"", x, "\" alone (unnamed arguments after `momid` are ",

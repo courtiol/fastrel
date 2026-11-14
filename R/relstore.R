@@ -142,8 +142,9 @@
 #' @return `rel_new()` returns the store. `rel_add()` and `rel_remove()` return
 #'   the store invisibly. `rel_get()` returns a matrix with `ids` as dimnames:
 #'   with the default `metric = "additive"`, it is symmetric with diagonal
-#'   `1 + F` (see [relatedness_metrics] for the other measures). `rel_ids()` returns a character vector, in
-#'   order of insertion. `rel_size()` and `rel_capacity()` return integers.
+#'   `1 + F` (see [relatedness_metrics] for the other measures). `rel_ids()`
+#'   returns a character vector, in order of insertion. `rel_size()` and
+#'   `rel_capacity()` return integers.
 #'
 #' @seealso [fastrel_ped()] to compute the whole matrix from a pedigree;
 #'   [rel_save()] and [rel_load()] to save a store to disk.
