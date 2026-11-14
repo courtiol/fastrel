@@ -18,7 +18,8 @@ unknown). See the section Columns of \code{ped}.}
 default), \code{"kinship"}, \code{"wright"} or \code{"hamilton"}. See
 \link{relatedness_metrics} for their definitions. For \code{fastrel_vec()}, it must
 be named (it comes after \code{...}, so that calls written for
-\code{\link[kinship2:kinship]{kinship2::kinship()}} keep working).}
+\code{\link[kinship2:kinship]{kinship2::kinship()}} keep working); a measure given without its name
+raises an error rather than being ignored.}
 
 \item{id}{Vector of unique individual identifiers. For this argument and
 the next two, a data frame with a single column (what \code{x[, "id"]} returns

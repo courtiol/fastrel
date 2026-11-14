@@ -30,7 +30,16 @@ deaths, emigration and immigration, for testing and benchmarking.
 
 By default, all functions return the additive relationship
 \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 * phi[i,j]}, where \eqn{\phi_{ij}}{phi[i,j]}
-is the kinship coefficient. Its diagonal is \eqn{1 + F_i}{1 + F[i]}, where
+is the kinship coefficient. The kinship coefficient is a probability: that
+of an allele drawn at random from \eqn{i} and an allele drawn at random from
+\eqn{j}, at the same locus, being identical by descent. The additive
+relationship is instead an expected count of alleles: \eqn{A_{ij}}{A[i,j]}
+is the expected number of the two alleles of \eqn{j} that are identical by
+descent with an allele drawn at random from \eqn{i}. This is why it lies
+between 0 and 2, and can exceed 1 (see the section Range of values). For
+example, an allele drawn from a parent is one of the two alleles of its
+offspring with probability 1/2, so their additive relationship is 0.5
+without inbreeding. Its diagonal is \eqn{1 + F_i}{1 + F[i]}, where
 \eqn{F_i}{F[i]} is the inbreeding coefficient, so \code{diag(A) - 1} gives the
 inbreeding coefficients. Founders (individuals with unknown parents) are
 assumed to be unrelated and non-inbred, and an unknown parent is treated as
@@ -45,8 +54,10 @@ measures, what they mean and when to use them are described in
 
 \section{Range of values}{
 
-The additive relationship lies between 0 and 2, since a kinship coefficient
-is a probability and lies between 0 and 1.
+The additive relationship lies between 0 and 2, since it counts how many of
+the two alleles of an individual are identical by descent with an allele of
+another (equivalently, since a kinship coefficient is a probability and lies
+between 0 and 1).
 \itemize{
 \item The diagonal goes from 1 (not inbred) to 2 (fully inbred).
 \item The relationship between two individuals is at most the smaller of their

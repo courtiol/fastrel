@@ -192,7 +192,7 @@ fastrel_ped(ped_selfing, metric = "hamilton") # regressions (row = actor)
 See `?relatedness_metrics` for the definitions, their interpretation and the
 references: Malécot (1948) for the kinship coefficient; Wright (1922) for the
 coefficient of relationship; Henderson (1976) for the additive relationship
-matrix; Hamilton (1964, 1972) and Michod & Hamilton (1980) for relatedness in
+matrix; Hamilton (1964a, b, 1972) and Michod & Hamilton (1980) for relatedness in
 kin selection.
 
 ## Using the store in a simulation

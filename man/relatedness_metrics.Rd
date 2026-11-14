@@ -87,7 +87,7 @@ selfing example above, the two offspring have \eqn{A = 1.5} but
 
 \section{Hamilton's regression coefficient of relatedness (\code{"hamilton"})}{
 
-Hamilton (1964) used Wright's coefficient of relationship in the first
+Hamilton (1964a, b) used Wright's coefficient of relationship in the first
 formulation of inclusive fitness. He later showed that with inbreeding the
 relevant measure for kin selection, the \eqn{r} of Hamilton's rule
 \eqn{rb > c}, is a regression coefficient rather than a correlation
@@ -156,12 +156,17 @@ Emik, L. O., & Terrill, C. E. (1949). Systematic procedures for calculating
 inbreeding coefficients. \emph{Journal of Heredity}, 40(2), 51–55.
 \doi{10.1093/oxfordjournals.jhered.a105986}
 
-Hamilton, W. D. (1964). The genetical evolution of social behaviour. I.
+Hamilton, W. D. (1964a). The genetical evolution of social behaviour. I.
 \emph{Journal of Theoretical Biology}, 7(1), 1–16.
 \doi{10.1016/0022-5193(64)90038-4}
 
+Hamilton, W. D. (1964b). The genetical evolution of social behaviour. II.
+\emph{Journal of Theoretical Biology}, 7(1), 17–52.
+\doi{10.1016/0022-5193(64)90039-6}
+
 Hamilton, W. D. (1972). Altruism and related phenomena, mainly in social
 insects. \emph{Annual Review of Ecology and Systematics}, 3, 193–232.
+\doi{10.1146/annurev.es.03.110172.001205}
 
 Henderson, C. R. (1976). A simple method for computing the inverse of a
 numerator relationship matrix used in prediction of breeding values.

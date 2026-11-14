@@ -56,7 +56,8 @@
 #'   default), `"kinship"`, `"wright"` or `"hamilton"`. See
 #'   [relatedness_metrics] for their definitions. For `fastrel_vec()`, it must
 #'   be named (it comes after `...`, so that calls written for
-#'   [kinship2::kinship()] keep working).
+#'   [kinship2::kinship()] keep working); a measure given without its name
+#'   raises an error rather than being ignored.
 #'
 #' @return A numeric matrix with one row and one column per individual, in the
 #'   order given, and the identifiers as row and column names. With the default
@@ -105,11 +106,32 @@ fastrel_ped <- function(ped, metric = "additive") {
               metric = metric)
 }
 
+## `metric` comes after `...` in fastrel_vec(), so a measure given without its
+## name, e.g. fastrel_vec(id, dadid, momid, "kinship"), would land in `...` and
+## be silently ignored. Refuse an unnamed argument of `...` that looks like a
+## measure. (A `sex` vector given in fourth position, as for kinship2::kinship(),
+## is left alone.)
+check_unnamed_metric <- function(dots) {
+  nm <- names(dots)
+  unnamed <- if (is.null(nm)) seq_along(dots) else which(nm == "")
+  for (k in unnamed) {
+    x <- dots[[k]]
+    if (is.character(x) && length(x) == 1L && !is.na(x) &&
+        !is.na(pmatch(tolower(x), metric_names)))
+      stop("`metric` must be named in fastrel_vec(): use `metric = \"", x,
+           "\"`, not \"", x, "\" alone (unnamed arguments after `momid` are ",
+           "ignored, as in kinship2::kinship())")
+  }
+  invisible(TRUE)
+}
+
 #' @rdname fastrel_ped
 #' @export
 fastrel_vec <- function(id, dadid, momid, ..., metric = "additive") {
+  dots <- list(...)
+  check_unnamed_metric(dots)
   code <- metric_code(metric)
-  chrtype <- list(...)[["chrtype"]]
+  chrtype <- dots[["chrtype"]]
   if (!is.null(chrtype) && !identical(tolower(chrtype), "autosome"))
     stop("only autosomes are supported (`chrtype = \"autosome\"`)")
   id    <- id_vector(id, "id")

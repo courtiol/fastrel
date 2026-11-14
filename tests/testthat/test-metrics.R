@@ -93,6 +93,14 @@ test_that("metric: partial matching, case and invalid values", {
   ## a fourth positional argument, as for kinship2::kinship(id, dadid, momid, sex),
   ## is ignored rather than taken as the metric
   expect_equal(fastrel_vec(ped$id, ped$dad, ped$mom, c(1, 2, 1, 2)), A)
+  expect_equal(fastrel_vec(ped$id, ped$dad, ped$mom, c("m", "f", "m", "f"), "autosome"), A)
+  ## ... but a measure given without its name is refused, not ignored
+  expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, "kinship"), "must be named")
+  expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, c(1, 2, 1, 2), "Wright"), "must be named")
+  expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, "ham"), "must be named")
+  expect_equal(fastrel_vec(ped$id, ped$dad, ped$mom, sex = "kinship"), A)   # named: not a measure
+  ## internal calls pass it by name
+  expect_equal(fastrel_ped(ped, "kinship"), A / 2)
 })
 
 test_that("kinship matches kinship2 when available", {
