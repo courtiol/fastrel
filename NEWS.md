@@ -24,7 +24,8 @@
 # fastrel 0.5.0
 
 * Tibbles are supported. This fixes `fastrel_vec()`, which returned a wrong
-  1 x 1 matrix when given tibbles with one column instead of vectors.
+  1 x 1 matrix when each argument was a tibble with one column instead of a
+  vector.
 * Inputs that cannot be a vector of identifiers now raise a clear error.
 
 # fastrel 0.4.0
