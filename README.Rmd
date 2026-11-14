@@ -118,7 +118,7 @@ immigration, and returns the step at which each individual arrives and leaves.
 Here we replay it with a store, adding the arrivals and removing the departures
 at each step, and we record the mean relatedness among the individuals present:
 
-```{r simulation, fig.align='center', fig.path=".github/figures/", fig.width=8}
+```{r simulation, fig.path=".github/figures/", fig.width=8, fig.height=4, dpi=150, out.width="100%", fig.show='hide'}
 rel <- rel_new()
 set.seed(1)
 pop <- sim_pop(n_steps = 1000, n_init = 200) # simulate pop (fine tuning the life history is possible)
@@ -134,6 +134,10 @@ plot(mean_rel ~ step, data = mean_relatedness,
      type = "l", las = 1,
      ylab = "Mean relatedness", xlab = "Time step")
 ```
+
+<p align="center">
+<img src=".github/figures/simulation-1.png" width="80%" alt="Mean relatedness over time">
+</p>
 
 Although `r nrow(pop)` individuals were simulated in total, the store never
 held more than a few hundred of them at once:

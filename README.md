@@ -179,10 +179,9 @@ plot(mean_rel ~ step, data = mean_relatedness,
      ylab = "Mean relatedness", xlab = "Time step")
 ```
 
-<div class="figure" style="text-align: center">
-<img src=".github/figures/simulation-1.png" alt="plot of chunk simulation"  />
-<p class="caption">plot of chunk simulation</p>
-</div>
+<p align="center">
+<img src=".github/figures/simulation-1.png" width="80%" alt="Mean relatedness over time">
+</p>
 
 Although 27150 individuals were simulated in total, the store never
 held more than a few hundred of them at once:
@@ -283,9 +282,12 @@ microbenchmark(ggroups = buildA(ped_ggroups),
 
 ```
 ## Unit: microseconds
-##     expr        min         lq     mean     median         uq      max neval cld
-##  ggroups 103992.961 106789.726 116258.0 110862.554 113778.169 356624.1   100  a 
-##  fastrel    741.301    807.782   5210.5   1068.124   1843.715 173609.9   100   b
+##     expr        min          lq       mean    median         uq      max neval
+##  ggroups 103148.174 105605.3880 108558.231 108414.44 111327.202 114476.5   100
+##  fastrel    733.005    795.5185   3626.973    907.33   2062.118 153596.2   100
+##  cld
+##   a 
+##    b
 ```
 As you can see `fastrel::fastrel_vec()` is much faster than `ggroups::buildA()` on our machine, for 1000 individuals.
 
