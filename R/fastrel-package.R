@@ -60,6 +60,7 @@
 #'
 #' For a measure that cannot exceed 1 whatever the inbreeding, use
 #' `metric = "kinship"` (a probability) or `metric = "wright"` (a correlation,
+#' where 1 means as similar as an individual is to itself,
 #' the same as `cov2cor(A)`): see [relatedness_metrics].
 #'
 #' @useDynLib fastrel, .registration = TRUE

@@ -11,7 +11,7 @@
 #' |---|---|---|---|---|---|
 #' | `"additive"` (default) | additive (or numerator) relationship | \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 phi[i,j]} | \eqn{1 + F_i}{1 + F[i]}, in \[1, 2\] | \[0, 2\] | yes |
 #' | `"kinship"` | kinship (or coancestry) coefficient | \eqn{\phi_{ij}}{phi[i,j]} | \eqn{(1 + F_i)/2}{(1 + F[i]) / 2}, in \[0.5, 1\] | \[0, 1\] | yes |
-#' | `"wright"` | Wright's coefficient of relationship | \eqn{A_{ij} / \sqrt{A_{ii} A_{jj}}}{A[i,j] / sqrt(A[i,i] A[j,j])} | 1 | \[0, 1\] | yes |
+#' | `"wright"` | Wright's coefficient of relationship (1 = as similar as an individual is to itself) | \eqn{A_{ij} / \sqrt{A_{ii} A_{jj}}}{A[i,j] / sqrt(A[i,i] A[j,j])} | 1 | \[0, 1\] | yes |
 #' | `"hamilton"` | regression coefficient of relatedness, as in Hamilton's rule | \eqn{A_{ij} / A_{ii}}{A[i,j] / A[i,i]} | 1 | \[0, 1\] | no |
 #'
 #' Here \eqn{\phi_{ij}}{phi[i,j]} is the kinship coefficient between
@@ -68,13 +68,18 @@
 #' matrix. Being a correlation, it lies between 0 and 1 (the Cauchy-Schwarz
 #' inequality guarantees that
 #' \eqn{A_{ij} \le \sqrt{A_{ii} A_{jj}}}{A[i,j] <= sqrt(A[i,i] * A[j,j])}), and
-#' every individual has a relationship of 1 with itself. It measures genetic
-#' resemblance relative to the variability of each individual: a value of 1
-#' means that two individuals are as alike as an individual is to itself, as
-#' with members of a line selfed for many generations. It does not remove the
-#' effect of inbreeding on resemblance, it puts it on a common scale. In the
-#' selfing example above, the two offspring have \eqn{A = 1.5} but
-#' \eqn{r = 1.5 / 1.75 \approx 0.86}{r = 1.5 / 1.75 = 0.86}.
+#' every individual has a relationship of 1 with itself.
+#'
+#' Its interpretation follows: it measures how similar two individuals are
+#' compared with how similar an individual is to itself. A value of 1 means
+#' that two individuals are **as similar as an individual is to itself**, as
+#' with members of a line selfed for many generations; a value of 0.5 means
+#' that they are half as similar. It does not remove the effect of inbreeding
+#' on resemblance, it measures resemblance against that reference, which is
+#' why it stays between 0 and 1 whatever the inbreeding. In the selfing example
+#' above, the two offspring have \eqn{A = 1.5} but
+#' \eqn{r = 1.5 / 1.75 \approx 0.86}{r = 1.5 / 1.75 = 0.86}: they are 86\% as
+#' similar to each other as each of them is to itself.
 #'
 #' @section Hamilton's regression coefficient of relatedness (`"hamilton"`):
 #' Hamilton (1964a, b) used Wright's coefficient of relationship in the first
@@ -89,7 +94,11 @@
 #' relatedness of recipient `j` from the point of view of actor `i`. The
 #' matrix is not symmetric when individuals differ in their inbreeding
 #' coefficients. Its values lie between 0 and 1 (see the section Bounds), and
-#' all individuals have a relatedness of 1 with themselves.
+#' all individuals have a relatedness of 1 with themselves. Its interpretation
+#' is similar to that of Wright's coefficient, but from the point of view of
+#' the actor only: `R[i, j] = 1` means that, as far as the genes of the actor
+#' `i` are concerned, the recipient `j` is as similar to `i` as `i` is to
+#' itself.
 #'
 #' @section Bounds:
 #' In a pedigree, nobody is more related to another individual than to itself:

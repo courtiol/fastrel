@@ -74,6 +74,7 @@ never reached, since founders are assumed not to be inbred.
 
 For a measure that cannot exceed 1 whatever the inbreeding, use
 \code{metric = "kinship"} (a probability) or \code{metric = "wright"} (a correlation,
+where 1 means as similar as an individual is to itself,
 the same as \code{cov2cor(A)}): see \link{relatedness_metrics}.
 }
 

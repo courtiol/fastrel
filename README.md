@@ -128,7 +128,7 @@ argument `metric`, at no extra memory cost:
 |---|---|---|---|---|
 | `"additive"` (default) | additive (numerator) relationship | 2 × kinship | 0 to 2 | covariance of breeding values (animal models, heritability) |
 | `"kinship"` | kinship (coancestry) coefficient | probability that two alleles drawn at random, one from each individual, are identical by descent | 0 to 1 | probability of identity by descent; same as `kinship2::kinship()` |
-| `"wright"` | Wright's coefficient of relationship | correlation between genetic values, `cov2cor(A)` | 0 to 1 | genetic resemblance on a common scale, whatever the inbreeding |
+| `"wright"` | Wright's coefficient of relationship | correlation between genetic values, `cov2cor(A)` | 0 to 1 | genetic resemblance compared with that of an individual to itself (1 = as similar as an individual is to itself), whatever the inbreeding |
 | `"hamilton"` | regression coefficient of relatedness | regression of the recipient's genetic value on the actor's, A[i, j] / A[i, i] | 0 to 1 | the *r* of Hamilton's rule (kin selection); not symmetric: rows are actors |
 
 Without inbreeding, all measures except the kinship coefficient are identical
