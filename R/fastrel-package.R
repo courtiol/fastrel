@@ -1,10 +1,11 @@
 #' fastrel: fast relatedness, relationship and kinship matrices from pedigrees
 #'
 #' Tools to compute, for autosomal loci of diploid individuals, the additive
-#' relationship ("relatedness") matrix \eqn{A = 2\phi}{A = 2 * phi}, where
-#' \eqn{\phi}{phi} is the kinship coefficient (Malécot 1948), as well as the
-#' kinship coefficient itself, Wright's coefficient of relationship (Wright
-#' 1922) and Hamilton's regression coefficient of relatedness (Hamilton 1972).
+#' relationship ("relatedness") matrix \eqn{A = 2\phi}{A = 2 * phi} (Emik and
+#' Terrill 1949; Henderson 1976), where \eqn{\phi}{phi} is the kinship
+#' coefficient (Malécot 1948), as well as the kinship coefficient itself,
+#' Wright's coefficient of relationship (Wright 1922) and Hamilton's regression
+#' coefficient of relatedness (Hamilton 1972; Michod and Hamilton 1980).
 #'
 #' Two interfaces are provided:
 #' * [fastrel_ped()] and [fastrel_vec()] compute the whole matrix from a
@@ -18,6 +19,11 @@
 #'
 #' [sim_ped()] simulates a pedigree, and [sim_pop()] a population with births,
 #' deaths, emigration and immigration, for testing and benchmarking.
+#'
+#' The README of the package, at <https://github.com/courtiol/fastrel>, gives
+#' an overview with worked examples: relatedness of a whole pedigree,
+#' incremental updates in a simulation with births and deaths,
+#' metapopulations, and benchmarks against other packages.
 #'
 #' @section Measures of relatedness:
 #' By default, all functions return the additive relationship
@@ -56,8 +62,15 @@
 #' insects. *Annual Review of Ecology and Systematics*, 3, 193–232.
 #' \doi{10.1146/annurev.es.03.110172.001205}
 #'
+#' Henderson, C. R. (1976). A simple method for computing the inverse of a
+#' numerator relationship matrix used in prediction of breeding values.
+#' *Biometrics*, 32(1), 69–83. \doi{10.2307/2529339}
+#'
 #' Malécot, G. (1948). *Les mathématiques de l'hérédité*. Masson et Cie,
 #' Paris.
+#'
+#' Michod, R. E., & Hamilton, W. D. (1980). Coefficients of relatedness in
+#' sociobiology. *Nature*, 288, 694–697. \doi{10.1038/288694a0}
 #'
 #' Wright, S. (1922). Coefficients of inbreeding and relationship. *The
 #' American Naturalist*, 56(645), 330–338. \doi{10.1086/279872}
