@@ -1,4 +1,4 @@
-# fastrel
+# fastrel <a href="https://courtiol.github.io/fastrel/"><img src="man/figures/logo.png" align="right" height="139" alt="fastrel website" /></a>
 
 
 
