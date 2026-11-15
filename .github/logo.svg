@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 518 600" width="518" height="600">
+  <polygon points="259,6 512,152 512,448 259,594 6,448 6,152" fill="#2c3e50" stroke="#18bc9c" stroke-width="12" stroke-linejoin="round"/>
+  <g transform="translate(0,32)">
+  <g transform="translate(0,-22)">
+  <g stroke="#ecf0f1" stroke-width="4" fill="none" stroke-linecap="round">
+    <line x1="225" y1="92" x2="296" y2="92"/>
+    <line x1="259" y1="92" x2="259" y2="122"/>
+    <line x1="221" y1="122" x2="297" y2="122"/>
+    <line x1="221" y1="122" x2="221" y2="150"/>
+    <line x1="297" y1="122" x2="297" y2="150"/>
+    <line x1="237" y1="166" x2="280" y2="166"/>
+    <line x1="259" y1="166" x2="259" y2="196"/>
+  </g>
+  <g fill="#ecf0f1" stroke="#2c3e50" stroke-width="3">
+    <rect x="193" y="76" width="32" height="32" rx="3"/>
+    <circle cx="313" cy="92" r="17"/>
+    <rect x="205" y="150" width="32" height="32" rx="3"/>
+    <circle cx="297" cy="166" r="17"/>
+  </g>
+  <circle cx="259" cy="214" r="18" fill="#f1c40f" stroke="#2c3e50" stroke-width="3"/>
+  </g>
+  <rect x="183" y="234" width="27" height="27" rx="4" fill="#1de9b6"/><rect x="214" y="234" width="27" height="27" rx="4" fill="#3b5269"/><rect x="245" y="234" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="276" y="234" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="307" y="234" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="183" y="265" width="27" height="27" rx="4" fill="#3b5269"/><rect x="214" y="265" width="27" height="27" rx="4" fill="#1de9b6"/><rect x="245" y="265" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="276" y="265" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="307" y="265" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="183" y="296" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="214" y="296" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="245" y="296" width="27" height="27" rx="4" fill="#1de9b6"/><rect x="276" y="296" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="307" y="296" width="27" height="27" rx="4" fill="#26ba9e"/><rect x="183" y="327" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="214" y="327" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="245" y="327" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="276" y="327" width="27" height="27" rx="4" fill="#1de9b6"/><rect x="307" y="327" width="27" height="27" rx="4" fill="#26ba9e"/><rect x="183" y="358" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="214" y="358" width="27" height="27" rx="4" fill="#2f8f88"/><rect x="245" y="358" width="27" height="27" rx="4" fill="#26ba9e"/><rect x="276" y="358" width="27" height="27" rx="4" fill="#26ba9e"/><rect x="307" y="358" width="27" height="27" rx="4" fill="#f1c40f"/>
+  <g stroke="#18bc9c" stroke-width="6" stroke-linecap="round">
+    <line x1="112" y1="422" x2="148" y2="422"/>
+    <line x1="98" y1="440" x2="142" y2="440"/>
+    <line x1="118" y1="458" x2="146" y2="458"/>
+  </g>
+  <text x="286" y="460" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif" font-weight="bold" font-style="italic" font-size="60" fill="#ecf0f1" letter-spacing="-1">fastrel</text>
+  </g>
+</svg>
