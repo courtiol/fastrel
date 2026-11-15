@@ -1,3 +1,17 @@
+# fastrel (development version)
+
+* Breaking: `rel_new(remember_removed = )` now takes `"none"` (the default),
+  `"fingerprint"` (formerly `TRUE`) or `"id"`, instead of `FALSE` or `TRUE`.
+* Breaking: `rel_load()` only reads stores saved by this version of fastrel.
+* When no column of `ped` has a recognised name, `fastrel_ped()` and
+  `rel_add()` still take the first three columns as the individual, its mother
+  and its father, but now say so in a message, once per R session.
+* New `rel_new(remember_removed = "id")`, which keeps the identifiers of the
+  individuals removed rather than a fingerprint of each of them. It takes more
+  memory (about 70 bytes per individual removed for short identifiers, against
+  about 30) but can never mistake a new identifier for a removed one.
+  `rel_save()` and `rel_load()` keep the kind of trace used.
+
 # fastrel 0.7.0
 
 * New argument `sim_ped(numeric_ids = TRUE)` to simulate a pedigree with

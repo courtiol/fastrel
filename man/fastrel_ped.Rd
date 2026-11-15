@@ -99,7 +99,8 @@ the same). The names recognised are:
 }
 
 If none of the columns has a recognised name, the first three columns are
-taken to be the focal individual, its mother and its father, in this order.
+taken to be the focal individual, its mother and its father, in this order;
+a message says so the first time this happens in an R session.
 If only some of the three are recognised, or if several columns could play
 the same role, an error is raised rather than guessing.
 }

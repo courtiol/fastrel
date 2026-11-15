@@ -81,8 +81,18 @@ test_that("fastrel_ped gives the same as fastrel_vec, whatever the columns", {
   set.seed(1)
   ped <- sim_ped(100)                            # id, momid, dadid, sex
   expect_equal(fastrel_ped(ped), fastrel_vec(ped$id, ped$dadid, ped$momid))
-  ## no recognised name at all: the first three columns, in this order
-  expect_equal(fastrel_ped(data.frame(x = p$id, y = p$mom, z = p$dad)), A0)
+  ## no recognised name at all: the first three columns, in this order, with a
+  ## message the first time only
+  memory <- fastrel:::ped_cache                 # start as in a new session
+  memory$told_position <- NULL
+  memory$names <- NULL
+  expect_message(A1 <- fastrel_ped(data.frame(x = p$id, y = p$mom, z = p$dad)),
+                 "first three columns \\(x, y, z\\).*once per session")
+  expect_equal(A1, A0)
+  expect_no_message(fastrel_ped(data.frame(u = p$id, v = p$mom, w = p$dad)))
+  rel <- rel_new()
+  expect_no_message(rel_add(rel, data.frame(a = p$id, b = p$mom, c = p$dad)))
+  expect_equal(rel_get(rel, p$id), A0)
   expect_equal(dim(fastrel_ped(p[0, ])), c(0L, 0L))
 })
 

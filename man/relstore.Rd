@@ -12,7 +12,7 @@
 \alias{print.relatedness_store}
 \title{Incremental store of the relatedness matrix}
 \usage{
-rel_new(remember_removed = FALSE)
+rel_new(remember_removed = c("none", "fingerprint", "id"))
 
 rel_add(rel, ped)
 
@@ -34,8 +34,11 @@ rel_capacity(rel)
 }
 \arguments{
 \item{remember_removed}{Should the store keep a trace of the individuals
-removed, so that \code{rel_add()} refuses to add them again? \code{FALSE} by default
-(see the section Removed individuals).}
+removed, so that \code{rel_add()} refuses to add them again? \code{"none"} (the
+default) for no trace, \code{"fingerprint"} for a compact trace that is wrong
+with a negligible probability, or \code{"id"} for the identifiers themselves,
+which takes more memory but is never wrong (see the section Removed
+individuals).}
 
 \item{rel}{A store created by \code{rel_new()}.}
 
@@ -152,26 +155,35 @@ Removal is final. The relatedness between a removed individual and those
 born afterwards is not tracked, so if it is added again it comes back as
 unrelated to everybody, which is wrong for its relatives. By default
 nothing prevents this: it is up to you never to add again an individual
-that was removed. With \code{rel_new(remember_removed = TRUE)}, \code{rel_add()}
-raises an error instead (see the section Removed individuals).
+that was removed. With \code{rel_new(remember_removed = "fingerprint")} or
+\code{rel_new(remember_removed = "id")}, \code{rel_add()} raises an error instead (see
+the section Removed individuals).
 }
 
 \section{Removed individuals}{
 
-With \code{remember_removed = TRUE}, the store keeps a trace of every individual
-removed and \code{rel_add()} refuses to add it again. This protects against a
-silent error, at the cost of about 30 bytes per individual removed for the
-table that holds the traces. The memory used then grows slowly with the
-length of the pedigree (about 30 MB per million individuals removed),
-instead of depending only on the number of individuals in the store. This
-is why it is off by default. The time taken by \code{rel_add()} and
-\code{rel_remove()} is not affected.
+With \code{remember_removed} set to \code{"fingerprint"} or \code{"id"} (rather than
+\code{"none"}, the default), the store keeps a trace of every individual removed and \code{rel_add()} refuses to add it
+again. This protects against a silent error, at a cost in memory that grows
+slowly with the length of the pedigree, instead of depending only on the
+number of individuals in the store. This is why it is off by default. Two
+kinds of trace are offered:
+\itemize{
+\item \code{"fingerprint"} keeps a 64-bit fingerprint of each
+identifier, about 30 bytes per individual removed (30 MB per million). A
+new identifier can be mistaken for a removed one, but with a negligible
+probability: the number of individuals removed divided by \code{2^64}, i.e.
+less than 1 in 10 million millions per addition after a million removals.
+\item \code{"id"} keeps the identifiers themselves, so it can never be wrong, but it
+takes more memory, which increases with the length of the identifiers:
+about 70 bytes per individual removed for identifiers of up to 15
+characters, and about 115 bytes for identifiers of 34 characters.
+}
 
-The trace is a 64-bit fingerprint of each identifier, not the identifier
-itself. A new identifier can thus be mistaken for a removed one, but with a
-negligible probability: the number of individuals removed divided by
-\code{2^64}, i.e. less than 1 in 10 million millions per addition after a million
-removals.
+Both add little to the time taken by \code{rel_add()} and \code{rel_remove()},
+\code{"id"} a little more than \code{"fingerprint"} since it handles whole
+identifiers. The cost only becomes noticeable when individuals are added
+and removed in large numbers without much else being computed.
 }
 
 \section{Metapopulations}{
@@ -186,8 +198,8 @@ relatives they left behind and the offspring they produce elsewhere. The
 time per birth and the memory depend on the number of individuals alive
 over all the patches (see the section Memory).
 
-Creating the store with \code{rel_new(remember_removed = TRUE)} is recommended
-here: with individuals moving between patches, removing one that left a
+Creating the store with \code{rel_new(remember_removed = "fingerprint")} or
+\code{rel_new(remember_removed = "id")} is recommended here: with individuals moving between patches, removing one that left a
 patch and adding it again when it comes back is an easy mistake to make,
 and it would go unnoticed.
 }
@@ -236,7 +248,7 @@ diag(A) - 1   # inbreeding coefficients
 rel_get(rel, metric = "kinship")   # other measures: see ?relatedness_metrics
 
 ## two patches: one store, and the patch of each individual kept aside
-rel <- rel_new(remember_removed = TRUE)
+rel <- rel_new(remember_removed = "id")
 rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
 patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B")
 rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2"))   # born in A
@@ -247,7 +259,7 @@ patch["b3"] <- "B"
 rel_get(rel, names(patch)[patch == "B"])
 rel_get(rel)["b3", "a1"]   # b3 is related to its grandparent in patch A
 
-## with remember_removed = TRUE, a removed individual cannot come back
+## with remember_removed = "id", a removed individual cannot come back
 rel_remove(rel, "a3")
 try(rel_add(rel, data.frame(id = "a3", mom = NA, dad = NA)))
 }

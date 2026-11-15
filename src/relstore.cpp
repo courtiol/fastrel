@@ -6,6 +6,8 @@
 #include <climits>
 #include <cstdint>
 #include <cstring>
+#include <string>
+#include <unordered_set>
 using namespace Rcpp;
 
 // Persistent store of the additive relationship ("relatedness") matrix
@@ -30,9 +32,11 @@ using namespace Rcpp;
 // Class invariant: rows/columns of free slots are all zero.
 class RelStore {
 public:
-  // remember: keep a trace of the individuals removed, to refuse adding them
-  // again (see the section "removed individuals" below).
-  RelStore(int capacity, bool remember) : remember_(remember), ngone_(0) {
+  // remember: whether and how to keep a trace of the individuals removed, to
+  // refuse adding them again (see the section "removed individuals" below):
+  // 0 = not at all, 1 = fingerprints, 2 = identifiers.
+  RelStore(int capacity, int remember) : remember_(remember), ngone_(0) {
+    if (remember < 0 || remember > 2) stop("invalid `remember`");
     init(capacity);
   }
 
@@ -164,23 +168,37 @@ public:
 
   // ---- removed individuals -------------------------------------------------
   // The store itself works with slots, not identifiers. When asked to
-  // (remember_), it also keeps a trace of every individual removed, so that
-  // the R side can refuse to add it again: its relatedness to the others is
-  // lost, so it would wrongly come back as unrelated to everybody.
-  // This is the one thing that grows with the length of the pedigree, so it
-  // is kept as small as possible: not the identifier but a 64-bit fingerprint
-  // of it, in a flat hash table (open addressing, linear probing, at most 70%
-  // full), i.e. 11 to 23 bytes per individual removed. Two identifiers have
-  // the same fingerprint with probability 2^-64, so a new identifier is
-  // wrongly taken for a removed one with probability (number removed) / 2^64.
+  // (remember_ > 0), it also keeps a trace of every individual removed, so
+  // that the R side can refuse to add it again: its relatedness to the others
+  // is lost, so it would wrongly come back as unrelated to everybody.
+  // This is the one thing that grows with the length of the pedigree. Two
+  // ways are offered:
+  // * remember_ = 1, fingerprints: not the identifier but a 64-bit fingerprint
+  //   of it, in a flat hash table (open addressing, linear probing, at most
+  //   70% full), i.e. 11 to 23 bytes per individual removed. Two identifiers
+  //   have the same fingerprint with probability 2^-64, so a new identifier is
+  //   wrongly taken for a removed one with probability (number removed) / 2^64.
+  // * remember_ = 2, identifiers: the identifiers themselves, in a hash set of
+  //   strings. It takes more memory but can never be wrong.
 
   void mark_gone(CharacterVector ids) {
-    if (!remember_) return;
-    for (R_xlen_t i = 0; i < ids.size(); i++) insert(fingerprint(ids[i]));
+    if (remember_ == 1) {
+      for (R_xlen_t i = 0; i < ids.size(); i++) insert(fingerprint(ids[i]));
+    } else if (remember_ == 2) {
+      for (R_xlen_t i = 0; i < ids.size(); i++)
+        gone_ids_.insert(std::string(Rf_translateCharUTF8(ids[i])));
+    }
   }
 
-  // fingerprints of the removed individuals, 8 bytes each (to save a store)
-  RawVector gone() {
+  // the trace of the removed individuals, to save a store: the fingerprints
+  // (8 bytes each, as a raw vector) or the identifiers (a character vector)
+  SEXP gone() {
+    if (remember_ == 2) {
+      CharacterVector out(gone_ids_.size());
+      R_xlen_t i = 0;
+      for (const std::string& s : gone_ids_) out[i++] = Rf_mkCharCE(s.c_str(), CE_UTF8);
+      return out;
+    }
     RawVector out(8 * ngone_);
     unsigned char* o = out.begin();
     for (std::uint64_t h : tab_)
@@ -189,7 +207,14 @@ public:
   }
 
   // the reverse of gone() (to restore a store)
-  void load_gone(RawVector raw) {
+  void load_gone(SEXP x) {
+    if (remember_ == 2) {
+      if (TYPEOF(x) != STRSXP) stop("invalid list of removed individuals");
+      mark_gone(CharacterVector(x));
+      return;
+    }
+    if (TYPEOF(x) != RAWSXP) stop("invalid list of removed individuals");
+    RawVector raw(x);
     if (raw.size() % 8 != 0) stop("invalid list of removed individuals");
     const unsigned char* r = raw.begin();
     for (R_xlen_t i = 0; i < raw.size(); i += 8) {
@@ -200,18 +225,18 @@ public:
     }
   }
 
-  bool remember() { return remember_; }
+  int remember() { return remember_; }
 
   // Called before individuals are added: refuse those that were removed
   // earlier, then make room for them all in a single step. (One call from R
   // for both, since each call to the C++ object has a fixed overhead.)
   void prepare(CharacterVector ids) {
     const int need = ids.size();
-    if (ngone_ > 0) {
+    if (ngone_ > 0 || !gone_ids_.empty()) {
       std::string bad;
       int nbad = 0;
       for (int i = 0; i < need && nbad < 5; i++)
-        if (contains(fingerprint(ids[i]))) {
+        if (was_removed(ids[i])) {
           if (nbad++) bad += ", ";
           bad += Rf_translateCharUTF8(ids[i]);
         }
@@ -230,9 +255,17 @@ private:
   std::vector<double> K;      // cap x cap relatedness matrix, column-major
   std::vector<char> used;     // used[i] = slot i is occupied
   std::vector<int> free_;     // stack of free slots
-  bool remember_;                   // keep a trace of the removed individuals?
+  int remember_;                    // trace of the removed individuals: 0 none,
+                                    // 1 fingerprints, 2 identifiers
   std::vector<std::uint64_t> tab_;  // their fingerprints; 0 = empty cell
   size_t ngone_;                    // number of fingerprints in tab_
+  std::unordered_set<std::string> gone_ids_;   // or their identifiers
+
+  bool was_removed(SEXP s) const {
+    if (remember_ == 2)
+      return gone_ids_.count(std::string(Rf_translateCharUTF8(s))) > 0;
+    return contains(fingerprint(s));
+  }
 
   // 64-bit fingerprint of an identifier (FNV-1a on its UTF-8 bytes, then a
   // mixing step so that all the bits depend on all the bytes); never 0.
@@ -326,7 +359,7 @@ private:
 
 RCPP_MODULE(relstore) {
   class_<RelStore>("RelStore")
-  .constructor<int, bool>()
+  .constructor<int, int>()
   .method("add", &RelStore::add)
   .method("remove", &RelStore::remove)
   .method("get", &RelStore::get)

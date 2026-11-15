@@ -122,12 +122,15 @@ test_that("by default a removed individual can be added again, as a founder", {
   rel_add(rel, data.frame(id = "a", mom = NA, dad = NA))
   expect_equal(rel_get(rel)["a", "c"], 0)      # documented: its relatives are lost
   expect_identical(rel_save(rel)$removed, raw(0))
-  expect_error(rel_new(remember_removed = NA), "TRUE or FALSE")
-  expect_error(rel_new(remember_removed = 16), "TRUE or FALSE")
+  expect_identical(rel_save(rel)$remember_removed, "none")
+  expect_error(rel_new(remember_removed = NA), "character vector")
+  expect_error(rel_new(remember_removed = TRUE), "character vector")
+  expect_error(rel_new(remember_removed = "ids"), "should be one of")
+  expect_error(rel_new(remember_removed = c("id", "none")), "length 1")
 })
 
-test_that("with remember_removed, a removed individual cannot be added again", {
-  rel <- rel_new(remember_removed = TRUE)
+for (how in c("fingerprint", "id")) test_that(paste("with remember_removed =", how, "a removed individual cannot be added again"), {
+  rel <- rel_new(remember_removed = how)
   rel_add(rel, data.frame(id = c("a", "b"), mom = NA, dad = NA))
   rel_add(rel, data.frame(id = "c", mom = "a", dad = "b"))
   rel_remove(rel, "a")
@@ -147,26 +150,27 @@ test_that("with remember_removed, a removed individual cannot be added again", {
   expect_error(rel_add(rel2, data.frame(id = "a", mom = NA, dad = NA)), "removed")
   rel_add(rel2, data.frame(id = "e", mom = "d", dad = NA))
   expect_equal(rel_size(rel2), 5L)
-  ## an object saved by a version without this feature still loads
-  old <- rel_save(rel); old$removed <- old$remember_removed <- NULL
-  rel3 <- rel_load(old)
-  expect_equal(rel_get(rel3), rel_get(rel))
-  rel_add(rel3, data.frame(id = "a", mom = NA, dad = NA))   # not remembered
-  bad <- rel_save(rel); bad$removed <- "a"
+  ## the kind of trace is saved too, and a corrupt trace is refused
+  expect_identical(rel_save(rel)$remember_removed, how)
+  bad <- rel_save(rel); bad$removed <- if (identical(how, "id")) as.raw(1:8) else "a"
   expect_error(rel_load(bad), "not valid")
-  bad$removed <- as.raw(1:5)
-  expect_error(rel_load(bad), "invalid")
+  if (!identical(how, "id")) {
+    bad$removed <- as.raw(1:5)
+    expect_error(rel_load(bad), "invalid")
+  }
 })
 
-test_that("the trace of removed individuals holds with many of them", {
-  rel <- rel_new(remember_removed = TRUE)
+for (how in c("fingerprint", "id")) test_that(paste("the trace of removed individuals holds with many of them:", how), {
+  rel <- rel_new(remember_removed = how)
   ids <- sprintf("i%05d", 1:5000)
   for (chunk in split(ids, rep(1:50, each = 100))) {
     rel_add(rel, data.frame(id = chunk, mom = NA, dad = NA))
     rel_remove(rel, chunk)
   }
   expect_equal(rel_size(rel), 0L)
-  expect_equal(length(rel_save(rel)$removed), 8 * 5000)
+  saved <- rel_save(rel)$removed
+  if (how == "fingerprint") expect_equal(length(saved), 8 * 5000)
+  else expect_setequal(saved, ids)
   for (id in ids[c(1, 77, 2500, 5000)])
     expect_error(rel_add(rel, data.frame(id = id, mom = NA, dad = NA)), id)
   ## none of 5000 new identifiers is mistaken for a removed one
@@ -177,7 +181,7 @@ test_that("the trace of removed individuals holds with many of them", {
 })
 
 test_that("a metapopulation in one store: migrants keep their relatives", {
-  rel <- rel_new(remember_removed = TRUE)
+  rel <- rel_new(remember_removed = "fingerprint")
   rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
   patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B")
   rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2"))
