@@ -20,6 +20,7 @@ Suggests:
     ggroups,
     kinship2,
     microbenchmark,
+    nadiv,
     testthat (>= 3.0.0),
     tibble,
     spelling

@@ -17,7 +17,8 @@ a computation time and memory footprint that do not increase over time as long a
 the population is at its demographic equilibrium
 (it only requires storing the information about alive individuals)
 - a function to compute relatedness from a pedigree more quickly than
-[`ggroups`](https://CRAN.R-project.org/package=ggroups), [`kinship2`](https://CRAN.R-project.org/package=kinship2) or
+[`ggroups`](https://CRAN.R-project.org/package=ggroups), [`kinship2`](https://CRAN.R-project.org/package=kinship2),
+[`nadiv`](https://CRAN.R-project.org/package=nadiv) or
 [`Pedixplorer`](https://louislenezet.github.io/Pedixplorer/)
 (which now supersedes `kinship2`)
 - a function to simulate a pedigree (with character or integer identifiers)
@@ -31,7 +32,7 @@ Between individuals that are not inbred, relatedness is at most 1 (identical twi
 This is the measure returned by default: 0.5 for parent and offspring, not the 0.25 of the kinship coefficient returned by `kinship2::kinship()`.
 The kinship coefficient, Wright's coefficient of relationship and Hamilton's regression coefficient of relatedness can be returned instead (see [Measures of relatedness](#measures-of-relatedness)).
 
-All four measures are validated in the tests of the package against two independent implementations, [`kinship2`](https://CRAN.R-project.org/package=kinship2) and [`ggroups`](https://CRAN.R-project.org/package=ggroups), on pedigrees of many shapes (with inbreeding, selfing, unknown parents and unsorted rows).
+All four measures are validated in the tests of the package against three independent implementations, [`kinship2`](https://CRAN.R-project.org/package=kinship2), [`ggroups`](https://CRAN.R-project.org/package=ggroups) and [`nadiv`](https://CRAN.R-project.org/package=nadiv), on pedigrees of many shapes (with inbreeding, selfing, unknown parents and unsorted rows).
 
 | Task | Functions |
 |---|---|
@@ -123,10 +124,10 @@ The additive relationship is the default because it keeps all the information:
 the three other measures can be computed from it, while the diagonal of 1 of
 Wright's coefficient, for instance, discards the inbreeding coefficients. It is
 also the matrix that animal models and other mixed models expect, as the
-covariance of the genetic values, and what `ggroups::buildA()` and
-`2 * kinship2::kinship()` return. Wright's coefficient is the one to choose
-for a measure of resemblance bounded by 1 whatever the inbreeding, but it
-should not be used as a covariance matrix in a model, since it gives every
+covariance of the genetic values, and what `ggroups::buildA()`,
+`nadiv::makeA()` and `2 * kinship2::kinship()` return. Wright's coefficient
+is the one to choose for a measure of resemblance bounded by 1 whatever the
+inbreeding, but it should not be used as a covariance matrix in a model, since it gives every
 individual a variance of 1 whatever its inbreeding.
 
 See `?relatedness_metrics` for the definitions, their interpretation and the
@@ -235,14 +236,15 @@ rel <- rel_load("store.rds") # a working store again
 
 ## Benchmarks
 
-The relatedness metrics are computed much faster by `fastrel` than by `ggroups`
-or `kinship2` under virtually all conditions. Here is an example, using a pedigree simulated with integer
-identifiers and 0 for unknown parents, which suits all three packages:
+The relatedness metrics are computed much faster by `fastrel` than by `ggroups`,
+`kinship2` or `nadiv` under virtually all conditions. Here is an example, using a pedigree simulated with integer
+identifiers and 0 for unknown parents, which suits all four packages:
 
 ```{r benchmark, message = FALSE, warning = FALSE}
 library(microbenchmark)
 library(ggroups)
 library(kinship2)
+library(nadiv)
 
 set.seed(1) # for reproducibility
 ped <- sim_ped(1000, numeric_ids = TRUE)
@@ -255,9 +257,13 @@ all.equal(unname(buildA(ped[, c("id", "dadid", "momid")])), # columns: individua
 all.equal(unname(kinship(ped$id, ped$dadid, ped$momid)),
           unname(fastrel_ped(ped, metric = "kinship")))
 
+all.equal(unname(as.matrix(makeA(ped[, c("id", "momid", "dadid")]))), # columns: individual, dam, sire
+          unname(fastrel_ped(ped)))
+
 # benchmark
 microbenchmark(ggroups = buildA(ped[, c("id", "dadid", "momid")]),
                kinship2 = kinship(ped$id, ped$dadid, ped$momid),
+               nadiv = makeA(ped[, c("id", "momid", "dadid")]), # sparse matrix
                fastrel_ped = fastrel_ped(ped),
                fastrel_vec = fastrel_vec(ped$id, ped$dadid, ped$momid,
                                          metric = "kinship"))
@@ -280,7 +286,7 @@ Most of this package was written with the help of large language models (LLMs),
 such as Claude Fable 5.2. The increase in computational speed has been achieved
 by relying heavily on a C++ implementation (rather than pure R code). The
 results have been cross-checked using alternative LLMs and compared to the
-output of established packages (`kinship2` and `ggroups`). Many tests have also been
+output of established packages (`kinship2`, `ggroups` and `nadiv`). Many tests have also been
 implemented to ensure the results are accurate.
 
 ### Tips for developers

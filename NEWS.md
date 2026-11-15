@@ -1,5 +1,7 @@
 # fastrel (development version)
 
+* The results are also validated in the tests against `nadiv::makeA()`, and
+  the README compares the speed of fastrel with that of nadiv.
 * New website, built with pkgdown: <https://courtiol.github.io/fastrel/>.
 * New `rel_copy()`, which returns an independent copy of a store (a store is
   otherwise shared, not copied, when it is assigned).

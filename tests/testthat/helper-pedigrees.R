@@ -1,6 +1,6 @@
 ## Pedigrees of various shapes used to validate fastrel against independent
-## implementations (test-kinship2.R, test-ggroups.R). Each is a data frame with
-## columns id, dad, mom, in birth order (parents before offspring), with NA for
+## implementations (test-kinship2.R, test-ggroups.R, test-nadiv.R). Each is a
+## data frame with columns id, dad, mom, in birth order (parents before offspring), with NA for
 ## unknown parents.
 validation_pedigrees <- function() {
   peds <- list()
