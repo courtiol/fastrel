@@ -18,6 +18,12 @@ reference:
   contents:
   - fastrel_ped
   - fastrel_vec
+- title: Inverse of the relatedness matrix
+  desc: >
+    The precision matrix used by animal models, sparse and built directly
+    from the pedigree.
+  contents:
+  - fastrel_inv
 - title: Relatedness updated step by step (the store)
   desc: >
     A store keeps the relatedness matrix among the individuals currently in

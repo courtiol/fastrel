@@ -134,6 +134,24 @@ fastrel_vec <- function(id, dadid, momid, sex, chrtype = "autosome",
   if (!is.character(chrtype) || length(chrtype) != 1L ||
       !identical(tolower(chrtype), "autosome"))
     stop("only autosomes are supported (`chrtype = \"autosome\"`)")
+  p <- parent_indices(id, dadid, momid)
+  id <- p$id
+  n <- length(id)
+  if (!missing(sex) && length(sex) != n)
+    stop("`sex` must have one value per individual (it is not used, since ",
+         "only autosomes are supported). To choose the measure returned, use ",
+         "`metric = `.")
+  if (n == 0L) return(matrix(numeric(0), 0, 0))
+
+  A <- relatedness_cpp(mom = p$mom, dad = p$dad, metric = code)
+  dimnames(A) <- list(id, id)
+  A
+}
+
+## Checks the identifiers of a pedigree and returns them, with the rows of the
+## mother and of the father of each individual (NA if unknown: given as NA or
+## 0, or absent from `id`).
+parent_indices <- function(id, dadid, momid) {
   id    <- id_vector(id, "id")
   dadid <- id_vector(dadid, "dadid")
   momid <- id_vector(momid, "momid")
@@ -144,13 +162,5 @@ fastrel_vec <- function(id, dadid, momid, sex, chrtype = "autosome",
   if (length(momid) != n) stop("Invalid mother id")
   momid <- zero_as_unknown(momid, id)             # 0 = unknown parent
   dadid <- zero_as_unknown(dadid, id)
-  if (!missing(sex) && length(sex) != n)
-    stop("`sex` must have one value per individual (it is not used, since ",
-         "only autosomes are supported). To choose the measure returned, use ",
-         "`metric = `.")
-  if (n == 0L) return(matrix(numeric(0), 0, 0))
-
-  A <- relatedness_cpp(mom = match(momid, id), dad = match(dadid, id), metric = code)
-  dimnames(A) <- list(id, id)
-  A
+  list(id = id, mom = match(momid, id), dad = match(dadid, id))
 }

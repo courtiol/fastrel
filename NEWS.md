@@ -1,5 +1,8 @@
 # fastrel (development version)
 
+* New `fastrel_inv()`, which returns the inverse of the relatedness matrix
+  (the precision matrix used by animal models) as a sparse matrix, built
+  directly from the pedigree. Matrix is now imported.
 * The results are also validated in the tests against `nadiv::makeA()`, and
   the README compares the speed of fastrel with that of nadiv.
 * New website, built with pkgdown: <https://courtiol.github.io/fastrel/>.

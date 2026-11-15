@@ -14,7 +14,7 @@ Description: Computes quickly the main measures of identity by descent
 License: GPL (>= 3)
 Encoding: UTF-8
 Depends: R (>= 4.0.0)
-Imports: methods, Rcpp (>= 1.0.0), stats, utils
+Imports: Matrix, methods, Rcpp (>= 1.0.0), stats, utils
 LinkingTo: Rcpp
 Suggests: 
     ggroups,
