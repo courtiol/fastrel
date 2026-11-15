@@ -36,7 +36,7 @@ All four measures are validated in the tests of the package against two independ
 | Relatedness of a whole pedigree | `fastrel_ped()` (from a data frame), `fastrel_vec()` (from vectors) |
 | Relatedness updated step by step (the "store") | `rel_new()`, `rel_add()`, `rel_remove()`, `rel_get()` |
 | Content of a relatedness store | `rel_ids()`, `rel_size()`, `rel_capacity()` |
-| Saving and restoring a store | `rel_save()`, `rel_load()` |
+| Copying, saving and restoring a store | `rel_copy()`, `rel_save()`, `rel_load()` |
 | Simulating data | `sim_ped()`, `sim_pop()` |
 
 

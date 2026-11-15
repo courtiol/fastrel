@@ -1,5 +1,7 @@
 # fastrel (development version)
 
+* New `rel_copy()`, which returns an independent copy of a store (a store is
+  otherwise shared, not copied, when it is assigned).
 * Documentation: the description of the package is shortened, says that it is
   for diploid individuals, and cites only the method used; the references for
   the measures are given in `?fastrel`.

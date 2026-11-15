@@ -18,6 +18,7 @@
 #' * `rel_remove()` removes individuals.
 #' * `rel_get()` extracts the relatedness matrix among chosen individuals, as
 #'   any of the measures described in [relatedness_metrics].
+#' * `rel_copy()` returns an independent copy of a store.
 #' * `rel_ids()` lists the individuals in the store.
 #' * `rel_size()` and `rel_capacity()` report the number of individuals in the
 #'   store and the number of slots allocated.
@@ -44,7 +45,8 @@
 #' * Like any R environment, a store is modified in place and is not copied
 #'   when it is assigned or passed to a function: `rel_add()` and `rel_remove()`
 #'   change the store they are given, and after `rel2 <- rel` both names refer
-#'   to the same store.
+#'   to the same store. Use `rel_copy()` to get a store that can be modified
+#'   without changing the original.
 #' * The matrix lives in memory managed by C++, outside the memory managed by
 #'   R. It is therefore not written by [save()] or [saveRDS()], and a store
 #'   read back from such a file is unusable: use [rel_save()] and [rel_load()]
@@ -153,7 +155,9 @@
 #'   [relatedness_metrics]. The store always holds the additive relationship,
 #'   and the conversion is done on the matrix extracted only.
 #'
-#' @return `rel_new()` returns the store. `rel_add()` and `rel_remove()` return
+#' @return `rel_new()` returns the store. `rel_copy()` returns a new store,
+#'   identical to `rel` (same individuals, slots, capacity and trace of the
+#'   removed individuals) but independent of it. `rel_add()` and `rel_remove()` return
 #'   the store invisibly. `rel_get()` returns a matrix with `ids` as dimnames:
 #'   with the default `metric = "additive"`, it is symmetric with diagonal
 #'   `1 + F` (see [relatedness_metrics] for the other measures). `rel_ids()`
@@ -185,6 +189,12 @@
 #' A
 #' diag(A) - 1   # inbreeding coefficients
 #' rel_get(rel, metric = "kinship")   # other measures: see ?relatedness_metrics
+#'
+#' ## an independent copy, e.g. to explore two scenarios from the same state
+#' rel2 <- rel_copy(rel)
+#' rel_remove(rel2, "H")
+#' rel_ids(rel)    # unchanged
+#' rel_ids(rel2)
 #'
 #' ## two patches: one store, and the patch of each individual kept aside
 #' rel <- rel_new(remember_removed = "id")
@@ -218,6 +228,17 @@ rel_new <- function(remember_removed = c("none", "fingerprint", "id")) {
   self$slots <- integer(0)     # their slots, same order
   class(self) <- "relatedness_store"
   self
+}
+
+#' @rdname relstore
+#' @export
+rel_copy <- function(rel) {
+  check_store(rel)
+  out <- rel_new(c("none", "fingerprint", "id")[rel$ks$remember() + 1L])
+  out$ks$copy_from(rel$ptr)
+  out$ids   <- rel$ids
+  out$slots <- rel$slots
+  out
 }
 
 #' @rdname relstore

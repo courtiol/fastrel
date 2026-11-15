@@ -15,7 +15,8 @@
 #'   incrementally, which is computationally much cheaper when a pedigree keeps growing, as in
 #'   an individual-based simulation. [rel_ids()], [rel_size()] and
 #'   [rel_capacity()] describe the content of such a store, and [rel_save()] and
-#'   [rel_load()] save it to disk and restore it.
+#'   [rel_load()] save it to disk and restore it. [rel_copy()] makes an
+#'   independent copy of it.
 #'
 #' [sim_ped()] simulates a pedigree, and [sim_pop()] a population with births,
 #' deaths, emigration and immigration, for testing and benchmarking.

@@ -23,7 +23,8 @@ fast replacement for \code{2 * kinship2::kinship()}).
 incrementally, which is computationally much cheaper when a pedigree keeps growing, as in
 an individual-based simulation. \code{\link[=rel_ids]{rel_ids()}}, \code{\link[=rel_size]{rel_size()}} and
 \code{\link[=rel_capacity]{rel_capacity()}} describe the content of such a store, and \code{\link[=rel_save]{rel_save()}} and
-\code{\link[=rel_load]{rel_load()}} save it to disk and restore it.
+\code{\link[=rel_load]{rel_load()}} save it to disk and restore it. \code{\link[=rel_copy]{rel_copy()}} makes an
+independent copy of it.
 }
 
 \code{\link[=sim_ped]{sim_ped()}} simulates a pedigree, and \code{\link[=sim_pop]{sim_pop()}} a population with births,
@@ -96,10 +97,5 @@ Useful links:
 }
 \author{
 \strong{Maintainer}: Alexandre Courtiol \email{alexandre.courtiol@gmail.com} (\href{https://orcid.org/0000-0003-0637-2959}{ORCID})
-
-Authors:
-\itemize{
-  \item Alexandre Courtiol \email{alexandre.courtiol@gmail.com} (\href{https://orcid.org/0000-0003-0637-2959}{ORCID})
-}
 
 }

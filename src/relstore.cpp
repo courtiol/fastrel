@@ -94,6 +94,13 @@ public:
     return out;
   }
 
+  // Make this store an exact copy of another one (matrix, free slots and
+  // trace of the removed individuals), given by the pointer to its object.
+  void copy_from(SEXP other) {
+    XPtr<RelStore> p(other);
+    if (p.get() != this) *this = *p;
+  }
+
   // Remove individuals (they can no longer be used as parents). Their row and
   // column are zeroed to keep the invariant, and the slot is recycled.
   // Relatedness values of the remaining individuals are unaffected.
@@ -364,6 +371,7 @@ RCPP_MODULE(relstore) {
   .method("remove", &RelStore::remove)
   .method("get", &RelStore::get)
   .method("restore", &RelStore::restore)
+  .method("copy_from", &RelStore::copy_from)
   .method("mark_gone", &RelStore::mark_gone)
   .method("gone", &RelStore::gone)
   .method("load_gone", &RelStore::load_gone)

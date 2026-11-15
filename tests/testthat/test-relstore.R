@@ -339,3 +339,31 @@ test_that("a store is shared, not copied, on assignment or when passed to a func
   expect_identical(rel_ids(rel), "b")
   expect_identical(rel_ids(rel3), c("b", "c"))
 })
+
+test_that("rel_copy() returns an identical but independent store", {
+  for (mode in c("none", "fingerprint", "id")) {
+    rel <- rel_new(remember_removed = mode)
+    rel_add(rel, data.frame(id = c("a", "b", "c"), dad = NA, mom = NA))
+    rel_add(rel, data.frame(id = c("d", "e"), dad = c("a", "a"), mom = c("b", "c")))
+    rel_remove(rel, "c")
+    rel2 <- rel_copy(rel)
+    expect_s3_class(rel2, "relatedness_store")
+    expect_identical(rel_ids(rel2), rel_ids(rel))
+    expect_identical(rel_get(rel2), rel_get(rel))
+    expect_identical(rel_capacity(rel2), rel_capacity(rel))
+    expect_identical(rel_save(rel2)$removed, rel_save(rel)$removed)
+    ## the copy and the original evolve independently
+    rel_add(rel2, data.frame(id = "f", dad = "d", mom = "e"))
+    rel_remove(rel2, "a")
+    expect_identical(rel_ids(rel), c("a", "b", "d", "e"))
+    rel_add(rel, data.frame(id = "g", dad = "a", mom = "e"))
+    expect_identical(rel_ids(rel2), c("b", "d", "e", "f"))
+    expect_equal(rel_get(rel2, c("d", "e")), rel_get(rel, c("d", "e")))
+    ## the same individual born on both sides gets the same values
+    rel_add(rel, data.frame(id = "f", dad = "d", mom = "e"))
+    expect_equal(rel_get(rel, c("b", "d", "e", "f")), rel_get(rel2))
+    if (mode != "none")
+      expect_error(rel_add(rel2, data.frame(id = "c", dad = NA, mom = NA)))
+  }
+  expect_error(rel_copy(list()), "must be a store")
+})
