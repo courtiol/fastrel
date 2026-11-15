@@ -14,9 +14,20 @@
 #' @param window Number of preceding individuals among which parents are drawn.
 #' @param p_unknown Probability that a parent (mother or father separately) is
 #'   unknown for a non-founder.
+#' @param numeric_ids If `TRUE`, individuals are identified by the integers 1
+#'   to `n` (in birth order) and unknown parents by 0, as many programs of
+#'   animal breeding expect (e.g. [ggroups::buildA()]). If `FALSE` (the
+#'   default), identifiers are character strings and unknown parents are `NA`.
 #'
-#' @return A data frame with columns `id` (e.g. `"ind0001"`), `momid`, `dadid`
-#'   and `sex` (1 = male, 2 = female).
+#' @return A data frame with columns `id`, `momid`, `dadid` and `sex` (1 =
+#'   male, 2 = female). Identifiers are character strings such as `"ind0001"`,
+#'   with `NA` for unknown parents, or with `numeric_ids = TRUE` integers, with
+#'   0 for unknown parents.
+#'
+#'   [fastrel_ped()] and [fastrel_vec()] treat a parent that is not among the
+#'   identifiers as unknown, so they accept both forms. [rel_add()] does not: it
+#'   refuses parents that are neither in the store nor in `ped`, so replace the
+#'   0 by `NA` before adding such a pedigree to a store.
 #'
 #' @examples
 #' set.seed(1)
@@ -24,9 +35,23 @@
 #' head(ped)
 #' A <- fastrel_ped(ped)
 #' range(diag(A) - 1)
+#'
+#' ## the same pedigree with integer identifiers and 0 for unknown parents
+#' set.seed(1)
+#' ped_num <- sim_ped(200, numeric_ids = TRUE)
+#' head(ped_num)
+#' all.equal(unname(fastrel_ped(ped_num)), unname(A))
+#'
+#' ## ready for other packages, e.g. ggroups (columns: individual, sire, dam)
+#' if (requireNamespace("ggroups", quietly = TRUE)) {
+#'   all.equal(unname(ggroups::buildA(ped_num[, c("id", "dadid", "momid")])),
+#'             unname(A))
+#' }
 #' @export
 sim_ped <- function(n = 1000, n_founders = 40, window = 150,
-                    p_unknown = 0.05) {
+                    p_unknown = 0.05, numeric_ids = FALSE) {
+  if (!is.logical(numeric_ids) || length(numeric_ids) != 1L || is.na(numeric_ids))
+    stop("`numeric_ids` must be TRUE or FALSE")
   if (n <= n_founders) stop("`n` must be larger than `n_founders`")
   if (n_founders < 1) stop("`n_founders` must be at least 1")
   if (window < 1) stop("`window` must be at least 1")
@@ -40,6 +65,12 @@ sim_ped <- function(n = 1000, n_founders = 40, window = 150,
     m <- pool[sex[pool] == 1]
     if (length(f) && stats::runif(1) > p_unknown) mom[i] <- f[sample.int(length(f), 1)]
     if (length(m) && stats::runif(1) > p_unknown) dad[i] <- m[sample.int(length(m), 1)]
+  }
+
+  if (numeric_ids) {
+    mom[is.na(mom)] <- 0L
+    dad[is.na(dad)] <- 0L
+    return(data.frame(id = seq_len(n), momid = mom, dadid = dad, sex = sex))
   }
 
   width <- max(4L, nchar(as.character(n)))

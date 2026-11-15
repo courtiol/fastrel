@@ -4,7 +4,13 @@
 \alias{sim_ped}
 \title{Simulate a pedigree}
 \usage{
-sim_ped(n = 1000, n_founders = 40, window = 150, p_unknown = 0.05)
+sim_ped(
+  n = 1000,
+  n_founders = 40,
+  window = 150,
+  p_unknown = 0.05,
+  numeric_ids = FALSE
+)
 }
 \arguments{
 \item{n}{Total number of individuals (larger than \code{n_founders}).}
@@ -15,10 +21,22 @@ sim_ped(n = 1000, n_founders = 40, window = 150, p_unknown = 0.05)
 
 \item{p_unknown}{Probability that a parent (mother or father separately) is
 unknown for a non-founder.}
+
+\item{numeric_ids}{If \code{TRUE}, individuals are identified by the integers 1
+to \code{n} (in birth order) and unknown parents by 0, as many programs of
+animal breeding expect (e.g. \code{\link[ggroups:buildA]{ggroups::buildA()}}). If \code{FALSE} (the
+default), identifiers are character strings and unknown parents are \code{NA}.}
 }
 \value{
-A data frame with columns \code{id} (e.g. \code{"ind0001"}), \code{momid}, \code{dadid}
-and \code{sex} (1 = male, 2 = female).
+A data frame with columns \code{id}, \code{momid}, \code{dadid} and \code{sex} (1 =
+male, 2 = female). Identifiers are character strings such as \code{"ind0001"},
+with \code{NA} for unknown parents, or with \code{numeric_ids = TRUE} integers, with
+0 for unknown parents.
+
+\code{\link[=fastrel_ped]{fastrel_ped()}} and \code{\link[=fastrel_vec]{fastrel_vec()}} treat a parent that is not among the
+identifiers as unknown, so they accept both forms. \code{\link[=rel_add]{rel_add()}} does not: it
+refuses parents that are neither in the store nor in \code{ped}, so replace the
+0 by \code{NA} before adding such a pedigree to a store.
 }
 \description{
 Simulates a pedigree with overlapping generations, some inbreeding, and some
@@ -37,4 +55,16 @@ ped <- sim_ped(200)
 head(ped)
 A <- fastrel_ped(ped)
 range(diag(A) - 1)
+
+## the same pedigree with integer identifiers and 0 for unknown parents
+set.seed(1)
+ped_num <- sim_ped(200, numeric_ids = TRUE)
+head(ped_num)
+all.equal(unname(fastrel_ped(ped_num)), unname(A))
+
+## ready for other packages, e.g. ggroups (columns: individual, sire, dam)
+if (requireNamespace("ggroups", quietly = TRUE)) {
+  all.equal(unname(ggroups::buildA(ped_num[, c("id", "dadid", "momid")])),
+            unname(A))
+}
 }
