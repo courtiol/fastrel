@@ -74,6 +74,7 @@ large populations. \emph{Genetics Selection Evolution}, 24(4), 305–313.
 
 Quaas, R. L. (1976). Computing the diagonal elements and inverse of a large
 numerator relationship matrix. \emph{Biometrics}, 32(4), 949–953.
+\doi{10.2307/2529279}
 }
 \seealso{
 \code{\link[=fastrel_ped]{fastrel_ped()}} for the relatedness matrix itself.

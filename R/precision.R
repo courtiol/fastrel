@@ -46,6 +46,7 @@
 #'
 #' Quaas, R. L. (1976). Computing the diagonal elements and inverse of a large
 #' numerator relationship matrix. *Biometrics*, 32(4), 949–953.
+#' \doi{10.2307/2529279}
 #'
 #' @seealso [fastrel_ped()] for the relatedness matrix itself.
 #'
