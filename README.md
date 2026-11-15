@@ -4,7 +4,6 @@
 
 **fast** **rel**atedness (aka `fastrel`) is an R package to compute relatedness,
 relationship or kinship from a pedigree quickly.
-Its documentation is also available as a website: <https://courtiol.github.io/fastrel/>.
 
 This package offers five main sets of functionalities:
 
@@ -416,18 +415,18 @@ microbenchmark(ggroups = buildA(ped[, c("id", "dadid", "momid")]),
 
 ```
 ## Unit: microseconds
-##         expr        min         lq       mean     median         uq
-##      ggroups 104102.698 106889.264 114073.721 108895.912 118757.184
-##        nadiv 140345.245 152222.637 159157.156 155286.909 160101.062
-##     kinship2  11317.820  13399.389  23686.424  24225.018  24942.986
-##  fastrel_vec   1094.629   1199.122   5244.731   1248.249   2208.654
-##  fastrel_ped    924.788   1016.581   5202.809   1083.798   2117.618
-##       max neval  cld
-##  277962.8   100 a   
-##  387208.3   100  b  
-##  224682.5   100   c 
-##  228837.3   100    d
-##  218193.3   100    d
+##         expr        min         lq       mean     median         uq        max
+##      ggroups 104014.191 109202.802 131375.080 117776.265 121240.177 1234483.28
+##        nadiv 140211.832 153731.884 161850.065 156811.775 163625.813  477643.79
+##     kinship2  11374.898  13755.237  26179.597  24586.352  25592.569  260272.88
+##  fastrel_vec   1122.472   1204.652   2654.996   1297.417   2255.593   19048.78
+##  fastrel_ped    912.324   1017.994   5326.970   1114.606   2090.260  232990.83
+##  neval  cld
+##    100 a   
+##    100  b  
+##    100   c 
+##    100    d
+##    100   cd
 ```
 
 You can also run the more detailed integrated benchmarks as follows:

@@ -7,7 +7,6 @@ dir.create("man/figures", showWarnings = FALSE)
 
 **fast** **rel**atedness (aka `fastrel`) is an R package to compute relatedness,
 relationship or kinship from a pedigree quickly.
-Its documentation is also available as a website: <https://courtiol.github.io/fastrel/>.
 
 This package offers five main sets of functionalities:
 
