@@ -2,7 +2,7 @@
 
 * Breaking: `rel_new(remember_removed = )` now takes `"none"` (the default),
   `"fingerprint"` (formerly `TRUE`) or `"id"`, instead of `FALSE` or `TRUE`.
-  Stores saved by earlier versions still load.
+* Breaking: `rel_load()` only reads stores saved by this version of fastrel.
 * New `rel_new(remember_removed = "id")`, which keeps the identifiers of the
   individuals removed rather than a fingerprint of each of them. It takes more
   memory (about 70 bytes per individual removed for short identifiers, against

@@ -48,6 +48,11 @@ test_that("empty stores and invalid input", {
   bad <- rel_save(rel2); bad$A[1, 1] <- NA
   expect_error(rel_load(bad), "non-finite")
   expect_error(rel_save(list()), "store")
-  bad <- rel_save(rel2); bad$format <- 2L
-  expect_error(rel_load(bad), "format")
+  ## only objects saved by this version are read
+  bad <- rel_save(rel2); bad$format <- 1L
+  expect_error(rel_load(bad), "another version")
+  bad <- rel_save(rel2); bad$remember_removed <- NULL
+  expect_error(rel_load(bad), "rel_save")
+  bad <- rel_save(rel2); bad$remember_removed <- TRUE
+  expect_error(rel_load(bad), "character vector")
 })

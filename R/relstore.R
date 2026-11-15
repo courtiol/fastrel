@@ -404,7 +404,7 @@ rel_save <- function(rel, file = NULL) {
   out <- structure(
     list(ids = rel$ids, A = rel_get(rel),
          remember_removed = c("none", "fingerprint", "id")[rel$ks$remember() + 1L],
-         removed = rel$ks$gone(), format = 1L),
+         removed = rel$ks$gone(), format = 2L),
     class = "relatedness_store_saved")
   if (is.null(file)) return(out)
   saveRDS(out, file)
@@ -415,28 +415,20 @@ rel_save <- function(rel, file = NULL) {
 #' @export
 rel_load <- function(x) {
   if (is.character(x) && length(x) == 1L) x <- readRDS(x)
-  if (!inherits(x, "relatedness_store_saved") ||
-      !all(c("ids", "A") %in% names(x)))
+  fields <- c("ids", "A", "remember_removed", "removed", "format")
+  if (!inherits(x, "relatedness_store_saved") || !all(fields %in% names(x)))
     stop("`x` must be a file or an object produced by rel_save()")
-  if (!is.null(x$format) && !identical(as.integer(x$format), 1L))
-    stop("this file was written in a format (", x$format, ") that this ",
-         "version of fastrel cannot read")
+  if (!identical(x$format, 2L))
+    stop("this object was saved by another version of fastrel and cannot be ",
+         "read by this one")
   k <- length(x$ids)
   if (!is.matrix(x$A) || nrow(x$A) != k || ncol(x$A) != k)
     stop("the saved matrix does not match the saved identifiers")
   if (anyNA(x$ids) || anyDuplicated(x$ids))
     stop("the saved identifiers must be unique and not NA")
-
-  ## "none", "fingerprint" or "id"; files written before 0.8.0 hold TRUE
-  ## (fingerprints) or FALSE, or nothing
   remember <- x$remember_removed
-  if (is.null(remember) || isFALSE(remember)) remember <- "none"
-  if (isTRUE(remember)) remember <- "fingerprint"
-  if (!is.character(remember) || length(remember) != 1L ||
-      !remember %in% c("none", "fingerprint", "id"))
-    stop("the saved setting of `remember_removed` is not valid")
-  if ((remember == "fingerprint" && !is.raw(x$removed)) ||
-      (remember == "id" && !is.character(x$removed)))
+  if ((identical(remember, "fingerprint") && !is.raw(x$removed)) ||
+      (identical(remember, "id") && !is.character(x$removed)))
     stop("the saved list of removed individuals is not valid")
 
   rel <- rel_new(remember_removed = remember)
