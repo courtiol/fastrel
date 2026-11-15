@@ -205,7 +205,11 @@ In that case we recommend creating the store with
 individual that was removed is added again, a mistake that is easy to make when
 individuals move between patches. This is off by default because it costs about
 30 bytes per individual removed, so the memory used then grows (slowly) with
-the length of the pedigree. See `?rel_new` for details.
+the length of the pedigree. This trace relies on a fingerprint of each identifier,
+which could in principle be mistaken for that of another one, with a negligible
+probability; `rel_new(remember_removed = "id")` keeps the identifiers themselves
+instead, which can never be wrong but takes more memory (about 70 bytes per
+individual removed for short identifiers). See `?rel_new` for details.
 
 ### Saving and loading the relatedness store
 

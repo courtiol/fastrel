@@ -65,24 +65,30 @@
 #' born afterwards is not tracked, so if it is added again it comes back as
 #' unrelated to everybody, which is wrong for its relatives. By default
 #' nothing prevents this: it is up to you never to add again an individual
-#' that was removed. With `rel_new(remember_removed = TRUE)`, `rel_add()`
-#' raises an error instead (see the section Removed individuals).
+#' that was removed. With `rel_new(remember_removed = TRUE)` (or `"id"`),
+#' `rel_add()` raises an error instead (see the section Removed individuals).
 #'
 #' @section Removed individuals:
-#' With `remember_removed = TRUE`, the store keeps a trace of every individual
-#' removed and `rel_add()` refuses to add it again. This protects against a
-#' silent error, at the cost of about 30 bytes per individual removed for the
-#' table that holds the traces. The memory used then grows slowly with the
-#' length of the pedigree (about 30 MB per million individuals removed),
-#' instead of depending only on the number of individuals in the store. This
-#' is why it is off by default. The time taken by `rel_add()` and
-#' `rel_remove()` is not affected.
+#' With `remember_removed` set to `TRUE`, `"fingerprint"` or `"id"`, the store
+#' keeps a trace of every individual removed and `rel_add()` refuses to add it
+#' again. This protects against a silent error, at a cost in memory that grows
+#' slowly with the length of the pedigree, instead of depending only on the
+#' number of individuals in the store. This is why it is off by default. Two
+#' kinds of trace are offered:
+#' * `"fingerprint"` (or `TRUE`) keeps a 64-bit fingerprint of each
+#'   identifier, about 30 bytes per individual removed (30 MB per million). A
+#'   new identifier can be mistaken for a removed one, but with a negligible
+#'   probability: the number of individuals removed divided by `2^64`, i.e.
+#'   less than 1 in 10 million millions per addition after a million removals.
+#' * `"id"` keeps the identifiers themselves, so it can never be wrong, but it
+#'   takes more memory, which increases with the length of the identifiers:
+#'   about 70 bytes per individual removed for identifiers of up to 15
+#'   characters, and about 115 bytes for identifiers of 34 characters.
 #'
-#' The trace is a 64-bit fingerprint of each identifier, not the identifier
-#' itself. A new identifier can thus be mistaken for a removed one, but with a
-#' negligible probability: the number of individuals removed divided by
-#' `2^64`, i.e. less than 1 in 10 million millions per addition after a million
-#' removals.
+#' Both add little to the time taken by `rel_add()` and `rel_remove()`,
+#' `"id"` a little more than `"fingerprint"` since it handles whole
+#' identifiers. The cost only becomes noticeable when individuals are added
+#' and removed in large numbers without much else being computed.
 #'
 #' @section Metapopulations:
 #' To follow several patches connected by migration, use a single store for
@@ -95,8 +101,8 @@
 #' time per birth and the memory depend on the number of individuals alive
 #' over all the patches (see the section Memory).
 #'
-#' Creating the store with `rel_new(remember_removed = TRUE)` is recommended
-#' here: with individuals moving between patches, removing one that left a
+#' Creating the store with `rel_new(remember_removed = TRUE)` (or `"id"`) is
+#' recommended here: with individuals moving between patches, removing one that left a
 #' patch and adding it again when it comes back is an easy mistake to make,
 #' and it would go unnoticed.
 #'
@@ -119,8 +125,11 @@
 #' `system.file("benchmarks/memory_benchmark.R", package = "fastrel")`.
 #'
 #' @param remember_removed Should the store keep a trace of the individuals
-#'   removed, so that `rel_add()` refuses to add them again? `FALSE` by default
-#'   (see the section Removed individuals).
+#'   removed, so that `rel_add()` refuses to add them again? `FALSE` (the
+#'   default) for no trace, `"fingerprint"` (or `TRUE`) for a compact trace
+#'   that is wrong with a negligible probability, or `"id"` for the
+#'   identifiers themselves, which takes more memory but is never wrong (see
+#'   the section Removed individuals).
 #' @param rel A store created by `rel_new()`.
 #' @param ped A data frame (or a tibble) with one row per individual to add and three columns
 #'   giving the identifier of the individual, of its mother and of its father
@@ -197,12 +206,10 @@ NULL
 #' @rdname relstore
 #' @export
 rel_new <- function(remember_removed = FALSE) {
-  if (!is.logical(remember_removed) || length(remember_removed) != 1L ||
-      is.na(remember_removed))
-    stop("`remember_removed` must be TRUE or FALSE")
+  mode <- remember_code(remember_removed)
   self <- new.env()
   ## 16: initial number of slots; grows as needed
-  self$ks    <- new(RelStore, 16L, remember_removed)
+  self$ks    <- new(RelStore, 16L, mode)
   self$ptr   <- self$ks$.pointer   # kept aside: quick to test in check_store()
   self$ids   <- character(0)   # IDs currently in the store
   self$slots <- integer(0)     # their slots, same order
@@ -332,6 +339,18 @@ print.relatedness_store <- function(x, ...) {
   invisible(x)
 }
 
+## code of `remember_removed` for the C++ side: 0 = no trace,
+## 1 = fingerprints, 2 = identifiers
+remember_code <- function(remember_removed) {
+  ok <- length(remember_removed) == 1L && !is.na(remember_removed) &&
+    (is.logical(remember_removed) ||
+       (is.character(remember_removed) && remember_removed %in% c("fingerprint", "id")))
+  if (!ok)
+    stop("`remember_removed` must be FALSE, TRUE, \"fingerprint\" or \"id\"")
+  if (isFALSE(remember_removed)) return(0L)
+  if (identical(remember_removed, "id")) 2L else 1L
+}
+
 check_store <- function(rel) {
   if (!inherits(rel, "relatedness_store"))
     stop("`rel` must be a store created by rel_new()")
@@ -354,8 +373,9 @@ nil_pointer <- methods::new("externalptr")
 #'
 #' The saved object contains the full dense relatedness matrix among the
 #' individuals in the store, so its size is `8 * n^2` bytes for `n` individuals,
-#' plus, for a store created with `remember_removed = TRUE`, 8 bytes per
-#' individual removed so far.
+#' plus the trace of the individuals removed so far if the store keeps one: 8
+#' bytes per individual removed with `remember_removed = "fingerprint"`, or
+#' their identifiers with `remember_removed = "id"`.
 #' After loading, individuals have new internal slots, which is invisible when
 #' you work through the identifiers. The restored store behaves exactly like the
 #' original one: you can keep adding and removing individuals.
@@ -391,7 +411,8 @@ NULL
 rel_save <- function(rel, file = NULL) {
   check_store(rel)
   out <- structure(
-    list(ids = rel$ids, A = rel_get(rel), remember_removed = rel$ks$remember(),
+    list(ids = rel$ids, A = rel_get(rel),
+         remember_removed = c(FALSE, "fingerprint", "id")[rel$ks$remember() + 1L],
          removed = rel$ks$gone(), format = 1L),
     class = "relatedness_store_saved")
   if (is.null(file)) return(out)
@@ -415,12 +436,16 @@ rel_load <- function(x) {
   if (anyNA(x$ids) || anyDuplicated(x$ids))
     stop("the saved identifiers must be unique and not NA")
 
-  remember <- isTRUE(x$remember_removed)
-  if (remember && !is.raw(x$removed))
+  ## FALSE / TRUE (fastrel < 0.8.0) or "FALSE" / "fingerprint" / "id"
+  remember <- x$remember_removed
+  if (is.null(remember) || identical(remember, "FALSE")) remember <- FALSE
+  mode <- tryCatch(remember_code(remember), error = function(e)
+    stop("the saved setting of `remember_removed` is not valid"))
+  if ((mode == 1L && !is.raw(x$removed)) || (mode == 2L && !is.character(x$removed)))
     stop("the saved list of removed individuals is not valid")
 
   rel <- rel_new(remember_removed = remember)
-  if (remember) rel$ks$load_gone(x$removed)
+  if (mode > 0L) rel$ks$load_gone(x$removed)
   if (k > 0L) {
     rel$slots <- rel$ks$restore(unname(x$A))
     rel$ids   <- as.character(x$ids)
