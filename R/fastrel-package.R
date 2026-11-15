@@ -1,10 +1,10 @@
 #' fastrel: fast relatedness, relationship and kinship matrices from pedigrees
 #'
-#' Tools to compute the additive relationship ("relatedness") matrix
-#' \eqn{A = 2\phi}{A = 2 * phi}, where \eqn{\phi}{phi} is the kinship
-#' coefficient, for autosomal loci, as well as the kinship coefficient itself,
-#' Wright's coefficient of relationship and Hamilton's regression coefficient
-#' of relatedness.
+#' Tools to compute, for autosomal loci of diploid individuals, the additive
+#' relationship ("relatedness") matrix \eqn{A = 2\phi}{A = 2 * phi}, where
+#' \eqn{\phi}{phi} is the kinship coefficient (Malécot 1948), as well as the
+#' kinship coefficient itself, Wright's coefficient of relationship (Wright
+#' 1922) and Hamilton's regression coefficient of relatedness (Hamilton 1972).
 #'
 #' Two interfaces are provided:
 #' * [fastrel_ped()] and [fastrel_vec()] compute the whole matrix from a
@@ -38,10 +38,29 @@
 #' unrelated to everybody.
 #'
 #' [fastrel_ped()], [fastrel_vec()] and [rel_get()] can instead return the
-#' kinship coefficient, Wright's coefficient of relationship or Hamilton's
-#' regression coefficient of relatedness, with their argument `metric`. These
-#' measures, what they mean and when to use them are described in
-#' [relatedness_metrics].
+#' kinship coefficient (Malécot 1948), Wright's coefficient of relationship
+#' (Wright 1922) or Hamilton's regression coefficient of relatedness
+#' (Hamilton 1972), with their argument `metric`. These measures, what they
+#' mean and when to use them are described in [relatedness_metrics].
+#'
+#' The matrices are computed with the tabular method (Emik and Terrill 1949),
+#' implemented in C++. See [relatedness_metrics] for the full list of
+#' references.
+#'
+#' @references
+#' Emik, L. O., & Terrill, C. E. (1949). Systematic procedures for calculating
+#' inbreeding coefficients. *Journal of Heredity*, 40(2), 51–55.
+#' \doi{10.1093/oxfordjournals.jhered.a105986}
+#'
+#' Hamilton, W. D. (1972). Altruism and related phenomena, mainly in social
+#' insects. *Annual Review of Ecology and Systematics*, 3, 193–232.
+#' \doi{10.1146/annurev.es.03.110172.001205}
+#'
+#' Malécot, G. (1948). *Les mathématiques de l'hérédité*. Masson et Cie,
+#' Paris.
+#'
+#' Wright, S. (1922). Coefficients of inbreeding and relationship. *The
+#' American Naturalist*, 56(645), 330–338. \doi{10.1086/279872}
 #'
 #' @useDynLib fastrel, .registration = TRUE
 #' @importFrom Rcpp evalCpp loadModule

@@ -1,3 +1,9 @@
+# fastrel (development version)
+
+* Documentation: the description of the package is shortened, says that it is
+  for diploid individuals, and cites only the method used; the references for
+  the measures are given in `?fastrel`.
+
 # fastrel 0.8.0
 
 * Breaking: `rel_new(remember_removed = )` now takes `"none"` (the default),

@@ -6,14 +6,12 @@ Authors@R: c(
   person("Alexandre", "Courtiol", email = "alexandre.courtiol@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0637-2959"))
   )
 Description: Computes quickly the main measures of identity by descent
-    between the individuals of a pedigree: relatedness (additive relationship),
-    kinship, and the coefficients of relationship of Wright (1922)
-    <doi:10.1086/279872> and of relatedness of Hamilton (1972)
-    <doi:10.1146/annurev.es.03.110172.001205>. The computation uses the
-    tabular method of Emik and Terrill (1949)
-    <doi:10.1093/oxfordjournals.jhered.a105986> and Henderson (1976)
-    <doi:10.2307/2529339>, implemented in C++. The measures can also be updated
-    incrementally as individuals are born, die or migrate, as needed in
+    between the diploid individuals of a pedigree: relatedness (additive
+    relationship), kinship, and the coefficients of relationship of Wright and
+    of relatedness of Hamilton. The computation uses the tabular method of Emik
+    and Terrill (1949) <doi:10.1093/oxfordjournals.jhered.a105986>,
+    implemented in C++. The measures can also be updated incrementally as
+    individuals are born, die or migrate, to save much computational time in
     individual-based simulations.
 License: GPL (>= 3)
 Encoding: UTF-8
