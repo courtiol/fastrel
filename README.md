@@ -4,8 +4,9 @@
 
 **fast** **rel**atedness (aka `fastrel`) is an R package to compute relatedness,
 relationship or kinship from a pedigree quickly.
+Its documentation is also available as a website: <https://courtiol.github.io/fastrel/>.
 
-This package offers four main sets of functionalities:
+This package offers five main sets of functionalities:
 
 - a set of functions allowing for updating a relatedness matrix, conceived with
 individual based simulations in mind, with no need to store a pedigree, and with
@@ -13,9 +14,15 @@ a computation time and memory footprint that do not increase over time as long a
 the population is at its demographic equilibrium
 (it only requires storing the information about alive individuals)
 - a function to compute relatedness from a pedigree more quickly than
-[`ggroups`](https://CRAN.R-project.org/package=ggroups), [`kinship2`](https://CRAN.R-project.org/package=kinship2) or
+[`ggroups`](https://CRAN.R-project.org/package=ggroups), 
+[`nadiv`](https://CRAN.R-project.org/package=nadiv),
+[`kinship2`](https://CRAN.R-project.org/package=kinship2)
+ or
 [`Pedixplorer`](https://louislenezet.github.io/Pedixplorer/)
 (which now supersedes `kinship2`)
+- a function to compute the inverse of the relatedness matrix (the precision
+matrix used by animal models), as a sparse matrix built directly from the
+pedigree, much more quickly than `nadiv`
 - a function to simulate a pedigree (with character or integer identifiers)
 - a function to simulate a population with its pedigree, deaths, births,
 immigrations and emigrations.
@@ -24,16 +31,18 @@ The relatedness matrix is here technically defined as the additive relationship 
 Its values lie between 0 and 2.
 Between individuals that are not inbred, relatedness is at most 1 (identical twins or clones; 0.5 for parent and offspring or full siblings), and it can only exceed 1 with inbreeding.
 
+This is the measure returned by default: 0.5 for parent and offspring, not the 0.25 of the kinship coefficient returned by `kinship2::kinship()`.
 The kinship coefficient, Wright's coefficient of relationship and Hamilton's regression coefficient of relatedness can be returned instead (see [Measures of relatedness](#measures-of-relatedness)).
 
-All four measures are validated in the tests of the package against two independent implementations, [`kinship2`](https://CRAN.R-project.org/package=kinship2) and [`ggroups`](https://CRAN.R-project.org/package=ggroups), on pedigrees of many shapes (with inbreeding, selfing, unknown parents and unsorted rows).
+All four measures are validated in the tests of the package against three independent implementations, [`kinship2`](https://CRAN.R-project.org/package=kinship2), [`ggroups`](https://CRAN.R-project.org/package=ggroups) and [`nadiv`](https://CRAN.R-project.org/package=nadiv), on pedigrees of many shapes (with inbreeding, selfing, unknown parents and unsorted rows).
 
 | Task | Functions |
 |---|---|
 | Relatedness of a whole pedigree | `fastrel_ped()` (from a data frame), `fastrel_vec()` (from vectors) |
+| Inverse of the relatedness matrix (sparse) | `fastrel_inv()` |
 | Relatedness updated step by step (the "store") | `rel_new()`, `rel_add()`, `rel_remove()`, `rel_get()` |
 | Content of a relatedness store | `rel_ids()`, `rel_size()`, `rel_capacity()` |
-| Saving and restoring a store | `rel_save()`, `rel_load()` |
+| Copying, saving and restoring a store | `rel_copy()`, `rel_save()`, `rel_load()` |
 | Simulating data | `sim_ped()`, `sim_pop()` |
 
 
@@ -70,10 +79,10 @@ tail(ped, n = 3) # last 3 individuals
 ```
 
 ```
-##           id   momid   dadid sex
-## 998  ind0998 ind0989 ind0959   1
-## 999  ind0999 ind0912    <NA>   1
-## 1000 ind1000 ind0871 ind0879   1
+##           id   dadid   momid sex
+## 998  ind0998 ind0959 ind0989   1
+## 999  ind0999    <NA> ind0912   1
+## 1000 ind1000 ind0879 ind0871   1
 ```
 
 ``` r
@@ -101,8 +110,8 @@ max(diag(A) - 1)   # maximum inbreeding coefficients
 
 ``` r
 rel <- rel_new() # initialize the store (once per simulation)
-rel_add(rel, data.frame(id = c("A", "B"), mom = NA, dad = NA)) # add founders
-rel_add(rel, data.frame(id = c("C", "D"), mom = c("A", "A"), dad = c(NA, "B"))) # add births
+rel_add(rel, data.frame(id = c("A", "B"), dad = NA, mom = NA)) # add founders
+rel_add(rel, data.frame(id = c("C", "D"), dad = c(NA, "B"), mom = c("A", "A"))) # add births
 rel_remove(rel, c("A", "B")) # remove dead / emigrated: free their slots
 rel_get(rel) # extract relatedness matrix between remaining individuals
 ```
@@ -140,8 +149,8 @@ and two individuals (O1, O2) by selfing P:
 
 ``` r
 ped_selfing <- data.frame(id  = c("G", "P", "O1", "O2"),
-                          mom = c(NA, "G", "P", "P"),
-                          dad = c(NA, "G", "P", "P"))
+                          dad = c(NA, "G", "P", "P"),
+                          mom = c(NA, "G", "P", "P"))
 fastrel_ped(ped_selfing)                      # additive relationship
 ```
 
@@ -189,8 +198,76 @@ fastrel_ped(ped_selfing, metric = "hamilton") # regressions (row = actor)
 ## O2 0.5714286 0.8571429 0.8571429 1.0000000
 ```
 
+The additive relationship is the default because it keeps all the information:
+the three other measures can be computed from it, while the diagonal of 1 of
+Wright's coefficient, for instance, discards the inbreeding coefficients. It is
+also the matrix that animal models and other mixed models expect, as the
+covariance of the genetic values, and what `ggroups::buildA()`,
+`nadiv::makeA()` and `2 * kinship2::kinship()` return. Wright's coefficient
+is the one to choose for a measure of resemblance bounded by 1 whatever the
+inbreeding, but it should not be used as a covariance matrix in a model, since it gives every
+individual a variance of 1 whatever its inbreeding.
+
 See `?relatedness_metrics` for the definitions, their interpretation and the
 references.
+
+## Inverse of the relatedness matrix
+
+Animal models and other mixed models of genetic values can be fitted with the
+inverse of the relatedness matrix, A⁻¹ (the precision matrix of the genetic
+values), rather than with A. While A is dense in most pedigrees (nearly all
+individuals of a population end up sharing an ancestor), A⁻¹ is always
+sparse: each individual adds at most six entries to its upper triangle.
+`fastrel_inv()` builds it directly from the pedigree, with the rules of
+Henderson (1976) and the inbreeding coefficients computed with the algorithm
+of Meuwissen and Luo (1992), without ever forming A. The memory used is thus
+proportional to the number of individuals, and A⁻¹ can be obtained for
+pedigrees far too large for A to fit in memory:
+
+
+``` r
+Ainv <- fastrel_inv(ped_selfing)
+Ainv
+```
+
+```
+## 4 x 4 sparse Matrix of class "dsCMatrix"
+##     G  P O1 O2
+## G   3 -2  .  .
+## P  -2 10 -4 -4
+## O1  . -4  4  .
+## O2  . -4  .  4
+```
+
+``` r
+all.equal(as.matrix(Ainv), solve(fastrel_ped(ped_selfing))) # it is the inverse of A
+```
+
+```
+## [1] TRUE
+```
+
+``` r
+set.seed(1)
+big <- sim_ped(20000)          # A would take 3.2 GB
+system.time(Ainv <- fastrel_inv(big))
+```
+
+```
+##    user  system elapsed 
+##   3.159   0.019   3.161
+```
+
+``` r
+Matrix::nnzero(Ainv)           # number of nonzero entries
+```
+
+```
+## [1] 130866
+```
+
+The result is a sparse matrix from the package Matrix, which can be given as it
+is to modelling packages, e.g. e.g. as `covStruct=list(precision=Ainv)` in `spaMM::fitme()` or `ginverse=list(var=Ainv)` in `MCMCglmm::MCMCglmm()`.
 
 ## Using the store in a simulation
 
@@ -228,11 +305,11 @@ at each step, and we record the mean relatedness among the individuals present:
 rel <- rel_new()
 set.seed(1)
 pop <- sim_pop(n_steps = 1000, n_init = 200) # simulate pop (fine tuning the life history is possible)
-head(pop) # first 6 simulated individual life histories (no momid and dadid since founder)
+head(pop) # first 6 simulated individual life histories (no dadid and momid since founder)
 ```
 
 ```
-##            id momid dadid sex arrival exit      fate  origin
+##            id dadid momid sex arrival exit      fate  origin
 ## 1 ind00000001  <NA>  <NA>   1       0   20 emigrated founder
 ## 2 ind00000002  <NA>  <NA>   2       0    7      dead founder
 ## 3 ind00000003  <NA>  <NA>   1       0    2      dead founder
@@ -244,7 +321,7 @@ head(pop) # first 6 simulated individual life histories (no momid and dadid sinc
 ``` r
 mean_relatedness <- data.frame(step = 0:1000, mean_rel = NA) # record mean relatedness
 for (t in 0:1000) {
-  rel_add(rel, pop[pop$arrival == t, c("id", "momid", "dadid")])
+  rel_add(rel, pop[pop$arrival == t, c("id", "dadid", "momid")])
   rel_remove(rel, pop$id[!is.na(pop$exit) & pop$exit == t])
   A <- rel_get(rel)
   mean_relatedness[mean_relatedness$step == t, "mean_rel"] <- mean(A[upper.tri(A)])
@@ -255,7 +332,7 @@ plot(mean_rel ~ step, data = mean_relatedness,
 ```
 
 <p align="center">
-<img src=".github/figures/simulation-1.png" width="80%" alt="Mean relatedness over time">
+<img src="man/figures/README-simulation-1.png" width="80%" alt="Mean relatedness over time">
 </p>
 
 Although 27150 individuals were simulated in total, the store never
@@ -282,11 +359,11 @@ offspring they produce elsewhere.
 
 ``` r
 rel <- rel_new(remember_removed = "fingerprint")
-rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
+rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), dad = NA, mom = NA))
 patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B") # the patch of each individual
-rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2")) # a3 is born in patch A...
+rel_add(rel, data.frame(id = "a3", dad = "a2", mom = "a1")) # a3 is born in patch A...
 patch["a3"] <- "B"                                          # ... and moves to patch B
-rel_add(rel, data.frame(id = "b3", mom = "b1", dad = "a3")) # where it reproduces
+rel_add(rel, data.frame(id = "b3", dad = "a3", mom = "b1")) # where it reproduces
 patch["b3"] <- "B"
 rel_get(rel, names(patch)[patch == "B"]) # relatedness within patch B
 ```
@@ -331,15 +408,16 @@ rel <- rel_load("store.rds") # a working store again
 
 ## Benchmarks
 
-The relatedness metrics are computed much faster by `fastrel` than by `ggroups`
-or `kinship2` under virtually all conditions. Here is an example, using a pedigree simulated with integer
-identifiers and 0 for unknown parents, which suits all three packages:
+The relatedness metrics are computed much faster by `fastrel` than by `ggroups`,
+`kinship2` or `nadiv` under virtually all conditions. Here is an example, using a pedigree simulated with integer
+identifiers and 0 for unknown parents, which suits all four packages:
 
 
 ``` r
 library(microbenchmark)
 library(ggroups)
 library(kinship2)
+library(nadiv)
 
 set.seed(1) # for reproducibility
 ped <- sim_ped(1000, numeric_ids = TRUE)
@@ -347,61 +425,46 @@ head(ped, n = 3)
 ```
 
 ```
-##   id momid dadid sex
+##   id dadid momid sex
 ## 1  1     0     0   1
 ## 2  2     0     0   2
 ## 3  3     0     0   1
 ```
 
 ``` r
-# check that the computed relatedness are the same
-all.equal(unname(buildA(ped[, c("id", "dadid", "momid")])), # columns: individual, sire, dam
-          unname(fastrel_ped(ped)))
-```
-
-```
-## [1] TRUE
-```
-
-``` r
-all.equal(unname(kinship(ped$id, ped$dadid, ped$momid)),
-          unname(fastrel_ped(ped, metric = "kinship")))
-```
-
-```
-## [1] TRUE
-```
-
-``` r
 # benchmark
 microbenchmark(ggroups = buildA(ped[, c("id", "dadid", "momid")]),
+               nadiv = makeA(ped[, c("id", "momid", "dadid")]), # sparse matrix
                kinship2 = kinship(ped$id, ped$dadid, ped$momid),
-               fastrel_ped = fastrel_ped(ped),
                fastrel_vec = fastrel_vec(ped$id, ped$dadid, ped$momid,
-                                         metric = "kinship"))
+                                         metric = "kinship"),
+               fastrel_ped = fastrel_ped(ped))
 ```
 
 ```
 ## Unit: microseconds
-##         expr        min         lq       mean     median         uq        max neval
-##      ggroups 105569.691 107454.438 115494.175 110346.202 112016.820 250376.918   100
-##     kinship2  11422.808  15146.602  20574.566  15882.262  18488.207 155966.398   100
-##  fastrel_ped    948.994   1037.596   2193.280   1219.399   2318.958   7782.719   100
-##  fastrel_vec   1110.800   1206.821   2186.675   1372.069   2378.245   6067.447   100
-##  cld
-##  a  
-##   b 
-##    c
-##    c
+##         expr        min         lq       mean     median         uq
+##      ggroups 103417.663 107482.550 123956.040 115789.660 119202.160
+##        nadiv 140993.970 151990.894 160865.795 155400.333 163162.046
+##     kinship2  11355.091  23382.626  32280.682  24145.208  34794.615
+##  fastrel_vec   1120.628   1190.670   6213.938   1316.283   2490.677
+##  fastrel_ped    907.746   1040.597   5863.974   1126.590   2458.561
+##       max neval  cld
+##  464688.8   100 a   
+##  461525.1   100  b  
+##  231321.7   100   c 
+##  220612.8   100    d
+##  214948.1   100    d
 ```
 
 You can also run the more detailed integrated benchmarks as follows:
 
 
 ``` r
-source(system.file("benchmarks/relstore_benchmark.R", package = "fastrel"))
-source(system.file("benchmarks/sim_pop_benchmark.R", package = "fastrel"))
-source(system.file("benchmarks/memory_benchmark.R", package = "fastrel")) # memory used (needs lobstr)
+source(system.file("benchmarks/relstore_benchmark.R", package = "fastrel")) # fastrel vs kinship2
+source(system.file("benchmarks/sim_pop_benchmark.R", package = "fastrel")) # fastrel vs simulation steps
+source(system.file("benchmarks/precision_benchmark.R", package = "fastrel")) # fastrel_inv() vs nadiv
+source(system.file("benchmarks/memory_benchmark.R", package = "fastrel")) # memory used
 ```
 
 
@@ -413,7 +476,7 @@ Most of this package was written with the help of large language models (LLMs),
 such as Claude Fable 5.2. The increase in computational speed has been achieved
 by relying heavily on a C++ implementation (rather than pure R code). The
 results have been cross-checked using alternative LLMs and compared to the
-output of established packages (`kinship2` and `ggroups`). Many tests have also been
+output of established packages (`kinship2`, `ggroups` and `nadiv`). Many tests have also been
 implemented to ensure the results are accurate.
 
 ### Tips for developers
@@ -422,7 +485,7 @@ After editing README.Rmd, do:
 
 
 ``` r
-knitr::knit("README.Rmd")
+knitr::knit("README.Rmd") # Knit in RStudio does not update README.md!
 ```
 
 After editing C++ attributes, do:
@@ -436,6 +499,13 @@ To generate the manual, do:
 
 ``` r
 devtools::build_manual()
+```
+
+To build the website locally (it is otherwise built and published by GitHub
+Actions after each push to `main`), do:
+
+``` r
+pkgdown::build_site()
 ```
 
 

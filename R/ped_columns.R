@@ -3,10 +3,10 @@
 ped_names <- list(
   focal  = c("id", "iid", "focal", "ind", "indiv", "individual", "animal",
              "ego", "offspring", "child"),
-  mother = c("mom", "mum", "mother", "dam", "mat", "maternal"),
-  father = c("dad", "father", "sire", "pat", "paternal"))
+  father = c("dad", "father", "sire", "pat", "paternal"),
+  mother = c("mom", "mum", "mother", "dam", "mat", "maternal"))
 
-## Role (1 = focal, 2 = mother, 3 = father, NA = none) of each column name.
+## Role (1 = focal, 2 = father, 3 = mother, NA = none) of each column name.
 ped_roles <- function(nm) {
   nm   <- gsub("[^a-z0-9]", "", tolower(nm))
   tail <- sub("^(.+)id$", "\\1", nm)             # "momid" -> "mom"; "id" stays
@@ -19,29 +19,33 @@ ped_roles <- function(nm) {
   role
 }
 
-## Positions of the columns focal, mother and father of a pedigree `ped`
-## (see the section "Columns of ped" of ?fastrel_ped).
+## Positions of the columns of the focal individual, its father and its mother
+## in a pedigree `ped`, in this order, whatever the order of the columns (see
+## the section "Columns of ped" of ?fastrel_ped).
 ## The answer for the last set of column names seen is kept, since a
 ## simulation calls rel_add() over and over with the same columns.
 ped_columns <- function(ped) {
   if (!is.data.frame(ped) || ncol(ped) < 3L)
-    stop("`ped` must be a data frame with columns focal, mother and father")
+    stop("`ped` must be a data frame with columns for the individual, its ",
+         "father and its mother")
   nm <- names(ped)
   if (identical(nm, ped_cache$names)) return(ped_cache$cols)
 
   role <- ped_roles(nm)
   if (all(is.na(role))) {
-    cols <- 1:3                                   # no known name: by position
+    ## no known name: by position, in the order individual, father, mother
+    ## (that of kinship2::kinship() and of pedigrees in animal breeding)
+    cols <- 1:3
     if (!isTRUE(ped_cache$told_position)) {       # say so once per session
       ped_cache$told_position <- TRUE
       message("No column of `ped` has a recognised name, so its first three ",
               "columns (", paste(nm[1:3], collapse = ", "), ") are taken as the ",
-              "individual, its mother and its father. Name them (e.g. id, mom, ",
-              "dad) to avoid any ambiguity; see ?fastrel_ped. This message is ",
-              "shown once per session.")
+              "individual, its father and its mother, in this order. Name them ",
+              "(e.g. id, dad, mom) to avoid any ambiguity; see ?fastrel_ped. ",
+              "This message is shown once per session.")
     }
   } else {
-    what <- c("the focal individual", "the mother", "the father")
+    what <- c("the focal individual", "the father", "the mother")
     n_found <- tabulate(role, 3L)
     if (any(n_found > 1L)) {
       r <- which(n_found > 1L)[1L]

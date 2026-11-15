@@ -1,7 +1,7 @@
 test_that("sim_ped gives a valid pedigree in birth order", {
   set.seed(1)
   ped <- sim_ped(300)
-  expect_named(ped, c("id", "momid", "dadid", "sex"))
+  expect_named(ped, c("id", "dadid", "momid", "sex"))
   expect_equal(nrow(ped), 300)
   ## parents always come before their offspring
   expect_true(all(match(ped$momid, ped$id) < seq_len(300), na.rm = TRUE))
@@ -32,7 +32,7 @@ test_that("the simulators follow the random number generator of the session", {
 test_that("numeric_ids gives the same pedigree with integers and 0 for unknown parents", {
   set.seed(3); a <- sim_ped(300, p_unknown = 0.2)
   set.seed(3); b <- sim_ped(300, p_unknown = 0.2, numeric_ids = TRUE)
-  expect_named(b, c("id", "momid", "dadid", "sex"))
+  expect_named(b, c("id", "dadid", "momid", "sex"))
   expect_identical(b$id, 1:300)
   expect_type(b$momid, "integer")
   expect_type(b$dadid, "integer")

@@ -42,8 +42,8 @@ original one: you can keep adding and removing individuals.
 }
 \examples{
 rel <- rel_new()
-rel_add(rel, data.frame(id = c("A", "B"), mom = NA, dad = NA))
-rel_add(rel, data.frame(id = "C", mom = "A", dad = "B"))
+rel_add(rel, data.frame(id = c("A", "B"), dad = NA, mom = NA))
+rel_add(rel, data.frame(id = "C", dad = "B", mom = "A"))
 
 f <- tempfile(fileext = ".rds")
 rel_save(rel, f)
@@ -51,7 +51,7 @@ rel2 <- rel_load(f)
 all.equal(rel_get(rel), rel_get(rel2))
 
 ## the restored store can be used as usual
-rel_add(rel2, data.frame(id = "D", mom = "C", dad = "A"))
+rel_add(rel2, data.frame(id = "D", dad = "A", mom = "C"))
 }
 \seealso{
 \code{\link[=rel_new]{rel_new()}}

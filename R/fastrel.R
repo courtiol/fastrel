@@ -1,7 +1,8 @@
 #' Relatedness matrix from a pedigree
 #'
 #' Compute a measure of relatedness of autosomal loci between all individuals
-#' of a pedigree, using the tabular method implemented in C++. By default, the
+#' of a pedigree, using the tabular method (Emik and Terrill 1949; Henderson
+#' 1976) implemented in C++. By default, the
 #' measure is the additive relationship \eqn{A = 2\phi}{A = 2 * phi}, where
 #' \eqn{\phi}{phi} is the kinship coefficient; the argument `metric` gives the
 #' kinship coefficient itself, Wright's coefficient of relationship or
@@ -11,7 +12,7 @@
 #' * `fastrel_ped()` takes a data frame;
 #' * `fastrel_vec()` takes three vectors, as [kinship2::kinship()] does. It is a
 #'   fast replacement for `2 * kinship2::kinship()`, or for
-#'   `kinship2::kinship()` with `metric = "kinship"`.
+#'   `kinship2::kinship()` when `metric = "kinship"`.
 #'
 #' Rows of the pedigree can be in any order: parents do not need to appear
 #' before their offspring. Parents that are `NA` or 0 (as in many programs of
@@ -33,25 +34,27 @@
 #' the same). The names recognised are:
 #' * for the focal individual: `id`, `iid`, `focal`, `ind`, `indiv`,
 #'   `individual`, `animal`, `ego`, `offspring`, `child`;
-#' * for its mother: `mom`, `mum`, `mother`, `dam`, `mat`, `maternal`;
-#' * for its father: `dad`, `father`, `sire`, `pat`, `paternal`.
+#' * for its father: `dad`, `father`, `sire`, `pat`, `paternal`;
+#' * for its mother: `mom`, `mum`, `mother`, `dam`, `mat`, `maternal`.
 #'
 #' If none of the columns has a recognised name, the first three columns are
-#' taken to be the focal individual, its mother and its father, in this order;
-#' a message says so the first time this happens in an R session.
+#' taken to be the focal individual, its father and its mother, in this order,
+#' as for the arguments of `fastrel_vec()` and [kinship2::kinship()] and as in
+#' pedigrees used in animal breeding (animal, sire, dam); a message says so the
+#' first time this happens in an R session.
 #' If only some of the three are recognised, or if several columns could play
 #' the same role, an error is raised rather than guessing.
 #'
-#' @param ped A data frame (or a tibble) with one row per individual and three columns giving
-#'   the identifier of the individual, of its mother and of its father (`NA` if
-#'   unknown). See the section Columns of `ped`.
+#' @param ped A data frame (or a tibble) with one row per individual and three
+#'   columns giving the identifier of the individual, of its father and of its
+#'   mother (`NA` or 0 if unknown). See the section Columns of `ped`.
 #' @param id Vector of unique individual identifiers. For this argument and
 #'   the next two, a data frame with a single column (what `x[, "id"]` returns
-#'   when `x` is a tibble) is taken as that column.
+#'   when `x` is a tibble) also works.
 #' @param dadid Vector of the same length as `id` with the identifier of each
-#'   individual's father (`NA` if unknown).
+#'   individual's father (`NA` or 0 if unknown).
 #' @param momid Vector of the same length as `id` with the identifier of each
-#'   individual's mother (`NA` if unknown).
+#'   individual's mother (`NA` or 0 if unknown).
 #' @param sex,chrtype Arguments of [kinship2::kinship()], present so that
 #'   calls written for that function work unchanged. `sex` is not used, as the
 #'   sex of individuals does not matter for autosomes; if given, it must have
@@ -61,7 +64,8 @@
 #'   default), `"kinship"`, `"wright"` (or `"Wright"`) or `"hamilton"` (or
 #'   `"Hamilton"`). Abbreviations are accepted (e.g. `"kin"`). See
 #'   [relatedness_metrics] for their definitions. In `fastrel_vec()` it comes
-#'   after the arguments of [kinship2::kinship()], so it is best given by name.
+#'   after the arguments used for compatibility with [kinship2::kinship()], so
+#'   it is best given by name.
 #'
 #' @return A numeric matrix with one row and one column per individual, in the
 #'   order given, and the identifiers as row and column names. With the default
@@ -71,14 +75,23 @@
 #'   [relatedness_metrics]; note that with `metric = "hamilton"` the matrix is
 #'   not symmetric (rows are actors, columns are recipients).
 #'
+#' @references
+#' Emik, L. O., & Terrill, C. E. (1949). Systematic procedures for calculating
+#' inbreeding coefficients. *Journal of Heredity*, 40(2), 51–55.
+#' \doi{10.1093/oxfordjournals.jhered.a105986}
+#'
+#' Henderson, C. R. (1976). A simple method for computing the inverse of a
+#' numerator relationship matrix used in prediction of breeding values.
+#' *Biometrics*, 32(1), 69–83. \doi{10.2307/2529339}
+#'
 #' @seealso [relatedness_metrics] for the measures of relatedness;
 #'   [rel_new()] for the incremental version.
 #'
 #' @examples
 #' ped <- data.frame(
 #'   id  = c("A", "B", "C", "D", "E", "F", "G", "H", "I"),
-#'   mom = c(NA, NA, NA, NA, "A", "C", "E", "E", "E"),
-#'   dad = c(NA, NA, NA, NA, "B", "D", "F", "G", "G"))
+#'   dad = c(NA, NA, NA, NA, "B", "D", "F", "G", "G"),
+#'   mom = c(NA, NA, NA, NA, "A", "C", "E", "E", "E"))
 #' A <- fastrel_ped(ped)
 #' A
 #'
@@ -94,7 +107,7 @@
 #' all.equal(A, fastrel_vec(ped$id, dadid = ped$dad, momid = ped$mom))
 #'
 #' ## columns are found by their names, whatever their order
-#' ped2 <- data.frame(Sire = ped$dad, Dam = ped$mom, Animal = ped$id, weight = 1:9)
+#' ped2 <- data.frame(Sire = ped$dad, Dam = ped$mom, Animal = ped$id)
 #' all.equal(A, fastrel_ped(ped2))
 #'
 #' ## the same as twice the kinship matrix of the kinship2 package
@@ -108,7 +121,7 @@ fastrel_ped <- function(ped,
                         metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")) {
   metric <- match.arg(metric)
   cols <- ped_columns(ped)
-  fastrel_vec(ped[[cols[1L]]], dadid = ped[[cols[3L]]], momid = ped[[cols[2L]]],
+  fastrel_vec(ped[[cols[1L]]], dadid = ped[[cols[2L]]], momid = ped[[cols[3L]]],
               metric = metric)
 }
 
@@ -121,6 +134,24 @@ fastrel_vec <- function(id, dadid, momid, sex, chrtype = "autosome",
   if (!is.character(chrtype) || length(chrtype) != 1L ||
       !identical(tolower(chrtype), "autosome"))
     stop("only autosomes are supported (`chrtype = \"autosome\"`)")
+  p <- parent_indices(id, dadid, momid)
+  id <- p$id
+  n <- length(id)
+  if (!missing(sex) && length(sex) != n)
+    stop("`sex` must have one value per individual (it is not used, since ",
+         "only autosomes are supported). To choose the measure returned, use ",
+         "`metric = `.")
+  if (n == 0L) return(matrix(numeric(0), 0, 0))
+
+  A <- relatedness_cpp(mom = p$mom, dad = p$dad, metric = code)
+  dimnames(A) <- list(id, id)
+  A
+}
+
+## Checks the identifiers of a pedigree and returns them, with the rows of the
+## mother and of the father of each individual (NA if unknown: given as NA or
+## 0, or absent from `id`).
+parent_indices <- function(id, dadid, momid) {
   id    <- id_vector(id, "id")
   dadid <- id_vector(dadid, "dadid")
   momid <- id_vector(momid, "momid")
@@ -131,13 +162,5 @@ fastrel_vec <- function(id, dadid, momid, sex, chrtype = "autosome",
   if (length(momid) != n) stop("Invalid mother id")
   momid <- zero_as_unknown(momid, id)             # 0 = unknown parent
   dadid <- zero_as_unknown(dadid, id)
-  if (!missing(sex) && length(sex) != n)
-    stop("`sex` must have one value per individual (it is not used, since ",
-         "only autosomes are supported). To choose the measure returned, use ",
-         "`metric = `.")
-  if (n == 0L) return(matrix(numeric(0), 0, 0))
-
-  A <- relatedness_cpp(mom = match(momid, id), dad = match(dadid, id), metric = code)
-  dimnames(A) <- list(id, id)
-  A
+  list(id = id, mom = match(momid, id), dad = match(dadid, id))
 }

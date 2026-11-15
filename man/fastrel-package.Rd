@@ -6,14 +6,15 @@
 \alias{fastrel-package}
 \title{fastrel: fast relatedness, relationship and kinship matrices from pedigrees}
 \description{
-Tools to compute the additive relationship ("relatedness") matrix
-\eqn{A = 2\phi}{A = 2 * phi}, where \eqn{\phi}{phi} is the kinship
-coefficient, for autosomal loci, as well as the kinship coefficient itself,
-Wright's coefficient of relationship and Hamilton's regression coefficient
-of relatedness.
+Tools to compute, for autosomal loci of diploid individuals, the additive
+relationship ("relatedness") matrix \eqn{A = 2\phi}{A = 2 * phi} (Emik and
+Terrill 1949; Henderson 1976), where \eqn{\phi}{phi} is the kinship
+coefficient (Malécot 1948), as well as the kinship coefficient itself,
+Wright's coefficient of relationship (Wright 1922) and Hamilton's regression
+coefficient of relatedness (Hamilton 1972; Michod and Hamilton 1980).
 }
 \details{
-Two interfaces are provided:
+Two interfaces compute the relatedness matrix itself:
 \itemize{
 \item \code{\link[=fastrel_ped]{fastrel_ped()}} and \code{\link[=fastrel_vec]{fastrel_vec()}} compute the whole matrix from a
 pedigree in one go, given as a data frame or as vectors (the latter is a
@@ -22,11 +23,22 @@ fast replacement for \code{2 * kinship2::kinship()}).
 incrementally, which is computationally much cheaper when a pedigree keeps growing, as in
 an individual-based simulation. \code{\link[=rel_ids]{rel_ids()}}, \code{\link[=rel_size]{rel_size()}} and
 \code{\link[=rel_capacity]{rel_capacity()}} describe the content of such a store, and \code{\link[=rel_save]{rel_save()}} and
-\code{\link[=rel_load]{rel_load()}} save it to disk and restore it.
+\code{\link[=rel_load]{rel_load()}} save it to disk and restore it. \code{\link[=rel_copy]{rel_copy()}} makes an
+independent copy of it.
 }
+
+\code{\link[=fastrel_inv]{fastrel_inv()}} computes the inverse of the relatedness matrix (the
+precision matrix used by animal models) as a sparse matrix, directly from the
+pedigree, so that it can be obtained even for very large pedigrees.
 
 \code{\link[=sim_ped]{sim_ped()}} simulates a pedigree, and \code{\link[=sim_pop]{sim_pop()}} a population with births,
 deaths, emigration and immigration, for testing and benchmarking.
+
+The README of the package, at \url{https://github.com/courtiol/fastrel} and
+on the website of the package, \url{https://courtiol.github.io/fastrel/}, gives
+an overview with worked examples: relatedness of a whole pedigree,
+incremental updates in a simulation with births and deaths,
+metapopulations, and benchmarks against other packages.
 }
 \section{Measures of relatedness}{
 
@@ -48,15 +60,42 @@ assumed to be unrelated and non-inbred, and an unknown parent is treated as
 unrelated to everybody.
 
 \code{\link[=fastrel_ped]{fastrel_ped()}}, \code{\link[=fastrel_vec]{fastrel_vec()}} and \code{\link[=rel_get]{rel_get()}} can instead return the
-kinship coefficient, Wright's coefficient of relationship or Hamilton's
-regression coefficient of relatedness, with their argument \code{metric}. These
-measures, what they mean and when to use them are described in
-\link{relatedness_metrics}.
+kinship coefficient (Malécot 1948), Wright's coefficient of relationship
+(Wright 1922) or Hamilton's regression coefficient of relatedness
+(Hamilton 1972), with their argument \code{metric}. These measures, what they
+mean and when to use them are described in \link{relatedness_metrics}.
+
+The matrices are computed with the tabular method (Emik and Terrill 1949),
+implemented in C++. See \link{relatedness_metrics} for the full list of
+references.
 }
 
+\references{
+Emik, L. O., & Terrill, C. E. (1949). Systematic procedures for calculating
+inbreeding coefficients. \emph{Journal of Heredity}, 40(2), 51–55.
+\doi{10.1093/oxfordjournals.jhered.a105986}
+
+Hamilton, W. D. (1972). Altruism and related phenomena, mainly in social
+insects. \emph{Annual Review of Ecology and Systematics}, 3, 193–232.
+\doi{10.1146/annurev.es.03.110172.001205}
+
+Henderson, C. R. (1976). A simple method for computing the inverse of a
+numerator relationship matrix used in prediction of breeding values.
+\emph{Biometrics}, 32(1), 69–83. \doi{10.2307/2529339}
+
+Malécot, G. (1948). \emph{Les mathématiques de l'hérédité}. Masson et Cie,
+Paris.
+
+Michod, R. E., & Hamilton, W. D. (1980). Coefficients of relatedness in
+sociobiology. \emph{Nature}, 288, 694–697. \doi{10.1038/288694a0}
+
+Wright, S. (1922). Coefficients of inbreeding and relationship. \emph{The
+American Naturalist}, 56(645), 330–338. \doi{10.1086/279872}
+}
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://courtiol.github.io/fastrel/}
   \item \url{https://github.com/courtiol/fastrel}
   \item Report bugs at \url{https://github.com/courtiol/fastrel/issues}
 }

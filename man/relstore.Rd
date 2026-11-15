@@ -3,6 +3,7 @@
 \name{relstore}
 \alias{relstore}
 \alias{rel_new}
+\alias{rel_copy}
 \alias{rel_add}
 \alias{rel_remove}
 \alias{rel_get}
@@ -13,6 +14,8 @@
 \title{Incremental store of the relatedness matrix}
 \usage{
 rel_new(remember_removed = c("none", "fingerprint", "id"))
+
+rel_copy(rel)
 
 rel_add(rel, ped)
 
@@ -43,9 +46,9 @@ individuals).}
 \item{rel}{A store created by \code{rel_new()}.}
 
 \item{ped}{A data frame (or a tibble) with one row per individual to add and three columns
-giving the identifier of the individual, of its mother and of its father
+giving the identifier of the individual, of its father and of its mother
 (\code{NA} or 0 for unknown parents). The columns are found by their names (e.g.
-\code{id}, \code{mom}, \code{dad} or \code{Animal}, \code{Dam}, \code{Sire}), whatever their order, and
+\code{id}, \code{dad}, \code{mom} or \code{Animal}, \code{Sire}, \code{Dam}), whatever their order, and
 other columns are ignored: see the section Columns of \code{ped} in
 \code{\link[=fastrel_ped]{fastrel_ped()}}. Only individuals not yet in the store can be added.
 Known parents must be in the store or in \code{ped} itself: any other
@@ -70,7 +73,9 @@ and the conversion is done on the matrix extracted only.}
 \item{...}{Ignored.}
 }
 \value{
-\code{rel_new()} returns the store. \code{rel_add()} and \code{rel_remove()} return
+\code{rel_new()} returns the store. \code{rel_copy()} returns a new store,
+identical to \code{rel} (same individuals, slots, capacity and trace of the
+removed individuals) but independent of it. \code{rel_add()} and \code{rel_remove()} return
 the store invisibly. \code{rel_get()} returns a matrix with \code{ids} as dimnames:
 with the default \code{metric = "additive"}, it is symmetric with diagonal
 \code{1 + F} (see \link{relatedness_metrics} for the other measures). \code{rel_ids()}
@@ -94,10 +99,11 @@ The functions work as follows:
 \itemize{
 \item \code{rel_new()} creates an empty store.
 \item \code{rel_add()} adds individuals, given by a data frame with columns for the
-focal individual, its mother and its father.
+focal individual, its father and its mother.
 \item \code{rel_remove()} removes individuals.
 \item \code{rel_get()} extracts the relatedness matrix among chosen individuals, as
 any of the measures described in \link{relatedness_metrics}.
+\item \code{rel_copy()} returns an independent copy of a store.
 \item \code{rel_ids()} lists the individuals in the store.
 \item \code{rel_size()} and \code{rel_capacity()} report the number of individuals in the
 store and the number of slots allocated.
@@ -131,7 +137,8 @@ differ from the usual behaviour of R objects:
 \item Like any R environment, a store is modified in place and is not copied
 when it is assigned or passed to a function: \code{rel_add()} and \code{rel_remove()}
 change the store they are given, and after \code{rel2 <- rel} both names refer
-to the same store.
+to the same store. Use \code{rel_copy()} to get a store that can be modified
+without changing the original.
 \item The matrix lives in memory managed by C++, outside the memory managed by
 R. It is therefore not written by \code{\link[=save]{save()}} or \code{\link[=saveRDS]{saveRDS()}}, and a store
 read back from such a file is unusable: use \code{\link[=rel_save]{rel_save()}} and \code{\link[=rel_load]{rel_load()}}
@@ -140,7 +147,7 @@ the section Memory management.
 }
 
 The content of the environment is internal: use the functions above rather
-than reading or modifying it.
+than reading or modifying it directly.
 }
 
 \section{What to keep in the store}{
@@ -228,11 +235,11 @@ on your machine with the script
 rel <- rel_new()
 
 ## founders: unknown parents
-rel_add(rel, data.frame(id = c("A", "B", "C", "D"), mom = NA, dad = NA))
+rel_add(rel, data.frame(id = c("A", "B", "C", "D"), dad = NA, mom = NA))
 
 ## births: the columns are found by their names, in any order
 rel_add(rel, data.frame(sire = c("B", "D"), dam = c("A", "C"), animal = c("E", "F")))
-rel_add(rel, data.frame(id = "G", mom = "E", dad = "F"))
+rel_add(rel, data.frame(id = "G", dad = "F", mom = "E"))
 
 ## deaths (or emigration): free the slots
 rel_remove(rel, c("A", "B", "C", "D"))
@@ -240,28 +247,34 @@ rel_size(rel)
 rel_ids(rel)
 
 ## a mother-son mating
-rel_add(rel, data.frame(id = "H", mom = "E", dad = "G"))
+rel_add(rel, data.frame(id = "H", dad = "G", mom = "E"))
 
 A <- rel_get(rel)
 A
 diag(A) - 1   # inbreeding coefficients
 rel_get(rel, metric = "kinship")   # other measures: see ?relatedness_metrics
 
+## an independent copy, e.g. to explore two scenarios from the same state
+rel2 <- rel_copy(rel)
+rel_remove(rel2, "H")
+rel_ids(rel)    # unchanged
+rel_ids(rel2)
+
 ## two patches: one store, and the patch of each individual kept aside
 rel <- rel_new(remember_removed = "id")
-rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
+rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), dad = NA, mom = NA))
 patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B")
-rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2"))   # born in A
+rel_add(rel, data.frame(id = "a3", dad = "a2", mom = "a1"))   # born in A
 patch["a3"] <- "A"
 patch["a3"] <- "B"                                            # a3 moves to B
-rel_add(rel, data.frame(id = "b3", mom = "b1", dad = "a3"))   # and breeds there
+rel_add(rel, data.frame(id = "b3", dad = "a3", mom = "b1"))   # and breeds there
 patch["b3"] <- "B"
 rel_get(rel, names(patch)[patch == "B"])
 rel_get(rel)["b3", "a1"]   # b3 is related to its grandparent in patch A
 
 ## with remember_removed = "id", a removed individual cannot come back
 rel_remove(rel, "a3")
-try(rel_add(rel, data.frame(id = "a3", mom = NA, dad = NA)))
+try(rel_add(rel, data.frame(id = "a3", dad = NA, mom = NA)))
 }
 \seealso{
 \code{\link[=fastrel_ped]{fastrel_ped()}} to compute the whole matrix from a pedigree;

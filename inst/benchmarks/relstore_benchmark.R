@@ -11,9 +11,9 @@ source_orig <- function(id, dadid, momid, ...) {
 
 ## comparison ----
 set.seed(1)
-ped <- sim_ped(1000)                                # columns: id, momid, dadid, sex
+ped <- sim_ped(1000)                                # columns: id, dadid, momid, sex
 rel <- rel_new()
-rel_add(rel, ped[, c("id", "momid", "dadid")])      # any row order works
+rel_add(rel, ped[, c("id", "dadid", "momid")])      # any row order works
 A1 <- rel_get(rel, ped$id)
 A2 <- fastrel_vec(ped$id, ped$dadid, ped$momid)
 A3 <- source_orig(ped$id, ped$dadid, ped$momid)
@@ -29,7 +29,7 @@ microbenchmark(orig  = source_orig(ped$id, ped$dadid, ped$momid),
                fast  = fastrel_vec(ped$id, ped$dadid, ped$momid),
                store_build = {
                  r <- rel_new()
-                 rel_add(r, ped[, c("id", "momid", "dadid")])
+                 rel_add(r, ped[, c("id", "dadid", "momid")])
                  rel_get(r, ped$id)
                },
                store_get = rel_get(rel, ped$id),
@@ -45,7 +45,7 @@ batch <- 20
 steps <- seq(1000, 4000, by = batch)
 
 rel <- rel_new()
-rel_add(rel, ped[1:1000, c("id", "momid", "dadid")])
+rel_add(rel, ped[1:1000, c("id", "dadid", "momid")])
 
 ped_ori <- ped[1:1000, ]
 rec_time <- data.frame(ped_length = steps, relstore = 0, orig = 0, cap = 0)
@@ -56,7 +56,7 @@ for (n in steps[-1]) {
 
   ## incremental store: add the newborns and extract the whole matrix
   rec_time$relstore[k] <- system.time({
-    rel_add(rel, new[, c("id", "momid", "dadid")])
+    rel_add(rel, new[, c("id", "dadid", "momid")])
     rel_get(rel)
   })[["elapsed"]]
 

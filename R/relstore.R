@@ -14,10 +14,11 @@
 #' The functions work as follows:
 #' * `rel_new()` creates an empty store.
 #' * `rel_add()` adds individuals, given by a data frame with columns for the
-#'   focal individual, its mother and its father.
+#'   focal individual, its father and its mother.
 #' * `rel_remove()` removes individuals.
 #' * `rel_get()` extracts the relatedness matrix among chosen individuals, as
 #'   any of the measures described in [relatedness_metrics].
+#' * `rel_copy()` returns an independent copy of a store.
 #' * `rel_ids()` lists the individuals in the store.
 #' * `rel_size()` and `rel_capacity()` report the number of individuals in the
 #'   store and the number of slots allocated.
@@ -44,7 +45,8 @@
 #' * Like any R environment, a store is modified in place and is not copied
 #'   when it is assigned or passed to a function: `rel_add()` and `rel_remove()`
 #'   change the store they are given, and after `rel2 <- rel` both names refer
-#'   to the same store.
+#'   to the same store. Use `rel_copy()` to get a store that can be modified
+#'   without changing the original.
 #' * The matrix lives in memory managed by C++, outside the memory managed by
 #'   R. It is therefore not written by [save()] or [saveRDS()], and a store
 #'   read back from such a file is unusable: use [rel_save()] and [rel_load()]
@@ -52,7 +54,7 @@
 #'   the section Memory management.
 #'
 #' The content of the environment is internal: use the functions above rather
-#' than reading or modifying it.
+#' than reading or modifying it directly.
 #'
 #' @section What to keep in the store:
 #' Keep an individual for as long as it can still become a parent, or for as long
@@ -133,9 +135,9 @@
 #'   individuals).
 #' @param rel A store created by `rel_new()`.
 #' @param ped A data frame (or a tibble) with one row per individual to add and three columns
-#'   giving the identifier of the individual, of its mother and of its father
+#'   giving the identifier of the individual, of its father and of its mother
 #'   (`NA` or 0 for unknown parents). The columns are found by their names (e.g.
-#'   `id`, `mom`, `dad` or `Animal`, `Dam`, `Sire`), whatever their order, and
+#'   `id`, `dad`, `mom` or `Animal`, `Sire`, `Dam`), whatever their order, and
 #'   other columns are ignored: see the section Columns of `ped` in
 #'   [fastrel_ped()]. Only individuals not yet in the store can be added.
 #'   Known parents must be in the store or in `ped` itself: any other
@@ -153,7 +155,9 @@
 #'   [relatedness_metrics]. The store always holds the additive relationship,
 #'   and the conversion is done on the matrix extracted only.
 #'
-#' @return `rel_new()` returns the store. `rel_add()` and `rel_remove()` return
+#' @return `rel_new()` returns the store. `rel_copy()` returns a new store,
+#'   identical to `rel` (same individuals, slots, capacity and trace of the
+#'   removed individuals) but independent of it. `rel_add()` and `rel_remove()` return
 #'   the store invisibly. `rel_get()` returns a matrix with `ids` as dimnames:
 #'   with the default `metric = "additive"`, it is symmetric with diagonal
 #'   `1 + F` (see [relatedness_metrics] for the other measures). `rel_ids()`
@@ -167,11 +171,11 @@
 #' rel <- rel_new()
 #'
 #' ## founders: unknown parents
-#' rel_add(rel, data.frame(id = c("A", "B", "C", "D"), mom = NA, dad = NA))
+#' rel_add(rel, data.frame(id = c("A", "B", "C", "D"), dad = NA, mom = NA))
 #'
 #' ## births: the columns are found by their names, in any order
 #' rel_add(rel, data.frame(sire = c("B", "D"), dam = c("A", "C"), animal = c("E", "F")))
-#' rel_add(rel, data.frame(id = "G", mom = "E", dad = "F"))
+#' rel_add(rel, data.frame(id = "G", dad = "F", mom = "E"))
 #'
 #' ## deaths (or emigration): free the slots
 #' rel_remove(rel, c("A", "B", "C", "D"))
@@ -179,28 +183,34 @@
 #' rel_ids(rel)
 #'
 #' ## a mother-son mating
-#' rel_add(rel, data.frame(id = "H", mom = "E", dad = "G"))
+#' rel_add(rel, data.frame(id = "H", dad = "G", mom = "E"))
 #'
 #' A <- rel_get(rel)
 #' A
 #' diag(A) - 1   # inbreeding coefficients
 #' rel_get(rel, metric = "kinship")   # other measures: see ?relatedness_metrics
 #'
+#' ## an independent copy, e.g. to explore two scenarios from the same state
+#' rel2 <- rel_copy(rel)
+#' rel_remove(rel2, "H")
+#' rel_ids(rel)    # unchanged
+#' rel_ids(rel2)
+#'
 #' ## two patches: one store, and the patch of each individual kept aside
 #' rel <- rel_new(remember_removed = "id")
-#' rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
+#' rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), dad = NA, mom = NA))
 #' patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B")
-#' rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2"))   # born in A
+#' rel_add(rel, data.frame(id = "a3", dad = "a2", mom = "a1"))   # born in A
 #' patch["a3"] <- "A"
 #' patch["a3"] <- "B"                                            # a3 moves to B
-#' rel_add(rel, data.frame(id = "b3", mom = "b1", dad = "a3"))   # and breeds there
+#' rel_add(rel, data.frame(id = "b3", dad = "a3", mom = "b1"))   # and breeds there
 #' patch["b3"] <- "B"
 #' rel_get(rel, names(patch)[patch == "B"])
 #' rel_get(rel)["b3", "a1"]   # b3 is related to its grandparent in patch A
 #'
 #' ## with remember_removed = "id", a removed individual cannot come back
 #' rel_remove(rel, "a3")
-#' try(rel_add(rel, data.frame(id = "a3", mom = NA, dad = NA)))
+#' try(rel_add(rel, data.frame(id = "a3", dad = NA, mom = NA)))
 #' @name relstore
 NULL
 
@@ -222,12 +232,23 @@ rel_new <- function(remember_removed = c("none", "fingerprint", "id")) {
 
 #' @rdname relstore
 #' @export
+rel_copy <- function(rel) {
+  check_store(rel)
+  out <- rel_new(c("none", "fingerprint", "id")[rel$ks$remember() + 1L])
+  out$ks$copy_from(rel$ptr)
+  out$ids   <- rel$ids
+  out$slots <- rel$slots
+  out
+}
+
+#' @rdname relstore
+#' @export
 rel_add <- function(rel, ped) {
   check_store(rel)
   cols <- ped_columns(ped)                        # found by their names
   id  <- as.character(ped[[cols[1L]]])
-  mom <- as.character(ped[[cols[2L]]])
-  dad <- as.character(ped[[cols[3L]]])
+  dad <- as.character(ped[[cols[2L]]])
+  mom <- as.character(ped[[cols[3L]]])
   n <- length(id)
   if (n == 0L) return(invisible(rel))             # nothing to add
 
@@ -383,8 +404,8 @@ nil_pointer <- methods::new("externalptr")
 #'
 #' @examples
 #' rel <- rel_new()
-#' rel_add(rel, data.frame(id = c("A", "B"), mom = NA, dad = NA))
-#' rel_add(rel, data.frame(id = "C", mom = "A", dad = "B"))
+#' rel_add(rel, data.frame(id = c("A", "B"), dad = NA, mom = NA))
+#' rel_add(rel, data.frame(id = "C", dad = "B", mom = "A"))
 #'
 #' f <- tempfile(fileext = ".rds")
 #' rel_save(rel, f)
@@ -392,7 +413,7 @@ nil_pointer <- methods::new("externalptr")
 #' all.equal(rel_get(rel), rel_get(rel2))
 #'
 #' ## the restored store can be used as usual
-#' rel_add(rel2, data.frame(id = "D", mom = "C", dad = "A"))
+#' rel_add(rel2, data.frame(id = "D", dad = "A", mom = "C"))
 #' @seealso [rel_new()]
 #' @name relstore_io
 NULL

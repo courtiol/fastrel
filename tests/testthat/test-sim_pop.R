@@ -1,7 +1,7 @@
 test_that("sim_pop returns a consistent pedigree", {
   set.seed(5)
   pop <- sim_pop(30, n_init = 40)
-  expect_named(pop, c("id", "momid", "dadid", "sex", "arrival", "exit", "fate", "origin"))
+  expect_named(pop, c("id", "dadid", "momid", "sex", "arrival", "exit", "fate", "origin"))
   expect_false(anyDuplicated(pop$id) > 0)
   expect_equal(sum(pop$origin == "founder"), 40)
   ## parents come first and arrived earlier than their offspring
@@ -26,7 +26,7 @@ test_that("population is roughly stable and replay with the store is exact", {
   full <- fastrel_vec(pop$id, pop$dadid, pop$momid)
   rel <- rel_new()
   for (t in 0:40) {
-    rel_add(rel, pop[pop$arrival == t, c("id", "momid", "dadid")])
+    rel_add(rel, pop[pop$arrival == t, c("id", "dadid", "momid")])
     rel_remove(rel, pop$id[!is.na(pop$exit) & pop$exit == t])
     n_alive <- sum(pop$arrival <= t & (is.na(pop$exit) | pop$exit > t))
     expect_equal(rel_size(rel), n_alive)

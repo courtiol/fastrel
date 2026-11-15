@@ -19,7 +19,7 @@
 #'   animal breeding expect (e.g. [ggroups::buildA()]). If `FALSE` (the
 #'   default), identifiers are character strings and unknown parents are `NA`.
 #'
-#' @return A data frame with columns `id`, `momid`, `dadid` and `sex` (1 =
+#' @return A data frame with columns `id`, `dadid`, `momid` and `sex` (1 =
 #'   male, 2 = female). Identifiers are character strings such as `"ind0001"`,
 #'   with `NA` for unknown parents, or with `numeric_ids = TRUE` integers, with
 #'   0 for unknown parents.
@@ -73,12 +73,12 @@ sim_ped <- function(n = 1000, n_founders = 40, window = 150,
   if (numeric_ids) {
     mom[is.na(mom)] <- 0L
     dad[is.na(dad)] <- 0L
-    return(data.frame(id = seq_len(n), momid = mom, dadid = dad, sex = sex))
+    return(data.frame(id = seq_len(n), dadid = dad, momid = mom, sex = sex))
   }
 
   width <- max(4L, nchar(as.character(n)))
   ped <- data.frame(id = sprintf(paste0("ind%0", width, "d"), 1:n), sex = sex)
   ped$momid <- ped$id[mom]
   ped$dadid <- ped$id[dad]
-  ped[, c("id", "momid", "dadid", "sex")]
+  ped[, c("id", "dadid", "momid", "sex")]
 }

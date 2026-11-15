@@ -28,7 +28,7 @@ animal breeding expect (e.g. \code{\link[ggroups:buildA]{ggroups::buildA()}}). I
 default), identifiers are character strings and unknown parents are \code{NA}.}
 }
 \value{
-A data frame with columns \code{id}, \code{momid}, \code{dadid} and \code{sex} (1 =
+A data frame with columns \code{id}, \code{dadid}, \code{momid} and \code{sex} (1 =
 male, 2 = female). Identifiers are character strings such as \code{"ind0001"},
 with \code{NA} for unknown parents, or with \code{numeric_ids = TRUE} integers, with
 0 for unknown parents.

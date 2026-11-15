@@ -1,0 +1,82 @@
+#' Inverse of the relatedness matrix (precision matrix)
+#'
+#' Computes the inverse \eqn{A^{-1}}{A^-1} of the additive relationship matrix
+#' \eqn{A = 2\phi}{A = 2 * phi} of a pedigree, i.e. the precision matrix of
+#' the additive genetic values, as a sparse matrix. It is built directly from
+#' the pedigree with the rules of Henderson (1976) and Quaas (1976), without
+#' ever computing \eqn{A}, so it can be obtained for pedigrees far too large
+#' for [fastrel_ped()].
+#'
+#' Whereas \eqn{A} is dense in most pedigrees (nearly all individuals of a
+#' population end up sharing an ancestor), its inverse is always sparse: each
+#' individual adds at most six distinct entries to its upper triangle, in the
+#' cells of itself and of its parents. This is what makes the inverse useful
+#' in mixed models of genetic values (animal models), which can be fitted with
+#' \eqn{A^{-1}}{A^-1} rather than with \eqn{A}: e.g. as 
+#' `covStruct=list(precision=Ainv)` in `spaMM::fitme()` or `ginverse=list(var=Ainv)` in
+#' `MCMCglmm::MCMCglmm()`.
+#'
+#' The inverse is \eqn{A^{-1} = \sum_i q_i q_i^\top / D_i}{A^-1 = sum over
+#' i of q_i q_i' / D_i}, where \eqn{q_i} has 1 for individual \eqn{i} and
+#' \eqn{-1/2} for each of its known parents, and \eqn{D_i} is the variance of
+#' the Mendelian sampling of \eqn{i}, relative to the additive genetic
+#' variance: \eqn{1/2 - (F_m + F_d)/4} if both parents are known,
+#' \eqn{3/4 - F_p/4} if only parent \eqn{p} is known, and 1 if no parent is
+#' known, \eqn{F} being the inbreeding coefficients. These are computed with
+#' the algorithm of Meuwissen and Luo (1992), which needs memory proportional
+#' to the number of individuals only.
+#'
+#' The inverse of the kinship matrix is `2 * fastrel_inv(ped)`. The other
+#' measures of [relatedness_metrics] are not offered here.
+#'
+#' @inheritParams fastrel_ped
+#'
+#' @return A symmetric sparse matrix of class `"dsCMatrix"` (see the package
+#'   Matrix), with the identifiers of the individuals as dimnames, in the
+#'   order of the rows of `ped`. Use [as.matrix()] to get a base (dense)
+#'   matrix.
+#'
+#' @references
+#' Henderson, C. R. (1976). A simple method for computing the inverse of a
+#' numerator relationship matrix used in prediction of breeding values.
+#' *Biometrics*, 32(1), 69–83. \doi{10.2307/2529339}
+#'
+#' Meuwissen, T. H. E., & Luo, Z. (1992). Computing inbreeding coefficients in
+#' large populations. *Genetics Selection Evolution*, 24(4), 305–313.
+#' \doi{10.1186/1297-9686-24-4-305}
+#'
+#' Quaas, R. L. (1976). Computing the diagonal elements and inverse of a large
+#' numerator relationship matrix. *Biometrics*, 32(4), 949–953.
+#' \doi{10.2307/2529279}
+#'
+#' @seealso [fastrel_ped()] for the relatedness matrix itself.
+#'
+#' @examples
+#' ped <- data.frame(id  = c("A", "B", "C", "D", "E"),
+#'                   dad = c(NA,  NA,  "A", "A", "C"),
+#'                   mom = c(NA,  NA,  "B", "B", "D"))   # E: offspring of siblings
+#' Ainv <- fastrel_inv(ped)
+#' Ainv
+#'
+#' ## it is the inverse of the relatedness matrix
+#' all.equal(as.matrix(Ainv), solve(fastrel_ped(ped)))
+#'
+#' ## a large pedigree: the inverse is sparse
+#' set.seed(1)
+#' big <- sim_ped(2000)
+#' Ainv <- fastrel_inv(big)
+#' Matrix::nnzero(Ainv) / prod(dim(Ainv))   # share of nonzero entries
+#' @export
+fastrel_inv <- function(ped) {
+  cols <- ped_columns(ped)
+  p <- parent_indices(ped[[cols[1L]]], dadid = ped[[cols[2L]]], momid = ped[[cols[3L]]])
+  n <- length(p$id)
+  ids <- as.character(p$id)
+  if (n == 0L)
+    return(Matrix::sparseMatrix(i = integer(0), j = integer(0), x = numeric(0),
+                                dims = c(0L, 0L), symmetric = TRUE))
+  t <- precision_cpp(mom = p$mom, dad = p$dad)
+  ## repeated (i, j) pairs are summed by sparseMatrix()
+  Matrix::sparseMatrix(i = t$i, j = t$j, x = t$x, dims = c(n, n),
+                       dimnames = list(ids, ids), symmetric = TRUE)
+}

@@ -79,28 +79,40 @@ test_that("fastrel_ped gives the same as fastrel_vec, whatever the columns", {
   expect_equal(fastrel_ped(data.frame(dad_id = p$dad, Mom.ID = p$mom, ind_id = p$id)), A0)
   expect_equal(fastrel_ped(data.frame(IID = p$id, PAT = p$dad, MAT = p$mom)), A0)
   set.seed(1)
-  ped <- sim_ped(100)                            # id, momid, dadid, sex
+  ped <- sim_ped(100)                            # id, dadid, momid, sex
   expect_equal(fastrel_ped(ped), fastrel_vec(ped$id, ped$dadid, ped$momid))
   ## no recognised name at all: the first three columns, in this order, with a
   ## message the first time only
   memory <- fastrel:::ped_cache                 # start as in a new session
   memory$told_position <- NULL
   memory$names <- NULL
-  expect_message(A1 <- fastrel_ped(data.frame(x = p$id, y = p$mom, z = p$dad)),
+  expect_message(A1 <- fastrel_ped(data.frame(x = p$id, y = p$dad, z = p$mom)),
                  "first three columns \\(x, y, z\\).*once per session")
   expect_equal(A1, A0)
-  expect_no_message(fastrel_ped(data.frame(u = p$id, v = p$mom, w = p$dad)))
+  expect_no_message(fastrel_ped(data.frame(u = p$id, v = p$dad, w = p$mom)))
   rel <- rel_new()
-  expect_no_message(rel_add(rel, data.frame(a = p$id, b = p$mom, c = p$dad)))
+  expect_no_message(rel_add(rel, data.frame(a = p$id, b = p$dad, c = p$mom)))
   expect_equal(rel_get(rel, p$id), A0)
   expect_equal(dim(fastrel_ped(p[0, ])), c(0L, 0L))
+})
+
+test_that("the columns are returned in the order individual, father, mother", {
+  ## the result does not depend on which parent is which, so check directly
+  memory <- fastrel:::ped_cache
+  memory$told_position <- TRUE                  # no message
+  memory$names <- NULL
+  cols <- function(...) fastrel:::ped_columns(data.frame(..., check.names = FALSE))
+  expect_identical(cols(a = 1, b = 2, c = 3), 1:3)          # by position
+  expect_identical(cols(id = 1, sire = 2, dam = 3), 1:3)
+  expect_identical(cols(id = 1, dam = 2, sire = 3), c(1L, 3L, 2L))
+  expect_identical(cols(momid = 1, id = 2, dadid = 3), c(2L, 3L, 1L))
 })
 
 test_that("fastrel_ped refuses ambiguous or incomplete columns", {
   p <- test_ped()
   expect_error(fastrel_ped(data.frame(id = p$id, mom = p$mom, x = p$dad)), "father")
   expect_error(fastrel_ped(data.frame(id = p$id, m = p$mom, d = p$dad)),
-               "mother or as the father")
+               "father or as the mother")
   expect_error(fastrel_ped(data.frame(x = p$id, mom = p$mom, dad = p$dad)), "focal")
   expect_error(fastrel_ped(data.frame(id = p$id, mom = p$mom, mother = p$mom, dad = p$dad)),
                "several columns.*mother.*mom, mother")

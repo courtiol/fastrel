@@ -14,7 +14,7 @@ rec <- data.frame(step = 0:n_steps, present = 0L, ever = 0L,
                   store = 0, scratch = 0, capacity = 0L)
 
 for (t in 0:n_steps) {
-  arrivals <- pop[pop$arrival == t, c("id", "momid", "dadid")]
+  arrivals <- pop[pop$arrival == t, c("id", "dadid", "momid")]
   leaving  <- pop$id[!is.na(pop$exit) & pop$exit == t]
 
   ## incremental store: add the arrivals, then remove the individuals that left
