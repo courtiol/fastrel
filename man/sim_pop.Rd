@@ -40,7 +40,7 @@ that did not die.}
 A data frame with one row per individual ever present, in order of
 arrival, so parents always come before their offspring, and with columns:
 \itemize{
-\item \code{id}, \code{momid}, \code{dadid}: identifiers (\code{NA} for unknown parents);
+\item \code{id}, \code{dadid}, \code{momid}: identifiers (\code{NA} for unknown parents);
 \item \code{sex}: 1 = male, 2 = female;
 \item \code{arrival}: step at which the individual enters the pedigree (0 for
 founders);

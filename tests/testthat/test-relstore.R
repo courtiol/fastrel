@@ -3,7 +3,7 @@ test_that("store reproduces fastrel_vec, any row order, with growth", {
   ped <- sim_ped(400, n_founders = 20, window = 60)
   rel <- rel_new()
   set.seed(3)
-  rel_add(rel, ped[sample(nrow(ped)), c("id", "momid", "dadid")])
+  rel_add(rel, ped[sample(nrow(ped)), c("id", "dadid", "momid")])
   expect_equal(rel_size(rel), 400L)
   expect_gte(rel_capacity(rel), 400L)
   expect_equal(rel_get(rel, ped$id),
@@ -15,11 +15,11 @@ test_that("incremental additions and removals stay exact (slot reuse)", {
   ped <- sim_ped(600, n_founders = 20, window = 60)
   full <- fastrel_vec(ped$id, ped$dadid, ped$momid)
   rel <- rel_new()
-  rel_add(rel, ped[1:30, c("id", "momid", "dadid")])
+  rel_add(rel, ped[1:30, c("id", "dadid", "momid")])
   batch <- 10
   for (start in seq(31, 591, by = batch)) {
     rows <- start:(start + batch - 1)
-    rel_add(rel, ped[rows, c("id", "momid", "dadid")])
+    rel_add(rel, ped[rows, c("id", "dadid", "momid")])
     ## remove only individuals that never parent again
     later <- ped[-seq_len(max(rows)), ]
     future_parents <- unique(stats::na.omit(c(later$momid, later$dadid)))
@@ -99,7 +99,7 @@ test_that("an oversized or emptied store gives the same values", {
   ped <- sim_ped(120, n_founders = 10, window = 30)
   full <- fastrel_vec(ped$id, ped$dadid, ped$momid)
   rel <- rel_new()
-  rel_add(rel, ped[, c("id", "momid", "dadid")])
+  rel_add(rel, ped[, c("id", "dadid", "momid")])
   expect_equal(rel_get(rel, ped$id), full)
   cap <- rel_capacity(rel)
   ## empty it completely and start again: no value must be left behind
@@ -107,7 +107,7 @@ test_that("an oversized or emptied store gives the same values", {
   expect_equal(rel_size(rel), 0L)
   expect_equal(dim(rel_get(rel)), c(0L, 0L))
   ## (under new identifiers: a removed individual cannot be added again)
-  ped2 <- ped[, c("id", "momid", "dadid")]
+  ped2 <- ped[, c("id", "dadid", "momid")]
   ped2[] <- lapply(ped2, function(x) ifelse(is.na(x), NA, paste0("new_", x)))
   rel_add(rel, ped2)
   expect_equal(unname(rel_get(rel, ped2$id)), unname(full))
@@ -207,7 +207,7 @@ test_that("the capacity is handled automatically and stays close to the peak", {
   full <- fastrel_vec(ped$id, ped$dadid, ped$momid)
   ## births one at a time; from the 301st on, the oldest individual is removed
   for (i in seq_len(nrow(ped))) {
-    rel_add(rel, ped[i, c("id", "momid", "dadid")])
+    rel_add(rel, ped[i, c("id", "dadid", "momid")])
     if (i > 300) rel_remove(rel, ped$id[i - 300])
     expect_gte(rel_capacity(rel), rel_size(rel))
   }
@@ -217,7 +217,7 @@ test_that("the capacity is handled automatically and stays close to the peak", {
   expect_equal(rel_get(rel, keep), full[keep, keep])
   ## a large batch makes room in one step, without overshooting
   rel2 <- rel_new()
-  rel_add(rel2, ped[, c("id", "momid", "dadid")])
+  rel_add(rel2, ped[, c("id", "dadid", "momid")])
   expect_equal(rel_capacity(rel2), 900L)
   expect_equal(rel_get(rel2, ped$id), full)
 })
@@ -234,7 +234,7 @@ test_that("rel_ids, and rel_get with a subset, another order or duplicates", {
   ped <- sim_ped(80, n_founders = 10, window = 20)
   full <- fastrel_vec(ped$id, ped$dadid, ped$momid)
   rel <- rel_new()
-  for (i in seq_len(nrow(ped))) rel_add(rel, ped[i, c("id", "momid", "dadid")])
+  for (i in seq_len(nrow(ped))) rel_add(rel, ped[i, c("id", "dadid", "momid")])
   expect_identical(rel_ids(rel), ped$id)       # order of insertion
   expect_error(rel_ids(list()), "store")
   sel <- ped$id[c(70, 3, 41, 3, 80)]

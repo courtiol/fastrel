@@ -70,10 +70,10 @@ tail(ped, n = 3) # last 3 individuals
 ```
 
 ```
-##           id   momid   dadid sex
-## 998  ind0998 ind0989 ind0959   1
-## 999  ind0999 ind0912    <NA>   1
-## 1000 ind1000 ind0871 ind0879   1
+##           id   dadid   momid sex
+## 998  ind0998 ind0959 ind0989   1
+## 999  ind0999    <NA> ind0912   1
+## 1000 ind1000 ind0879 ind0871   1
 ```
 
 ``` r
@@ -101,8 +101,8 @@ max(diag(A) - 1)   # maximum inbreeding coefficients
 
 ``` r
 rel <- rel_new() # initialize the store (once per simulation)
-rel_add(rel, data.frame(id = c("A", "B"), mom = NA, dad = NA)) # add founders
-rel_add(rel, data.frame(id = c("C", "D"), mom = c("A", "A"), dad = c(NA, "B"))) # add births
+rel_add(rel, data.frame(id = c("A", "B"), dad = NA, mom = NA)) # add founders
+rel_add(rel, data.frame(id = c("C", "D"), dad = c(NA, "B"), mom = c("A", "A"))) # add births
 rel_remove(rel, c("A", "B")) # remove dead / emigrated: free their slots
 rel_get(rel) # extract relatedness matrix between remaining individuals
 ```
@@ -140,8 +140,8 @@ and two individuals (O1, O2) by selfing P:
 
 ``` r
 ped_selfing <- data.frame(id  = c("G", "P", "O1", "O2"),
-                          mom = c(NA, "G", "P", "P"),
-                          dad = c(NA, "G", "P", "P"))
+                          dad = c(NA, "G", "P", "P"),
+                          mom = c(NA, "G", "P", "P"))
 fastrel_ped(ped_selfing)                      # additive relationship
 ```
 
@@ -228,11 +228,11 @@ at each step, and we record the mean relatedness among the individuals present:
 rel <- rel_new()
 set.seed(1)
 pop <- sim_pop(n_steps = 1000, n_init = 200) # simulate pop (fine tuning the life history is possible)
-head(pop) # first 6 simulated individual life histories (no momid and dadid since founder)
+head(pop) # first 6 simulated individual life histories (no dadid and momid since founder)
 ```
 
 ```
-##            id momid dadid sex arrival exit      fate  origin
+##            id dadid momid sex arrival exit      fate  origin
 ## 1 ind00000001  <NA>  <NA>   1       0   20 emigrated founder
 ## 2 ind00000002  <NA>  <NA>   2       0    7      dead founder
 ## 3 ind00000003  <NA>  <NA>   1       0    2      dead founder
@@ -244,7 +244,7 @@ head(pop) # first 6 simulated individual life histories (no momid and dadid sinc
 ``` r
 mean_relatedness <- data.frame(step = 0:1000, mean_rel = NA) # record mean relatedness
 for (t in 0:1000) {
-  rel_add(rel, pop[pop$arrival == t, c("id", "momid", "dadid")])
+  rel_add(rel, pop[pop$arrival == t, c("id", "dadid", "momid")])
   rel_remove(rel, pop$id[!is.na(pop$exit) & pop$exit == t])
   A <- rel_get(rel)
   mean_relatedness[mean_relatedness$step == t, "mean_rel"] <- mean(A[upper.tri(A)])
@@ -282,11 +282,11 @@ offspring they produce elsewhere.
 
 ``` r
 rel <- rel_new(remember_removed = "fingerprint")
-rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
+rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), dad = NA, mom = NA))
 patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B") # the patch of each individual
-rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2")) # a3 is born in patch A...
+rel_add(rel, data.frame(id = "a3", dad = "a2", mom = "a1")) # a3 is born in patch A...
 patch["a3"] <- "B"                                          # ... and moves to patch B
-rel_add(rel, data.frame(id = "b3", mom = "b1", dad = "a3")) # where it reproduces
+rel_add(rel, data.frame(id = "b3", dad = "a3", mom = "b1")) # where it reproduces
 patch["b3"] <- "B"
 rel_get(rel, names(patch)[patch == "B"]) # relatedness within patch B
 ```
@@ -347,7 +347,7 @@ head(ped, n = 3)
 ```
 
 ```
-##   id momid dadid sex
+##   id dadid momid sex
 ## 1  1     0     0   1
 ## 2  2     0     0   2
 ## 3  3     0     0   1

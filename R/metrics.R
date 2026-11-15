@@ -236,8 +236,8 @@
 #' @examples
 #' ## G is a founder; P is obtained by selfing G; O1 and O2 by selfing P
 #' ped <- data.frame(id  = c("G", "P", "O1", "O2"),
-#'                   mom = c(NA, "G", "P", "P"),
-#'                   dad = c(NA, "G", "P", "P"))
+#'                   dad = c(NA, "G", "P", "P"),
+#'                   mom = c(NA, "G", "P", "P"))
 #' fastrel_ped(ped)                       # additive relationship, the default
 #' fastrel_ped(ped, metric = "kinship")   # probabilities
 #' fastrel_ped(ped, metric = "wright")    # correlations
@@ -250,8 +250,8 @@
 #' all.equal(fastrel_ped(ped, metric = "hamilton"), A / diag(A))
 #'
 #' ## without inbreeding, all but the kinship are the same
-#' ped2 <- data.frame(id = c("a", "b", "c", "d"), mom = c(NA, NA, "a", "a"),
-#'                    dad = c(NA, NA, "b", "b"))
+#' ped2 <- data.frame(id = c("a", "b", "c", "d"), dad = c(NA, NA, "b", "b"),
+#'                    mom = c(NA, NA, "a", "a"))
 #' all.equal(fastrel_ped(ped2), fastrel_ped(ped2, metric = "wright"))
 #' all.equal(fastrel_ped(ped2), fastrel_ped(ped2, metric = "hamilton"))
 #' @name relatedness_metrics

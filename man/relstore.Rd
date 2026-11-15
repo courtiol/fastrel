@@ -43,9 +43,9 @@ individuals).}
 \item{rel}{A store created by \code{rel_new()}.}
 
 \item{ped}{A data frame (or a tibble) with one row per individual to add and three columns
-giving the identifier of the individual, of its mother and of its father
+giving the identifier of the individual, of its father and of its mother
 (\code{NA} or 0 for unknown parents). The columns are found by their names (e.g.
-\code{id}, \code{mom}, \code{dad} or \code{Animal}, \code{Dam}, \code{Sire}), whatever their order, and
+\code{id}, \code{dad}, \code{mom} or \code{Animal}, \code{Sire}, \code{Dam}), whatever their order, and
 other columns are ignored: see the section Columns of \code{ped} in
 \code{\link[=fastrel_ped]{fastrel_ped()}}. Only individuals not yet in the store can be added.
 Known parents must be in the store or in \code{ped} itself: any other
@@ -94,7 +94,7 @@ The functions work as follows:
 \itemize{
 \item \code{rel_new()} creates an empty store.
 \item \code{rel_add()} adds individuals, given by a data frame with columns for the
-focal individual, its mother and its father.
+focal individual, its father and its mother.
 \item \code{rel_remove()} removes individuals.
 \item \code{rel_get()} extracts the relatedness matrix among chosen individuals, as
 any of the measures described in \link{relatedness_metrics}.
@@ -228,11 +228,11 @@ on your machine with the script
 rel <- rel_new()
 
 ## founders: unknown parents
-rel_add(rel, data.frame(id = c("A", "B", "C", "D"), mom = NA, dad = NA))
+rel_add(rel, data.frame(id = c("A", "B", "C", "D"), dad = NA, mom = NA))
 
 ## births: the columns are found by their names, in any order
 rel_add(rel, data.frame(sire = c("B", "D"), dam = c("A", "C"), animal = c("E", "F")))
-rel_add(rel, data.frame(id = "G", mom = "E", dad = "F"))
+rel_add(rel, data.frame(id = "G", dad = "F", mom = "E"))
 
 ## deaths (or emigration): free the slots
 rel_remove(rel, c("A", "B", "C", "D"))
@@ -240,7 +240,7 @@ rel_size(rel)
 rel_ids(rel)
 
 ## a mother-son mating
-rel_add(rel, data.frame(id = "H", mom = "E", dad = "G"))
+rel_add(rel, data.frame(id = "H", dad = "G", mom = "E"))
 
 A <- rel_get(rel)
 A
@@ -249,19 +249,19 @@ rel_get(rel, metric = "kinship")   # other measures: see ?relatedness_metrics
 
 ## two patches: one store, and the patch of each individual kept aside
 rel <- rel_new(remember_removed = "id")
-rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
+rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), dad = NA, mom = NA))
 patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B")
-rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2"))   # born in A
+rel_add(rel, data.frame(id = "a3", dad = "a2", mom = "a1"))   # born in A
 patch["a3"] <- "A"
 patch["a3"] <- "B"                                            # a3 moves to B
-rel_add(rel, data.frame(id = "b3", mom = "b1", dad = "a3"))   # and breeds there
+rel_add(rel, data.frame(id = "b3", dad = "a3", mom = "b1"))   # and breeds there
 patch["b3"] <- "B"
 rel_get(rel, names(patch)[patch == "B"])
 rel_get(rel)["b3", "a1"]   # b3 is related to its grandparent in patch A
 
 ## with remember_removed = "id", a removed individual cannot come back
 rel_remove(rel, "a3")
-try(rel_add(rel, data.frame(id = "a3", mom = NA, dad = NA)))
+try(rel_add(rel, data.frame(id = "a3", dad = NA, mom = NA)))
 }
 \seealso{
 \code{\link[=fastrel_ped]{fastrel_ped()}} to compute the whole matrix from a pedigree;

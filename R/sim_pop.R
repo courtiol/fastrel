@@ -42,7 +42,7 @@
 #'
 #' @return A data frame with one row per individual ever present, in order of
 #'   arrival, so parents always come before their offspring, and with columns:
-#'   * `id`, `momid`, `dadid`: identifiers (`NA` for unknown parents);
+#'   * `id`, `dadid`, `momid`: identifiers (`NA` for unknown parents);
 #'   * `sex`: 1 = male, 2 = female;
 #'   * `arrival`: step at which the individual enters the pedigree (0 for
 #'     founders);
@@ -162,7 +162,7 @@ sim_pop <- function(n_steps = 50, n_init = 100, K = 2 * n_init,
   gone <- unlist(x_id)
   exit[gone] <- unlist(x_step)
   fate[gone] <- unlist(x_fate)
-  data.frame(id = ids, momid = ids[unlist(r_mom)], dadid = ids[unlist(r_dad)],
+  data.frame(id = ids, dadid = ids[unlist(r_dad)], momid = ids[unlist(r_mom)],
              sex = unlist(r_sex), arrival = unlist(r_arr), exit = exit,
              fate = fate, origin = unlist(r_ori), stringsAsFactors = FALSE)
 }

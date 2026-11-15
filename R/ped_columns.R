@@ -20,25 +20,29 @@ ped_roles <- function(nm) {
 }
 
 ## Positions of the columns focal, mother and father of a pedigree `ped`
+## (in this order, which is the order of the roles, not of the columns)
 ## (see the section "Columns of ped" of ?fastrel_ped).
 ## The answer for the last set of column names seen is kept, since a
 ## simulation calls rel_add() over and over with the same columns.
 ped_columns <- function(ped) {
   if (!is.data.frame(ped) || ncol(ped) < 3L)
-    stop("`ped` must be a data frame with columns focal, mother and father")
+    stop("`ped` must be a data frame with columns for the individual, its ",
+         "father and its mother")
   nm <- names(ped)
   if (identical(nm, ped_cache$names)) return(ped_cache$cols)
 
   role <- ped_roles(nm)
   if (all(is.na(role))) {
-    cols <- 1:3                                   # no known name: by position
+    ## no known name: by position, in the order individual, father, mother
+    ## (that of kinship2::kinship() and of pedigrees in animal breeding)
+    cols <- c(1L, 3L, 2L)
     if (!isTRUE(ped_cache$told_position)) {       # say so once per session
       ped_cache$told_position <- TRUE
       message("No column of `ped` has a recognised name, so its first three ",
               "columns (", paste(nm[1:3], collapse = ", "), ") are taken as the ",
-              "individual, its mother and its father. Name them (e.g. id, mom, ",
-              "dad) to avoid any ambiguity; see ?fastrel_ped. This message is ",
-              "shown once per session.")
+              "individual, its father and its mother, in this order. Name them ",
+              "(e.g. id, dad, mom) to avoid any ambiguity; see ?fastrel_ped. ",
+              "This message is shown once per session.")
     }
   } else {
     what <- c("the focal individual", "the mother", "the father")

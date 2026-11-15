@@ -126,7 +126,7 @@ rm(rel)
 n_steps <- 600
 set.seed(1)
 pop <- sim_pop(n_steps = n_steps, n_init = 1000, K = 2000)
-arrivals <- split(pop[, c("id", "momid", "dadid")], factor(pop$arrival, 0:n_steps))
+arrivals <- split(pop[, c("id", "dadid", "momid")], factor(pop$arrival, 0:n_steps))
 exits    <- split(pop$id, factor(pop$exit, 0:n_steps))
 rel <- rel_new()
 track <- data.frame(step = 0:n_steps, pedigree = NA, present = NA, capacity = NA, memory = NA)

@@ -20,9 +20,9 @@ fastrel_vec(
 )
 }
 \arguments{
-\item{ped}{A data frame (or a tibble) with one row per individual and three columns giving
-the identifier of the individual, of its mother and of its father (\code{NA}
-or 0 if unknown). See the section Columns of \code{ped}.}
+\item{ped}{A data frame (or a tibble) with one row per individual and three
+columns giving the identifier of the individual, of its father and of its
+mother (\code{NA} or 0 if unknown). See the section Columns of \code{ped}.}
 
 \item{metric}{The measure of relatedness to return: \code{"additive"} (the
 default), \code{"kinship"}, \code{"wright"} (or \code{"Wright"}) or \code{"hamilton"} (or
@@ -101,8 +101,10 @@ the same). The names recognised are:
 }
 
 If none of the columns has a recognised name, the first three columns are
-taken to be the focal individual, its mother and its father, in this order;
-a message says so the first time this happens in an R session.
+taken to be the focal individual, its father and its mother, in this order,
+as for the arguments of \code{fastrel_vec()} and \code{\link[kinship2:kinship]{kinship2::kinship()}} and as in
+pedigrees used in animal breeding (animal, sire, dam); a message says so the
+first time this happens in an R session.
 If only some of the three are recognised, or if several columns could play
 the same role, an error is raised rather than guessing.
 }
@@ -110,8 +112,8 @@ the same role, an error is raised rather than guessing.
 \examples{
 ped <- data.frame(
   id  = c("A", "B", "C", "D", "E", "F", "G", "H", "I"),
-  mom = c(NA, NA, NA, NA, "A", "C", "E", "E", "E"),
-  dad = c(NA, NA, NA, NA, "B", "D", "F", "G", "G"))
+  dad = c(NA, NA, NA, NA, "B", "D", "F", "G", "G"),
+  mom = c(NA, NA, NA, NA, "A", "C", "E", "E", "E"))
 A <- fastrel_ped(ped)
 A
 

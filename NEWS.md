@@ -3,6 +3,11 @@
 * Documentation: the description of the package is shortened, says that it is
   for diploid individuals, and cites only the method used; the references for
   the measures are given in `?fastrel`.
+* Breaking: when no column of `ped` has a recognised name, `fastrel_ped()` and
+  `rel_add()` take the first three columns as the individual, its father and
+  its mother (not its mother and its father), the order of `fastrel_vec()`,
+  `kinship2::kinship()` and of pedigrees in animal breeding. `sim_ped()` and
+  `sim_pop()` return their columns in the same order (`id`, `dadid`, `momid`).
 
 # fastrel 0.8.0
 
