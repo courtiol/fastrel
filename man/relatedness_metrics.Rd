@@ -61,10 +61,25 @@ The additive relationship \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 phi[i,j]} is
 what animal and plant breeders call the numerator relationship, as it is
 the numerator of Wright's coefficient of relationship (see below). Emik and
 Terrill (1949) introduced this name and described the tabular method used
-here to compute it: the values of an individual are the averages of those
-of its two parents (an unknown parent counting as 0), and its diagonal value is 1 plus half the value between
-its parents. Henderson (1976) gives the same method for the whole numerator
-relationship matrix, as used to predict breeding values. It is not a probability but an expected count: \eqn{A_{ij}}{A[i,j]}
+here to compute it. Individuals are added one by one, parents before
+offspring. When individual \eqn{i}, with mother \eqn{m} and father
+\eqn{d}, is added:
+\itemize{
+\item its additive relationship with each individual \eqn{j} already present is
+the average of those of its two parents with \eqn{j},
+\eqn{A_{ij} = (A_{mj} + A_{dj}) / 2}{A[i,j] = (A[m,j] + A[d,j]) / 2}
+(an unknown parent counting as 0);
+\item its additive relationship with itself is
+\eqn{A_{ii} = 1 + A_{md} / 2}{A[i,i] = 1 + A[m,d] / 2}, where
+\eqn{A_{md}}{A[m,d]} is the additive relationship between its two
+parents, since its inbreeding coefficient is half of that; if a parent
+is unknown, \eqn{A_{ii} = 1}{A[i,i] = 1}.
+}
+
+Henderson (1976) gives the same method for the whole numerator
+relationship matrix, as used to predict breeding values.
+
+The additive relationship is not a probability but an expected count: \eqn{A_{ij}}{A[i,j]}
 is the expected number of the two alleles of \eqn{j} that are identical by
 descent with an allele drawn at random from \eqn{i}, which is why it can
 exceed 1 (see the section Range of values). For example, two
