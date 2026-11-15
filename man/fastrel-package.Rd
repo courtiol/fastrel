@@ -30,7 +30,8 @@ independent copy of it.
 \code{\link[=sim_ped]{sim_ped()}} simulates a pedigree, and \code{\link[=sim_pop]{sim_pop()}} a population with births,
 deaths, emigration and immigration, for testing and benchmarking.
 
-The README of the package, at \url{https://github.com/courtiol/fastrel}, gives
+The README of the package, at \url{https://github.com/courtiol/fastrel} and
+on the website of the package, \url{https://courtiol.github.io/fastrel/}, gives
 an overview with worked examples: relatedness of a whole pedigree,
 incremental updates in a simulation with births and deaths,
 metapopulations, and benchmarks against other packages.

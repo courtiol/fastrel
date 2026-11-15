@@ -26,6 +26,6 @@ Suggests:
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.1.1
-URL: https://github.com/courtiol/fastrel
+URL: https://courtiol.github.io/fastrel/, https://github.com/courtiol/fastrel
 BugReports: https://github.com/courtiol/fastrel/issues
 Language: en-GB

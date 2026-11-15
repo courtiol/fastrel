@@ -1,12 +1,13 @@
 # fastrel
 
 ```{r settings, echo = FALSE}
-unlink(".github/figures", recursive = TRUE)
-dir.create(".github/figures")
+unlink(list.files("man/figures", pattern = "^README-", full.names = TRUE))
+dir.create("man/figures", showWarnings = FALSE)
 ```
 
 **fast** **rel**atedness (aka `fastrel`) is an R package to compute relatedness,
 relationship or kinship from a pedigree quickly.
+Its documentation is also available as a website: <https://courtiol.github.io/fastrel/>.
 
 This package offers four main sets of functionalities:
 
@@ -151,7 +152,7 @@ immigration, and returns the step at which each individual arrives and leaves.
 Here we replay it with a store, adding the arrivals and removing the departures
 at each step, and we record the mean relatedness among the individuals present:
 
-```{r simulation, fig.path=".github/figures/", fig.width=8, fig.height=4, dpi=150, out.width="100%", fig.show='hide'}
+```{r simulation, fig.path="man/figures/README-", fig.width=8, fig.height=4, dpi=150, out.width="100%", fig.show='hide'}
 rel <- rel_new()
 set.seed(1)
 pop <- sim_pop(n_steps = 1000, n_init = 200) # simulate pop (fine tuning the life history is possible)
@@ -169,7 +170,7 @@ plot(mean_rel ~ step, data = mean_relatedness,
 ```
 
 <p align="center">
-<img src=".github/figures/simulation-1.png" width="80%" alt="Mean relatedness over time">
+<img src="man/figures/README-simulation-1.png" width="80%" alt="Mean relatedness over time">
 </p>
 
 Although `r nrow(pop)` individuals were simulated in total, the store never
@@ -288,6 +289,12 @@ Rcpp::compileAttributes() # or "Build/Document" in RStudio
 To generate the manual, do:
 ```{r manual, eval = FALSE}
 devtools::build_manual()
+```
+
+To build the website locally (it is otherwise built and published by GitHub
+Actions after each push to `main`), do:
+```{r pkgdown, eval = FALSE}
+pkgdown::build_site()
 ```
 
 

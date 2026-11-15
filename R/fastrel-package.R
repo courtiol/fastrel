@@ -21,7 +21,8 @@
 #' [sim_ped()] simulates a pedigree, and [sim_pop()] a population with births,
 #' deaths, emigration and immigration, for testing and benchmarking.
 #'
-#' The README of the package, at <https://github.com/courtiol/fastrel>, gives
+#' The README of the package, at <https://github.com/courtiol/fastrel> and
+#' on the website of the package, <https://courtiol.github.io/fastrel/>, gives
 #' an overview with worked examples: relatedness of a whole pedigree,
 #' incremental updates in a simulation with births and deaths,
 #' metapopulations, and benchmarks against other packages.

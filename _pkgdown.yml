@@ -1,0 +1,41 @@
+url: https://courtiol.github.io/fastrel/
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  math-rendering: katex
+
+home:
+  title: Fast Relatedness, Relationship and Kinship Matrices from Pedigrees
+
+navbar:
+  structure:
+    left: [intro, reference, news]
+    right: [search, github]
+
+reference:
+- title: Relatedness of a whole pedigree
+  contents:
+  - fastrel_ped
+  - fastrel_vec
+- title: Relatedness updated step by step (the store)
+  desc: >
+    A store keeps the relatedness matrix among the individuals currently in
+    it, and is updated as individuals are added and removed.
+  contents:
+  - rel_new
+  - rel_copy
+  - relstore_io
+- title: Measures of relatedness
+  contents:
+  - relatedness_metrics
+- title: Simulating data
+  contents:
+  - sim_ped
+  - sim_pop
+- title: Package
+  contents:
+  - fastrel-package
+
+news:
+  cran_dates: false

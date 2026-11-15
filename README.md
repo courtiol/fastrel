@@ -4,6 +4,7 @@
 
 **fast** **rel**atedness (aka `fastrel`) is an R package to compute relatedness,
 relationship or kinship from a pedigree quickly.
+Its documentation is also available as a website: <https://courtiol.github.io/fastrel/>.
 
 This package offers four main sets of functionalities:
 
@@ -255,7 +256,7 @@ plot(mean_rel ~ step, data = mean_relatedness,
 ```
 
 <p align="center">
-<img src=".github/figures/simulation-1.png" width="80%" alt="Mean relatedness over time">
+<img src="man/figures/README-simulation-1.png" width="80%" alt="Mean relatedness over time">
 </p>
 
 Although 27150 individuals were simulated in total, the store never
@@ -436,6 +437,13 @@ To generate the manual, do:
 
 ``` r
 devtools::build_manual()
+```
+
+To build the website locally (it is otherwise built and published by GitHub
+Actions after each push to `main`), do:
+
+``` r
+pkgdown::build_site()
 ```
 
 

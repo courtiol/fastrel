@@ -1,5 +1,6 @@
 # fastrel (development version)
 
+* New website, built with pkgdown: <https://courtiol.github.io/fastrel/>.
 * New `rel_copy()`, which returns an independent copy of a store (a store is
   otherwise shared, not copied, when it is assigned).
 * Documentation: the description of the package is shortened, says that it is
