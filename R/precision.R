@@ -11,8 +11,9 @@
 #' population end up sharing an ancestor), its inverse is always sparse: each
 #' individual adds at most six distinct entries to its upper triangle, in the
 #' cells of itself and of its parents. This is what makes the inverse useful
-#' in mixed models of genetic values (animal models), which are fitted with
-#' \eqn{A^{-1}}{A^-1} rather than with \eqn{A}: e.g. as `ginverse` in
+#' in mixed models of genetic values (animal models), which can be fitted with
+#' \eqn{A^{-1}}{A^-1} rather than with \eqn{A}: e.g. as 
+#' `covStruct = list(precision  = Ainv)` in `spaMM::fitme()` or `ginverse` in
 #' `MCMCglmm::MCMCglmm()`.
 #'
 #' The inverse is \eqn{A^{-1} = \sum_i q_i q_i^\top / D_i}{A^-1 = sum over
