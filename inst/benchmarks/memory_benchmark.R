@@ -47,7 +47,7 @@ record <- function(claim, expected, measured, tolerance = 0.10, upper_only = FAL
 }
 
 ## a store holding n unrelated individuals
-store_of <- function(n, remember_removed = FALSE) {
+store_of <- function(n, remember_removed = "none") {
   rel <- rel_new(remember_removed)
   rel_add(rel, data.frame(id = seq_len(n), mom = NA, dad = NA))
   rel
@@ -153,7 +153,7 @@ record("simulation: memory at the end / at mid-run",
        1, mem[length(mem)] / mem[1], tolerance = 0.10)
 rm(rel)
 
-## 7. remember_removed = "fingerprint" (or TRUE) costs about 30 bytes per
+## 7. remember_removed = "fingerprint" costs about 30 bytes per
 ##    individual removed, and "id" about 70 for short identifiers ----------
 ##    (the table of traces itself takes 11 to 23 bytes per individual; the rest
 ##    is, as in 5, memory released when the table is enlarged that the system
@@ -166,7 +166,7 @@ n_removed <- 2e6
 run <- function(remember_removed) {
   code <- sprintf('
     library(fastrel)
-    rel <- rel_new(%s)   # FALSE, TRUE or "id"
+    rel <- rel_new(%s)   # "none", "fingerprint" or "id"
     ids <- split(sprintf("ind%%08d", seq_len(%d)), rep(1:2000, each = %d))
     for (b in ids) {
       rel_add(rel, data.frame(id = b, mom = NA, dad = NA))
@@ -186,14 +186,14 @@ run <- function(remember_removed) {
                  stdout = TRUE, env = paste0("R_LIBS=", paste(.libPaths(), collapse = .Platform$path.sep)))
   as.numeric(out[length(out)])
 }
-base <- run(FALSE)
-per_removed <- (run(TRUE) - base) / n_removed
+base <- run('"none"')
+per_removed <- (run('"fingerprint"') - base) / n_removed
 record("remember_removed = \"fingerprint\": bytes per individual removed (about 30)",
        30, per_removed, tolerance = 0.25)
 per_removed_id <- (run('"id"') - base) / n_removed
 record("remember_removed = \"id\": bytes per individual removed (about 70, ids of 11 characters)",
        70, per_removed_id, tolerance = 0.25)
-rel <- rel_new(remember_removed = TRUE)
+rel <- rel_new(remember_removed = "fingerprint")
 rel_add(rel, data.frame(id = 1:1000, mom = NA, dad = NA))
 rel_remove(rel, 1:1000)
 record("rel_save() with remember_removed: bytes saved per individual removed",

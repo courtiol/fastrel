@@ -281,7 +281,7 @@ offspring they produce elsewhere.
 
 
 ``` r
-rel <- rel_new(remember_removed = TRUE)
+rel <- rel_new(remember_removed = "fingerprint")
 rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
 patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B") # the patch of each individual
 rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2")) # a3 is born in patch A...
@@ -308,7 +308,7 @@ rel_get(rel)["b3", "a1"] # b3 remains related to its grandparent in patch A
 ```
 
 In that case we recommend creating the store with
-`rel_new(remember_removed = TRUE)`, as above: `rel_add()` then raises an error if an
+`rel_new(remember_removed = "fingerprint")`, as above: `rel_add()` then raises an error if an
 individual that was removed is added again, a mistake that is easy to make when
 individuals move between patches. This is off by default because it costs about
 30 bytes per individual removed, so the memory used then grows (slowly) with

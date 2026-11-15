@@ -36,7 +36,7 @@ test_that("a store after removals keeps the values kinship2 gives on the whole p
   pop <- sim_pop(n_steps = 60, n_init = 40, K = 80)
   A_ref <- kinship2_additive(data.frame(id = pop$id, dad = pop$dadid, mom = pop$momid))
   ref <- metrics_from_additive(A_ref)
-  rel <- rel_new(remember_removed = TRUE)
+  rel <- rel_new(remember_removed = "fingerprint")
   for (t in 0:60) {
     rel_add(rel, pop[pop$arrival == t, ])
     rel_remove(rel, pop$id[!is.na(pop$exit) & pop$exit == t])

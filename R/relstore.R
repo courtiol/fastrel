@@ -65,17 +65,18 @@
 #' born afterwards is not tracked, so if it is added again it comes back as
 #' unrelated to everybody, which is wrong for its relatives. By default
 #' nothing prevents this: it is up to you never to add again an individual
-#' that was removed. With `rel_new(remember_removed = TRUE)` (or `"id"`),
-#' `rel_add()` raises an error instead (see the section Removed individuals).
+#' that was removed. With `rel_new(remember_removed = "fingerprint")` or
+#' `rel_new(remember_removed = "id")`, `rel_add()` raises an error instead (see
+#' the section Removed individuals).
 #'
 #' @section Removed individuals:
-#' With `remember_removed` set to `TRUE`, `"fingerprint"` or `"id"`, the store
-#' keeps a trace of every individual removed and `rel_add()` refuses to add it
+#' With `remember_removed` set to `"fingerprint"` or `"id"` (rather than
+#' `"none"`, the default), the store keeps a trace of every individual removed and `rel_add()` refuses to add it
 #' again. This protects against a silent error, at a cost in memory that grows
 #' slowly with the length of the pedigree, instead of depending only on the
 #' number of individuals in the store. This is why it is off by default. Two
 #' kinds of trace are offered:
-#' * `"fingerprint"` (or `TRUE`) keeps a 64-bit fingerprint of each
+#' * `"fingerprint"` keeps a 64-bit fingerprint of each
 #'   identifier, about 30 bytes per individual removed (30 MB per million). A
 #'   new identifier can be mistaken for a removed one, but with a negligible
 #'   probability: the number of individuals removed divided by `2^64`, i.e.
@@ -101,8 +102,8 @@
 #' time per birth and the memory depend on the number of individuals alive
 #' over all the patches (see the section Memory).
 #'
-#' Creating the store with `rel_new(remember_removed = TRUE)` (or `"id"`) is
-#' recommended here: with individuals moving between patches, removing one that left a
+#' Creating the store with `rel_new(remember_removed = "fingerprint")` or
+#' `rel_new(remember_removed = "id")` is recommended here: with individuals moving between patches, removing one that left a
 #' patch and adding it again when it comes back is an easy mistake to make,
 #' and it would go unnoticed.
 #'
@@ -125,11 +126,11 @@
 #' `system.file("benchmarks/memory_benchmark.R", package = "fastrel")`.
 #'
 #' @param remember_removed Should the store keep a trace of the individuals
-#'   removed, so that `rel_add()` refuses to add them again? `FALSE` (the
-#'   default) for no trace, `"fingerprint"` (or `TRUE`) for a compact trace
-#'   that is wrong with a negligible probability, or `"id"` for the
-#'   identifiers themselves, which takes more memory but is never wrong (see
-#'   the section Removed individuals).
+#'   removed, so that `rel_add()` refuses to add them again? `"none"` (the
+#'   default) for no trace, `"fingerprint"` for a compact trace that is wrong
+#'   with a negligible probability, or `"id"` for the identifiers themselves,
+#'   which takes more memory but is never wrong (see the section Removed
+#'   individuals).
 #' @param rel A store created by `rel_new()`.
 #' @param ped A data frame (or a tibble) with one row per individual to add and three columns
 #'   giving the identifier of the individual, of its mother and of its father
@@ -186,7 +187,7 @@
 #' rel_get(rel, metric = "kinship")   # other measures: see ?relatedness_metrics
 #'
 #' ## two patches: one store, and the patch of each individual kept aside
-#' rel <- rel_new(remember_removed = TRUE)
+#' rel <- rel_new(remember_removed = "id")
 #' rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
 #' patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B")
 #' rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2"))   # born in A
@@ -197,7 +198,7 @@
 #' rel_get(rel, names(patch)[patch == "B"])
 #' rel_get(rel)["b3", "a1"]   # b3 is related to its grandparent in patch A
 #'
-#' ## with remember_removed = TRUE, a removed individual cannot come back
+#' ## with remember_removed = "id", a removed individual cannot come back
 #' rel_remove(rel, "a3")
 #' try(rel_add(rel, data.frame(id = "a3", mom = NA, dad = NA)))
 #' @name relstore
@@ -205,8 +206,10 @@ NULL
 
 #' @rdname relstore
 #' @export
-rel_new <- function(remember_removed = FALSE) {
-  mode <- remember_code(remember_removed)
+rel_new <- function(remember_removed = c("none", "fingerprint", "id")) {
+  remember_removed <- match.arg(remember_removed)
+  ## code for the C++ side: 0 = no trace, 1 = fingerprints, 2 = identifiers
+  mode <- match(remember_removed, c("none", "fingerprint", "id")) - 1L
   self <- new.env()
   ## 16: initial number of slots; grows as needed
   self$ks    <- new(RelStore, 16L, mode)
@@ -339,18 +342,6 @@ print.relatedness_store <- function(x, ...) {
   invisible(x)
 }
 
-## code of `remember_removed` for the C++ side: 0 = no trace,
-## 1 = fingerprints, 2 = identifiers
-remember_code <- function(remember_removed) {
-  ok <- length(remember_removed) == 1L && !is.na(remember_removed) &&
-    (is.logical(remember_removed) ||
-       (is.character(remember_removed) && remember_removed %in% c("fingerprint", "id")))
-  if (!ok)
-    stop("`remember_removed` must be FALSE, TRUE, \"fingerprint\" or \"id\"")
-  if (isFALSE(remember_removed)) return(0L)
-  if (identical(remember_removed, "id")) 2L else 1L
-}
-
 check_store <- function(rel) {
   if (!inherits(rel, "relatedness_store"))
     stop("`rel` must be a store created by rel_new()")
@@ -412,7 +403,7 @@ rel_save <- function(rel, file = NULL) {
   check_store(rel)
   out <- structure(
     list(ids = rel$ids, A = rel_get(rel),
-         remember_removed = c(FALSE, "fingerprint", "id")[rel$ks$remember() + 1L],
+         remember_removed = c("none", "fingerprint", "id")[rel$ks$remember() + 1L],
          removed = rel$ks$gone(), format = 1L),
     class = "relatedness_store_saved")
   if (is.null(file)) return(out)
@@ -436,16 +427,20 @@ rel_load <- function(x) {
   if (anyNA(x$ids) || anyDuplicated(x$ids))
     stop("the saved identifiers must be unique and not NA")
 
-  ## FALSE / TRUE (fastrel < 0.8.0) or "FALSE" / "fingerprint" / "id"
+  ## "none", "fingerprint" or "id"; files written before 0.8.0 hold TRUE
+  ## (fingerprints) or FALSE, or nothing
   remember <- x$remember_removed
-  if (is.null(remember) || identical(remember, "FALSE")) remember <- FALSE
-  mode <- tryCatch(remember_code(remember), error = function(e)
-    stop("the saved setting of `remember_removed` is not valid"))
-  if ((mode == 1L && !is.raw(x$removed)) || (mode == 2L && !is.character(x$removed)))
+  if (is.null(remember) || isFALSE(remember)) remember <- "none"
+  if (isTRUE(remember)) remember <- "fingerprint"
+  if (!is.character(remember) || length(remember) != 1L ||
+      !remember %in% c("none", "fingerprint", "id"))
+    stop("the saved setting of `remember_removed` is not valid")
+  if ((remember == "fingerprint" && !is.raw(x$removed)) ||
+      (remember == "id" && !is.character(x$removed)))
     stop("the saved list of removed individuals is not valid")
 
   rel <- rel_new(remember_removed = remember)
-  if (mode > 0L) rel$ks$load_gone(x$removed)
+  if (remember != "none") rel$ks$load_gone(x$removed)
   if (k > 0L) {
     rel$slots <- rel$ks$restore(unname(x$A))
     rel$ids   <- as.character(x$ids)

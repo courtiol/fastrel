@@ -122,13 +122,14 @@ test_that("by default a removed individual can be added again, as a founder", {
   rel_add(rel, data.frame(id = "a", mom = NA, dad = NA))
   expect_equal(rel_get(rel)["a", "c"], 0)      # documented: its relatives are lost
   expect_identical(rel_save(rel)$removed, raw(0))
-  expect_error(rel_new(remember_removed = NA), "FALSE, TRUE")
-  expect_error(rel_new(remember_removed = 16), "FALSE, TRUE")
-  expect_error(rel_new(remember_removed = "ids"), "FALSE, TRUE")
-  expect_error(rel_new(remember_removed = c(TRUE, TRUE)), "FALSE, TRUE")
+  expect_identical(rel_save(rel)$remember_removed, "none")
+  expect_error(rel_new(remember_removed = NA), "character vector")
+  expect_error(rel_new(remember_removed = TRUE), "character vector")
+  expect_error(rel_new(remember_removed = "ids"), "should be one of")
+  expect_error(rel_new(remember_removed = c("id", "none")), "length 1")
 })
 
-for (how in list(TRUE, "fingerprint", "id")) test_that(paste("with remember_removed =", how, "a removed individual cannot be added again"), {
+for (how in c("fingerprint", "id")) test_that(paste("with remember_removed =", how, "a removed individual cannot be added again"), {
   rel <- rel_new(remember_removed = how)
   rel_add(rel, data.frame(id = c("a", "b"), mom = NA, dad = NA))
   rel_add(rel, data.frame(id = "c", mom = "a", dad = "b"))
@@ -155,7 +156,7 @@ for (how in list(TRUE, "fingerprint", "id")) test_that(paste("with remember_remo
   expect_equal(rel_get(rel3), rel_get(rel))
   rel_add(rel3, data.frame(id = "a", mom = NA, dad = NA))   # not remembered
   ## the kind of trace is saved too, and a corrupt trace is refused
-  expect_identical(rel_save(rel)$remember_removed, if (isTRUE(how)) "fingerprint" else how)
+  expect_identical(rel_save(rel)$remember_removed, how)
   bad <- rel_save(rel); bad$removed <- if (identical(how, "id")) as.raw(1:8) else "a"
   expect_error(rel_load(bad), "not valid")
   if (!identical(how, "id")) {
@@ -185,7 +186,7 @@ for (how in c("fingerprint", "id")) test_that(paste("the trace of removed indivi
 })
 
 test_that("a metapopulation in one store: migrants keep their relatives", {
-  rel <- rel_new(remember_removed = TRUE)
+  rel <- rel_new(remember_removed = "fingerprint")
   rel_add(rel, data.frame(id = c("a1", "a2", "b1", "b2"), mom = NA, dad = NA))
   patch <- c(a1 = "A", a2 = "A", b1 = "B", b2 = "B")
   rel_add(rel, data.frame(id = "a3", mom = "a1", dad = "a2"))
@@ -328,8 +329,8 @@ test_that("0 means an unknown parent, unless an individual is called 0", {
   expect_equal(rel_size(rel2), 2L)
 })
 
-test_that("an object saved by fastrel < 0.8.0 (remember_removed = TRUE) still loads", {
-  rel <- rel_new(remember_removed = TRUE)
+test_that("an object saved by fastrel < 0.8.0 (remember_removed TRUE or FALSE) still loads", {
+  rel <- rel_new(remember_removed = "fingerprint")
   rel_add(rel, data.frame(id = c("a", "b"), mom = NA, dad = NA))
   rel_remove(rel, "a")
   old <- rel_save(rel)
