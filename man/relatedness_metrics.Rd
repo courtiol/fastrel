@@ -44,10 +44,11 @@ a common ancestor. Being a probability, it lies between 0 and 1. This is
 what \code{\link[kinship2:kinship]{kinship2::kinship()}} returns (Sinnwell et al. 2014).
 
 Two related quantities follow. The inbreeding coefficient \eqn{F_i}{F[i]},
-introduced by Wright (1922) as a correlation between the gametes that unite
-to form \eqn{i} and reinterpreted by Malécot (1948) as a probability, is the
-probability that the two alleles of \eqn{i} are identical by descent; it
-equals the kinship coefficient between the parents of \eqn{i}. The kinship of an individual with itself is
+introduced by Wright (1922) as the correlation between the egg and the sperm
+that unite to form \eqn{i}, is the probability that the two alleles of
+\eqn{i} are identical by descent: Malécot (1948) defined it so, as his
+\emph{coefficient de consanguinité}, and noted that it equals the kinship
+coefficient between the parents of \eqn{i}. The kinship of an individual with itself is
 \eqn{\phi_{ii} = (1 + F_i)/2}{phi[i,i] = (1 + F[i]) / 2}: when two alleles
 are drawn from \eqn{i} with replacement, the same allele is drawn twice with
 probability 1/2, and otherwise the two alleles are identical by descent with
@@ -83,9 +84,9 @@ estimate heritability.
 \section{Wright's coefficient of relationship (\code{"wright"})}{
 
 Wright (1922) defined the coefficient of relationship as the correlation
-between the genetic values of two individuals, which is obtained by dividing
-the covariance \eqn{A_{ij}}{A[i,j]} by the product of the two standard
-deviations:
+between two individuals, i.e. between their genotypes (Michod and Hamilton
+1980), which is obtained by dividing the covariance \eqn{A_{ij}}{A[i,j]} by
+the product of the two standard deviations, as in Wright's own formula:
 \deqn{r_{ij} = \frac{A_{ij}}{\sqrt{A_{ii} A_{jj}}} = \frac{2\phi_{ij}}{\sqrt{(1 + F_i)(1 + F_j)}}}{r[i,j] = A[i,j] / sqrt(A[i,i] * A[j,j]) = 2 phi[i,j] / sqrt((1 + F[i]) * (1 + F[j]))}
 Conversely, \eqn{A_{ij} = r_{ij} \sqrt{A_{ii} A_{jj}}}{A[i,j] = r[i,j] * sqrt(A[i,i] * A[j,j])}
 (Henderson 1976). This is what \code{\link[stats:cor]{stats::cov2cor()}} computes from the additive
@@ -117,15 +118,18 @@ where \eqn{r_{AB}}{r[A,B]}, the probability that a gene of \eqn{A} is
 present in a random gamete of \eqn{B}, is their kinship coefficient. In
 his words, it "measures the regression of B's additive genotype on that of
 A". With inbreeding, the \eqn{r} of Hamilton's rule \eqn{rb > c} is this
-regression coefficient rather than a correlation (see also Michod and
-Hamilton 1980): the regression of the genetic value of the recipient of a
+regression coefficient rather than a correlation. Michod and Hamilton (1980)
+showed that the various coefficients of relatedness proposed for Hamilton's
+rule are equivalent, and that they reduce, in particular when gene effects
+are additive, to this regression of the genotype of the recipient of a
 behaviour on that of the actor,
 \deqn{b_{ij} = \frac{\mathrm{Cov}(g_i, g_j)}{\mathrm{Var}(g_i)} = \frac{A_{ij}}{A_{ii}} = \frac{2\phi_{ij}}{1 + F_i}}{b[i,j] = Cov(g[i], g[j]) / Var(g[i]) = A[i,j] / A[i,i] = 2 phi[i,j] / (1 + F[i])}
 where \eqn{i} is the actor and \eqn{j} the recipient. In the matrix
 returned, \strong{rows are actors and columns are recipients}: \code{R[i, j]} is the
 relatedness of recipient \code{j} from the point of view of actor \code{i}. The
 matrix is not symmetric when individuals differ in their inbreeding
-coefficients. Its values lie between 0 and 1 (see the section Range of values), and
+coefficients, which is also when the regression and the correlation (Wright's
+coefficient) differ (Michod and Hamilton 1980). Its values lie between 0 and 1 (see the section Range of values), and
 all individuals have a relatedness of 1 with themselves. Its interpretation
 is similar to that of Wright's coefficient, but from the point of view of
 the actor only: \code{R[i, j] = 1} means that, as far as the genes of the actor
