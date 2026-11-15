@@ -68,10 +68,15 @@
 #' Its main use is quantitative genetics: under an additive model, the
 #' covariance between the breeding values of \eqn{i} and \eqn{j} is
 #' \eqn{A_{ij} \sigma^2_A}{A[i,j] * sigma2_A}, where \eqn{\sigma^2_A}{sigma2_A}
-#' is the additive genetic variance of the base population (Lynch and Walsh
-#' 1998, chapter 7). The diagonal, \eqn{1 + F_i}{1 + F[i]}, shows that the
-#' breeding values of inbred individuals vary more, since inbred individuals
-#' are more homozygous. This matrix is the one used in animal models and to
+#' is the additive genetic variance of the base population: the variance
+#' matrix of breeding values is \eqn{A \sigma^2_A}{A * sigma2_A} (Henderson
+#' 1976; Lynch and Walsh 1998, chapter 7). In a population without inbreeding,
+#' the covariance is thus half the additive variance between parent and
+#' offspring and a quarter of it between half siblings, as Falconer (1960,
+#' chapter 9) derives directly (between full siblings, the covariance of
+#' genotypic values also includes a quarter of the dominance variance).
+#' The diagonal, \eqn{1 + F_i}{1 + F[i]}, shows that the breeding values of
+#' inbred individuals vary more, since inbred individuals are more homozygous. This matrix is the one used in animal models and to
 #' estimate heritability.
 #'
 #' @section Wright's coefficient of relationship (`"wright"`):
@@ -176,6 +181,9 @@
 #' Emik, L. O., & Terrill, C. E. (1949). Systematic procedures for calculating
 #' inbreeding coefficients. *Journal of Heredity*, 40(2), 51–55.
 #' \doi{10.1093/oxfordjournals.jhered.a105986}
+#'
+#' Falconer, D. S. (1960). *Introduction to Quantitative Genetics*. Oliver and
+#' Boyd, Edinburgh.
 #'
 #' Hamilton, W. D. (1964a). The genetical evolution of social behaviour. I.
 #' *Journal of Theoretical Biology*, 7(1), 1–16.
