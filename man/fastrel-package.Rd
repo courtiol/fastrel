@@ -95,6 +95,7 @@ American Naturalist}, 56(645), 330–338. \doi{10.1086/279872}
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://courtiol.github.io/fastrel/}
   \item \url{https://github.com/courtiol/fastrel}
   \item Report bugs at \url{https://github.com/courtiol/fastrel/issues}
 }

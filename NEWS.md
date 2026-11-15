@@ -1,21 +1,19 @@
-# fastrel (development version)
+# fastrel 0.9.0
 
-* New `fastrel_inv()`, which returns the inverse of the relatedness matrix
-  (the precision matrix used by animal models) as a sparse matrix, built
-  directly from the pedigree. Matrix is now imported.
-* The results are also validated in the tests against `nadiv::makeA()`, and
-  the README compares the speed of fastrel with that of nadiv.
-* New website, built with pkgdown: <https://courtiol.github.io/fastrel/>.
-* New `rel_copy()`, which returns an independent copy of a store (a store is
-  otherwise shared, not copied, when it is assigned).
-* Documentation: the description of the package is shortened, says that it is
-  for diploid individuals, and cites only the method used; the references for
-  the measures are given in `?fastrel`.
 * Breaking: when no column of `ped` has a recognised name, `fastrel_ped()` and
   `rel_add()` take the first three columns as the individual, its father and
   its mother (not its mother and its father), the order of `fastrel_vec()`,
   `kinship2::kinship()` and of pedigrees in animal breeding. `sim_ped()` and
   `sim_pop()` return their columns in the same order (`id`, `dadid`, `momid`).
+* New website, built with pkgdown: <https://courtiol.github.io/fastrel/>.
+* New `rel_copy()`, which returns an independent copy of a store (a store is
+  otherwise shared, not copied, when it is assigned).
+* New `fastrel_inv()`, which returns the inverse of the relatedness matrix
+  (the precision matrix used by animal models) as a sparse matrix, built
+  directly from the pedigree. Matrix is now imported.
+* The results are now also validated in the tests against `nadiv::makeA()`, and
+  the README compares the speed of fastrel with that of nadiv.
+* Documentation slightly reworked.
 
 # fastrel 0.8.0
 
