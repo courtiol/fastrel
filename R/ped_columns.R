@@ -32,6 +32,14 @@ ped_columns <- function(ped) {
   role <- ped_roles(nm)
   if (all(is.na(role))) {
     cols <- 1:3                                   # no known name: by position
+    if (!isTRUE(ped_cache$told_position)) {       # say so once per session
+      ped_cache$told_position <- TRUE
+      message("No column of `ped` has a recognised name, so its first three ",
+              "columns (", paste(nm[1:3], collapse = ", "), ") are taken as the ",
+              "individual, its mother and its father. Name them (e.g. id, mom, ",
+              "dad) to avoid any ambiguity; see ?fastrel_ped. This message is ",
+              "shown once per session.")
+    }
   } else {
     what <- c("the focal individual", "the mother", "the father")
     n_found <- tabulate(role, 3L)
@@ -53,6 +61,8 @@ ped_columns <- function(ped) {
   cols
 }
 
+## Memory of the session: the last column names seen (see above), and whether
+## the message about columns taken by position was shown.
 ped_cache <- new.env()
 
 ## Identifiers given as a vector. A data frame with a single column is
