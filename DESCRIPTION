@@ -7,19 +7,22 @@ Authors@R: c(
   )
 Description: Computes quickly the main measures of identity by descent
     between the individuals of a pedigree: relatedness (additive relationship),
-    kinship, and the coefficients of relationship of Wright and of relatedness
-    of Hamilton. They can also be updated incrementally as individuals are
-    born, die or migrate, as needed in individual-based simulations.
+    kinship, and the coefficients of relationship of Wright (1922)
+    <doi:10.1086/279872> and of relatedness of Hamilton (1972)
+    <doi:10.1146/annurev.es.03.110172.001205>. The computation uses the
+    tabular method of Emik and Terrill (1949)
+    <doi:10.1093/oxfordjournals.jhered.a105986> and Henderson (1976)
+    <doi:10.2307/2529339>, implemented in C++. The measures can also be updated
+    incrementally as individuals are born, die or migrate, as needed in
+    individual-based simulations.
 License: GPL (>= 3)
 Encoding: UTF-8
 Depends: R (>= 4.0.0)
 Imports: methods, Rcpp (>= 1.0.0), stats, utils
 LinkingTo: Rcpp
 Suggests: 
-    devtools,
     ggroups,
     kinship2,
-    knitr,
     lobstr,
     microbenchmark,
     testthat (>= 3.0.0),

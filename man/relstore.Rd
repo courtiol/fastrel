@@ -20,7 +20,7 @@ rel_remove(rel, ids)
 
 rel_get(
   rel,
-  ids = rel$ids,
+  ids = rel_ids(rel),
   metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")
 )
 
@@ -163,8 +163,8 @@ the section Removed individuals).
 \section{Removed individuals}{
 
 With \code{remember_removed} set to \code{"fingerprint"} or \code{"id"} (rather than
-\code{"none"}, the default), the store keeps a trace of every individual removed and \code{rel_add()} refuses to add it
-again. This protects against a silent error, at a cost in memory that grows
+\code{"none"}, the default), the store keeps a trace of every individual removed
+and \code{rel_add()} refuses to add it again. This protects against a silent error, at a cost in memory that grows
 slowly with the length of the pedigree, instead of depending only on the
 number of individuals in the store. This is why it is off by default. Two
 kinds of trace are offered:
@@ -196,12 +196,12 @@ extract the matrix of a patch with \code{rel_get(rel, ids_of_the_patch)}.
 Migrants then keep their exact relatedness with everybody, including the
 relatives they left behind and the offspring they produce elsewhere. The
 time per birth and the memory depend on the number of individuals alive
-over all the patches (see the section Memory).
+over all the patches (see the section Memory management).
 
 Creating the store with \code{rel_new(remember_removed = "fingerprint")} or
-\code{rel_new(remember_removed = "id")} is recommended here: with individuals moving between patches, removing one that left a
-patch and adding it again when it comes back is an easy mistake to make,
-and it would go unnoticed.
+\code{rel_new(remember_removed = "id")} is recommended here: with individuals
+moving between patches, removing one that left a patch and adding it again
+when it comes back is an easy mistake to make, and it would go unnoticed.
 }
 
 \section{Memory management}{

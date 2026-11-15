@@ -14,6 +14,10 @@ test_that("sim_ped gives a valid pedigree in birth order", {
   expect_error(sim_ped(10, n_founders = 0), "n_founders")
   expect_error(sim_ped(10, n_founders = 2, window = 0), "window")
   expect_error(sim_ped(10, n_founders = 2, p_unknown = 1.5), "probability")
+  expect_error(sim_ped(10, n_founders = 2, p_unknown = NA), "probability")
+  expect_error(sim_ped(10.5, n_founders = 2), "whole number")
+  expect_error(sim_ped(10, n_founders = 2, window = c(3, 4)), "window")
+  expect_error(sim_ped("10", n_founders = 2), "whole number")
 })
 
 test_that("the simulators follow the random number generator of the session", {

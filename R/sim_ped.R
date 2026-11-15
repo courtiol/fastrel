@@ -50,10 +50,15 @@ sim_ped <- function(n = 1000, n_founders = 40, window = 150,
                     p_unknown = 0.05, numeric_ids = FALSE) {
   if (!is.logical(numeric_ids) || length(numeric_ids) != 1L || is.na(numeric_ids))
     stop("`numeric_ids` must be TRUE or FALSE")
-  if (n <= n_founders) stop("`n` must be larger than `n_founders`")
-  if (n_founders < 1) stop("`n_founders` must be at least 1")
-  if (window < 1) stop("`window` must be at least 1")
-  if (p_unknown < 0 || p_unknown > 1) stop("`p_unknown` must be a probability")
+  whole <- function(x) is.numeric(x) && length(x) == 1L && !is.na(x) && x == round(x)
+  if (!whole(n_founders) || n_founders < 1)
+    stop("`n_founders` must be a whole number, at least 1")
+  if (!whole(n) || n <= n_founders)
+    stop("`n` must be a whole number, larger than `n_founders`")
+  if (!whole(window) || window < 1) stop("`window` must be a whole number, at least 1")
+  if (!is.numeric(p_unknown) || length(p_unknown) != 1L || is.na(p_unknown) ||
+      p_unknown < 0 || p_unknown > 1)
+    stop("`p_unknown` must be a probability")
   sex <- sample(1:2, n, replace = TRUE)       # 1 = male, 2 = female
   mom <- dad <- rep(NA_integer_, n)
 

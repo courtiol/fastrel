@@ -32,7 +32,7 @@ using namespace Rcpp;
 //     matrix is relabelled in place at the end, which needs no second matrix.
 // [[Rcpp::export]]
 NumericMatrix relatedness_cpp(IntegerVector mom, IntegerVector dad, int metric = 0) {
-  const int n = mom.size();
+  const int n = (int)mom.size();
   if (dad.size() != n) stop("mom and dad must have the same length");
 
   // m[i], d[i]: 0-based index of mother / father of i, or -1 if unknown

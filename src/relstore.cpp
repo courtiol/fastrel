@@ -46,7 +46,7 @@ public:
   // Newborns are processed one after the other in the order given, so a
   // newborn cannot use another newborn of the same call as a parent.
   IntegerVector add(IntegerVector mom, IntegerVector dad) {
-    const int nb = mom.size();
+    const int nb = (int)mom.size();
     if (dad.size() != nb) stop("mom and dad must have the same length");
     // Everything that can fail is done before the first slot is taken, so
     // that an error leaves the store unchanged (and in step with the R side):
@@ -118,7 +118,7 @@ public:
   // Relatedness submatrix for the given slots, as the measure `metric` (see
   // metrics.h; 0 = A = 2 * kinship, which is what the store holds).
   NumericMatrix get(IntegerVector slots, int metric) {
-    const int k = slots.size();
+    const int k = (int)slots.size();
     // convert and validate the slots once, not inside the double loop
     std::vector<int> s(k);
     for (int a = 0; a < k; a++) {
@@ -231,7 +231,7 @@ public:
   // earlier, then make room for them all in a single step. (One call from R
   // for both, since each call to the C++ object has a fixed overhead.)
   void prepare(CharacterVector ids) {
-    const int need = ids.size();
+    const int need = (int)ids.size();
     if (ngone_ > 0 || !gone_ids_.empty()) {
       std::string bad;
       int nbad = 0;
