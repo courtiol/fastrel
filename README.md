@@ -328,7 +328,7 @@ rel <- rel_load("store.rds") # a working store again
 ## Benchmarks
 
 The relatedness metrics are computed much faster by `fastrel` than by `ggroups`
-or `kinship2`. Here is an example, using a pedigree simulated with integer
+or `kinship2` under virtually all conditions. Here is an example, using a pedigree simulated with integer
 identifiers and 0 for unknown parents, which suits all three packages:
 
 
