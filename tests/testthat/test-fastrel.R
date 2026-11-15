@@ -96,11 +96,23 @@ test_that("fastrel_ped gives the same as fastrel_vec, whatever the columns", {
   expect_equal(dim(fastrel_ped(p[0, ])), c(0L, 0L))
 })
 
+test_that("the columns are returned in the order individual, father, mother", {
+  ## the result does not depend on which parent is which, so check directly
+  memory <- fastrel:::ped_cache
+  memory$told_position <- TRUE                  # no message
+  memory$names <- NULL
+  cols <- function(...) fastrel:::ped_columns(data.frame(..., check.names = FALSE))
+  expect_identical(cols(a = 1, b = 2, c = 3), 1:3)          # by position
+  expect_identical(cols(id = 1, sire = 2, dam = 3), 1:3)
+  expect_identical(cols(id = 1, dam = 2, sire = 3), c(1L, 3L, 2L))
+  expect_identical(cols(momid = 1, id = 2, dadid = 3), c(2L, 3L, 1L))
+})
+
 test_that("fastrel_ped refuses ambiguous or incomplete columns", {
   p <- test_ped()
   expect_error(fastrel_ped(data.frame(id = p$id, mom = p$mom, x = p$dad)), "father")
   expect_error(fastrel_ped(data.frame(id = p$id, m = p$mom, d = p$dad)),
-               "mother or as the father")
+               "father or as the mother")
   expect_error(fastrel_ped(data.frame(x = p$id, mom = p$mom, dad = p$dad)), "focal")
   expect_error(fastrel_ped(data.frame(id = p$id, mom = p$mom, mother = p$mom, dad = p$dad)),
                "several columns.*mother.*mom, mother")

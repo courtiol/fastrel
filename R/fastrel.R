@@ -34,8 +34,8 @@
 #' the same). The names recognised are:
 #' * for the focal individual: `id`, `iid`, `focal`, `ind`, `indiv`,
 #'   `individual`, `animal`, `ego`, `offspring`, `child`;
-#' * for its mother: `mom`, `mum`, `mother`, `dam`, `mat`, `maternal`;
-#' * for its father: `dad`, `father`, `sire`, `pat`, `paternal`.
+#' * for its father: `dad`, `father`, `sire`, `pat`, `paternal`;
+#' * for its mother: `mom`, `mum`, `mother`, `dam`, `mat`, `maternal`.
 #'
 #' If none of the columns has a recognised name, the first three columns are
 #' taken to be the focal individual, its father and its mother, in this order,
@@ -121,7 +121,7 @@ fastrel_ped <- function(ped,
                         metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")) {
   metric <- match.arg(metric)
   cols <- ped_columns(ped)
-  fastrel_vec(ped[[cols[1L]]], dadid = ped[[cols[3L]]], momid = ped[[cols[2L]]],
+  fastrel_vec(ped[[cols[1L]]], dadid = ped[[cols[2L]]], momid = ped[[cols[3L]]],
               metric = metric)
 }
 

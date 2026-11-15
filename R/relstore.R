@@ -247,8 +247,8 @@ rel_add <- function(rel, ped) {
   check_store(rel)
   cols <- ped_columns(ped)                        # found by their names
   id  <- as.character(ped[[cols[1L]]])
-  mom <- as.character(ped[[cols[2L]]])
-  dad <- as.character(ped[[cols[3L]]])
+  dad <- as.character(ped[[cols[2L]]])
+  mom <- as.character(ped[[cols[3L]]])
   n <- length(id)
   if (n == 0L) return(invisible(rel))             # nothing to add
 

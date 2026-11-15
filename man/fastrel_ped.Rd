@@ -96,8 +96,8 @@ the same). The names recognised are:
 \itemize{
 \item for the focal individual: \code{id}, \code{iid}, \code{focal}, \code{ind}, \code{indiv},
 \code{individual}, \code{animal}, \code{ego}, \code{offspring}, \code{child};
-\item for its mother: \code{mom}, \code{mum}, \code{mother}, \code{dam}, \code{mat}, \code{maternal};
-\item for its father: \code{dad}, \code{father}, \code{sire}, \code{pat}, \code{paternal}.
+\item for its father: \code{dad}, \code{father}, \code{sire}, \code{pat}, \code{paternal};
+\item for its mother: \code{mom}, \code{mum}, \code{mother}, \code{dam}, \code{mat}, \code{maternal}.
 }
 
 If none of the columns has a recognised name, the first three columns are
