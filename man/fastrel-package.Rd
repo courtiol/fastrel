@@ -98,4 +98,9 @@ Useful links:
 \author{
 \strong{Maintainer}: Alexandre Courtiol \email{alexandre.courtiol@gmail.com} (\href{https://orcid.org/0000-0003-0637-2959}{ORCID})
 
+Authors:
+\itemize{
+  \item Alexandre Courtiol \email{alexandre.courtiol@gmail.com} (\href{https://orcid.org/0000-0003-0637-2959}{ORCID})
+}
+
 }
