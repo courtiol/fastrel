@@ -382,17 +382,17 @@ microbenchmark(ggroups = buildA(ped[, c("id", "dadid", "momid")]),
 ```
 
 ```
-## Unit: milliseconds
-##         expr        min         lq       mean     median         uq       max
-##      ggroups 122.003128 127.396422 132.461313 131.158967 137.104818 172.15611
-##     kinship2  16.814116  23.015420  27.484279  26.041132  29.130176 133.15792
-##  fastrel_ped   1.268417   2.081106   2.730765   2.492844   2.851635   7.41647
-##  fastrel_vec   1.619900   2.550982   4.584552   3.003825   3.692775 132.62793
-##  neval
-##    100
-##    100
-##    100
-##    100
+## Unit: microseconds
+##         expr        min         lq       mean     median         uq        max neval
+##      ggroups 105569.691 107454.438 115494.175 110346.202 112016.820 250376.918   100
+##     kinship2  11422.808  15146.602  20574.566  15882.262  18488.207 155966.398   100
+##  fastrel_ped    948.994   1037.596   2193.280   1219.399   2318.958   7782.719   100
+##  fastrel_vec   1110.800   1206.821   2186.675   1372.069   2378.245   6067.447   100
+##  cld
+##  a  
+##   b 
+##    c
+##    c
 ```
 
 You can also run the more detailed integrated benchmarks as follows:

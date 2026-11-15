@@ -1,4 +1,4 @@
-# fastrel (development version)
+# fastrel 0.8.0
 
 * Breaking: `rel_new(remember_removed = )` now takes `"none"` (the default),
   `"fingerprint"` (formerly `TRUE`) or `"id"`, instead of `FALSE` or `TRUE`.
@@ -8,8 +8,7 @@
   and its father, but now say so in a message, once per R session.
 * New `rel_new(remember_removed = "id")`, which keeps the identifiers of the
   individuals removed rather than a fingerprint of each of them. It takes more
-  memory (about 70 bytes per individual removed for short identifiers, against
-  about 30) but can never mistake a new identifier for a removed one.
+  memory but can never mistake a new identifier for a removed one.
   `rel_save()` and `rel_load()` keep the kind of trace used.
 
 # fastrel 0.7.0
