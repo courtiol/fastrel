@@ -21,24 +21,25 @@ fastrel_vec(
 }
 \arguments{
 \item{ped}{A data frame (or a tibble) with one row per individual and three columns giving
-the identifier of the individual, of its mother and of its father (\code{NA} if
-unknown). See the section Columns of \code{ped}.}
+the identifier of the individual, of its mother and of its father (\code{NA}
+or 0 if unknown). See the section Columns of \code{ped}.}
 
 \item{metric}{The measure of relatedness to return: \code{"additive"} (the
 default), \code{"kinship"}, \code{"wright"} (or \code{"Wright"}) or \code{"hamilton"} (or
 \code{"Hamilton"}). Abbreviations are accepted (e.g. \code{"kin"}). See
 \link{relatedness_metrics} for their definitions. In \code{fastrel_vec()} it comes
-after the arguments of \code{\link[kinship2:kinship]{kinship2::kinship()}}, so it is best given by name.}
+after the arguments used for compatibility with \code{\link[kinship2:kinship]{kinship2::kinship()}}, so
+it is best given by name.}
 
 \item{id}{Vector of unique individual identifiers. For this argument and
 the next two, a data frame with a single column (what \code{x[, "id"]} returns
-when \code{x} is a tibble) is taken as that column.}
+when \code{x} is a tibble) also works.}
 
 \item{dadid}{Vector of the same length as \code{id} with the identifier of each
-individual's father (\code{NA} if unknown).}
+individual's father (\code{NA} or 0 if unknown).}
 
 \item{momid}{Vector of the same length as \code{id} with the identifier of each
-individual's mother (\code{NA} if unknown).}
+individual's mother (\code{NA} or 0 if unknown).}
 
 \item{sex, chrtype}{Arguments of \code{\link[kinship2:kinship]{kinship2::kinship()}}, present so that
 calls written for that function work unchanged. \code{sex} is not used, as the
@@ -57,7 +58,8 @@ not symmetric (rows are actors, columns are recipients).
 }
 \description{
 Compute a measure of relatedness of autosomal loci between all individuals
-of a pedigree, using the tabular method implemented in C++. By default, the
+of a pedigree, using the tabular method (Emik and Terrill 1949; Henderson
+1976) implemented in C++. By default, the
 measure is the additive relationship \eqn{A = 2\phi}{A = 2 * phi}, where
 \eqn{\phi}{phi} is the kinship coefficient; the argument \code{metric} gives the
 kinship coefficient itself, Wright's coefficient of relationship or
@@ -68,7 +70,7 @@ in how the pedigree is given:
 \item \code{fastrel_ped()} takes a data frame;
 \item \code{fastrel_vec()} takes three vectors, as \code{\link[kinship2:kinship]{kinship2::kinship()}} does. It is a
 fast replacement for \code{2 * kinship2::kinship()}, or for
-\code{kinship2::kinship()} with \code{metric = "kinship"}.
+\code{kinship2::kinship()} when \code{metric = "kinship"}.
 }
 }
 \details{
@@ -134,6 +136,15 @@ if (requireNamespace("kinship2", quietly = TRUE)) {
   all.equal(fastrel_ped(ped, metric = "kinship"),
             kinship2::kinship(ped$id, dadid = ped$dad, momid = ped$mom))
 }
+}
+\references{
+Emik, L. O., & Terrill, C. E. (1949). Systematic procedures for calculating
+inbreeding coefficients. \emph{Journal of Heredity}, 40(2), 51–55.
+\doi{10.1093/oxfordjournals.jhered.a105986}
+
+Henderson, C. R. (1976). A simple method for computing the inverse of a
+numerator relationship matrix used in prediction of breeding values.
+\emph{Biometrics}, 32(1), 69–83. \doi{10.2307/2529339}
 }
 \seealso{
 \link{relatedness_metrics} for the measures of relatedness;

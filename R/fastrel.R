@@ -1,7 +1,8 @@
 #' Relatedness matrix from a pedigree
 #'
 #' Compute a measure of relatedness of autosomal loci between all individuals
-#' of a pedigree, using the tabular method implemented in C++. By default, the
+#' of a pedigree, using the tabular method (Emik and Terrill 1949; Henderson
+#' 1976) implemented in C++. By default, the
 #' measure is the additive relationship \eqn{A = 2\phi}{A = 2 * phi}, where
 #' \eqn{\phi}{phi} is the kinship coefficient; the argument `metric` gives the
 #' kinship coefficient itself, Wright's coefficient of relationship or
@@ -11,7 +12,7 @@
 #' * `fastrel_ped()` takes a data frame;
 #' * `fastrel_vec()` takes three vectors, as [kinship2::kinship()] does. It is a
 #'   fast replacement for `2 * kinship2::kinship()`, or for
-#'   `kinship2::kinship()` with `metric = "kinship"`.
+#'   `kinship2::kinship()` when `metric = "kinship"`.
 #'
 #' Rows of the pedigree can be in any order: parents do not need to appear
 #' before their offspring. Parents that are `NA` or 0 (as in many programs of
@@ -43,15 +44,15 @@
 #' the same role, an error is raised rather than guessing.
 #'
 #' @param ped A data frame (or a tibble) with one row per individual and three columns giving
-#'   the identifier of the individual, of its mother and of its father (`NA` if
-#'   unknown). See the section Columns of `ped`.
+#'   the identifier of the individual, of its mother and of its father (`NA`
+#'   or 0 if unknown). See the section Columns of `ped`.
 #' @param id Vector of unique individual identifiers. For this argument and
 #'   the next two, a data frame with a single column (what `x[, "id"]` returns
-#'   when `x` is a tibble) is taken as that column.
+#'   when `x` is a tibble) also works.
 #' @param dadid Vector of the same length as `id` with the identifier of each
-#'   individual's father (`NA` if unknown).
+#'   individual's father (`NA` or 0 if unknown).
 #' @param momid Vector of the same length as `id` with the identifier of each
-#'   individual's mother (`NA` if unknown).
+#'   individual's mother (`NA` or 0 if unknown).
 #' @param sex,chrtype Arguments of [kinship2::kinship()], present so that
 #'   calls written for that function work unchanged. `sex` is not used, as the
 #'   sex of individuals does not matter for autosomes; if given, it must have
@@ -61,7 +62,8 @@
 #'   default), `"kinship"`, `"wright"` (or `"Wright"`) or `"hamilton"` (or
 #'   `"Hamilton"`). Abbreviations are accepted (e.g. `"kin"`). See
 #'   [relatedness_metrics] for their definitions. In `fastrel_vec()` it comes
-#'   after the arguments of [kinship2::kinship()], so it is best given by name.
+#'   after the arguments used for compatibility with [kinship2::kinship()], so
+#'   it is best given by name.
 #'
 #' @return A numeric matrix with one row and one column per individual, in the
 #'   order given, and the identifiers as row and column names. With the default
@@ -70,6 +72,15 @@
 #'   2, exceeding 1 only with inbreeding. For the other measures, see
 #'   [relatedness_metrics]; note that with `metric = "hamilton"` the matrix is
 #'   not symmetric (rows are actors, columns are recipients).
+#'
+#' @references
+#' Emik, L. O., & Terrill, C. E. (1949). Systematic procedures for calculating
+#' inbreeding coefficients. *Journal of Heredity*, 40(2), 51–55.
+#' \doi{10.1093/oxfordjournals.jhered.a105986}
+#'
+#' Henderson, C. R. (1976). A simple method for computing the inverse of a
+#' numerator relationship matrix used in prediction of breeding values.
+#' *Biometrics*, 32(1), 69–83. \doi{10.2307/2529339}
 #'
 #' @seealso [relatedness_metrics] for the measures of relatedness;
 #'   [rel_new()] for the incremental version.
