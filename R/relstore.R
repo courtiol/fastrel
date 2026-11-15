@@ -124,12 +124,16 @@
 #' @param rel A store created by `rel_new()`.
 #' @param ped A data frame (or a tibble) with one row per individual to add and three columns
 #'   giving the identifier of the individual, of its mother and of its father
-#'   (`NA` for unknown parents). The columns are found by their names (e.g.
+#'   (`NA` or 0 for unknown parents). The columns are found by their names (e.g.
 #'   `id`, `mom`, `dad` or `Animal`, `Dam`, `Sire`), whatever their order, and
 #'   other columns are ignored: see the section Columns of `ped` in
 #'   [fastrel_ped()]. Only individuals not yet in the store can be added.
-#'   Parents must be in the store or in `ped` itself; the rows of `ped` may be
-#'   in any order.
+#'   Known parents must be in the store or in `ped` itself: any other
+#'   identifier raises an error rather than being treated as unknown, since it
+#'   usually reveals a mistake (a typo, a parent never added or removed too
+#'   early). 0 is taken as an unknown parent unless an individual is called 0,
+#'   in which case it is refused as ambiguous. The rows of `ped` may be in any
+#'   order.
 #' @param ids Character vector (or coercible to it) of individual identifiers.
 #'   A data frame with a single column is taken as that column.
 #'   For `rel_get()`, the default is every individual in the store.
@@ -219,6 +223,8 @@ rel_add <- function(rel, ped) {
 
   if (anyNA(id))                stop("focal IDs cannot be NA")
   if (anyDuplicated(id))        stop("duplicated focal IDs in ped")
+  mom <- zero_as_unknown(mom, c(id, rel$ids))    # 0 = unknown parent
+  dad <- zero_as_unknown(dad, c(id, rel$ids))
 
   ## a single lookup in the store for the focal individuals and their parents
   k <- match(c(id, mom, dad), rel$ids)

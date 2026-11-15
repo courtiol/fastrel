@@ -41,12 +41,16 @@ removed, so that \code{rel_add()} refuses to add them again? \code{FALSE} by def
 
 \item{ped}{A data frame (or a tibble) with one row per individual to add and three columns
 giving the identifier of the individual, of its mother and of its father
-(\code{NA} for unknown parents). The columns are found by their names (e.g.
+(\code{NA} or 0 for unknown parents). The columns are found by their names (e.g.
 \code{id}, \code{mom}, \code{dad} or \code{Animal}, \code{Dam}, \code{Sire}), whatever their order, and
 other columns are ignored: see the section Columns of \code{ped} in
 \code{\link[=fastrel_ped]{fastrel_ped()}}. Only individuals not yet in the store can be added.
-Parents must be in the store or in \code{ped} itself; the rows of \code{ped} may be
-in any order.}
+Known parents must be in the store or in \code{ped} itself: any other
+identifier raises an error rather than being treated as unknown, since it
+usually reveals a mistake (a typo, a parent never added or removed too
+early). 0 is taken as an unknown parent unless an individual is called 0,
+in which case it is refused as ambiguous. The rows of \code{ped} may be in any
+order.}
 
 \item{ids}{Character vector (or coercible to it) of individual identifiers.
 A data frame with a single column is taken as that column.

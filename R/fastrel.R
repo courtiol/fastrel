@@ -14,8 +14,10 @@
 #'   `kinship2::kinship()` with `metric = "kinship"`.
 #'
 #' Rows of the pedigree can be in any order: parents do not need to appear
-#' before their offspring. Parents that are `NA` or that are not found among
-#' the individuals are treated as unknown. The algorithm uses a topological
+#' before their offspring. Parents that are `NA` or 0 (as in many programs of
+#' animal breeding), or that are not found among the individuals, are treated
+#' as unknown; 0 is refused if an individual is itself called 0, as it would
+#' then be ambiguous. The algorithm uses a topological
 #' sort of the pedigree, so an impossible pedigree (someone being their own
 #' ancestor) raises an error.
 #'
@@ -126,6 +128,8 @@ fastrel_vec <- function(id, dadid, momid, sex, chrtype = "autosome",
   n <- length(id)
   if (length(dadid) != n) stop("Invalid father id")
   if (length(momid) != n) stop("Invalid mother id")
+  momid <- zero_as_unknown(momid, id)             # 0 = unknown parent
+  dadid <- zero_as_unknown(dadid, id)
   if (!missing(sex) && length(sex) != n)
     stop("`sex` must have one value per individual (it is not used, since ",
          "only autosomes are supported). To choose the measure returned, use ",

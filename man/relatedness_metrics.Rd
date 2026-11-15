@@ -44,10 +44,11 @@ a common ancestor. Being a probability, it lies between 0 and 1. This is
 what \code{\link[kinship2:kinship]{kinship2::kinship()}} returns (Sinnwell et al. 2014).
 
 Two related quantities follow. The inbreeding coefficient \eqn{F_i}{F[i]},
-introduced by Wright (1922) as a correlation between the gametes that unite
-to form \eqn{i} and reinterpreted by Malécot (1948) as a probability, is the
-probability that the two alleles of \eqn{i} are identical by descent; it
-equals the kinship coefficient between the parents of \eqn{i}. The kinship of an individual with itself is
+introduced by Wright (1922) as the correlation between the egg and the sperm
+that unite to form \eqn{i}, is the probability that the two alleles of
+\eqn{i} are identical by descent: Malécot (1948) defined it so, as his
+\emph{coefficient de consanguinité}, and noted that it equals the kinship
+coefficient between the parents of \eqn{i}. The kinship of an individual with itself is
 \eqn{\phi_{ii} = (1 + F_i)/2}{phi[i,i] = (1 + F[i]) / 2}: when two alleles
 are drawn from \eqn{i} with replacement, the same allele is drawn twice with
 probability 1/2, and otherwise the two alleles are identical by descent with
@@ -57,9 +58,28 @@ probability \eqn{F_i}{F[i]}.
 \section{Additive relationship (\code{"additive"})}{
 
 The additive relationship \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 phi[i,j]} is
-what animal and plant breeders call the numerator relationship matrix
-(Henderson 1976), computed here with the tabular method (Emik and Terrill
-1949). It is not a probability but an expected count: \eqn{A_{ij}}{A[i,j]}
+what animal and plant breeders call the numerator relationship, as it is
+the numerator of Wright's coefficient of relationship (see below). Emik and
+Terrill (1949) introduced this name and described the tabular method used
+here to compute it. Individuals are added one by one, parents before
+offspring. When individual \eqn{i}, with mother \eqn{m} and father
+\eqn{d}, is added:
+\itemize{
+\item its additive relationship with each individual \eqn{j} already present is
+the average of those of its two parents with \eqn{j},
+\eqn{A_{ij} = (A_{mj} + A_{dj}) / 2}{A[i,j] = (A[m,j] + A[d,j]) / 2}
+(an unknown parent counting as 0);
+\item its additive relationship with itself is
+\eqn{A_{ii} = 1 + A_{md} / 2}{A[i,i] = 1 + A[m,d] / 2}, where
+\eqn{A_{md}}{A[m,d]} is the additive relationship between its two
+parents, since its inbreeding coefficient is half of that; if a parent
+is unknown, \eqn{A_{ii} = 1}{A[i,i] = 1}.
+}
+
+Henderson (1976) gives the same method for the whole numerator
+relationship matrix, as used to predict breeding values.
+
+The additive relationship is not a probability but an expected count: \eqn{A_{ij}}{A[i,j]}
 is the expected number of the two alleles of \eqn{j} that are identical by
 descent with an allele drawn at random from \eqn{i}, which is why it can
 exceed 1 (see the section Range of values). For example, two
@@ -69,22 +89,28 @@ selfing have an additive relationship of 1.5 (and a kinship of 0.75).
 Its main use is quantitative genetics: under an additive model, the
 covariance between the breeding values of \eqn{i} and \eqn{j} is
 \eqn{A_{ij} \sigma^2_A}{A[i,j] * sigma2_A}, where \eqn{\sigma^2_A}{sigma2_A}
-is the additive genetic variance of the base population (Lynch and Walsh
-1998, chapter 7). The diagonal, \eqn{1 + F_i}{1 + F[i]}, shows that the
-breeding values of inbred individuals vary more, since inbred individuals
-are more homozygous. This matrix is the one used in animal models and to
+is the additive genetic variance of the base population: the variance
+matrix of breeding values is \eqn{A \sigma^2_A}{A * sigma2_A} (Henderson
+1976; Lynch and Walsh 1998, chapter 7). In a population without inbreeding,
+the covariance is thus half the additive variance between parent and
+offspring and a quarter of it between half siblings, as Falconer (1960,
+chapter 9) derives directly (between full siblings, the covariance of
+genotypic values also includes a quarter of the dominance variance).
+The diagonal, \eqn{1 + F_i}{1 + F[i]}, shows that the breeding values of
+inbred individuals vary more, since inbred individuals are more homozygous. This matrix is the one used in animal models and to
 estimate heritability.
 }
 
 \section{Wright's coefficient of relationship (\code{"wright"})}{
 
 Wright (1922) defined the coefficient of relationship as the correlation
-between the genetic values of two individuals, which is obtained by dividing
-the covariance \eqn{A_{ij}}{A[i,j]} by the product of the two standard
-deviations:
+between two individuals, i.e. between their genotypes (Michod and Hamilton
+1980), which is obtained by dividing the covariance \eqn{A_{ij}}{A[i,j]} by
+the product of the two standard deviations, as in Wright's own formula:
 \deqn{r_{ij} = \frac{A_{ij}}{\sqrt{A_{ii} A_{jj}}} = \frac{2\phi_{ij}}{\sqrt{(1 + F_i)(1 + F_j)}}}{r[i,j] = A[i,j] / sqrt(A[i,i] * A[j,j]) = 2 phi[i,j] / sqrt((1 + F[i]) * (1 + F[j]))}
-This is what \code{\link[stats:cor]{stats::cov2cor()}} computes from the additive relationship
-matrix. Being a correlation, it lies between 0 and 1 (the Cauchy-Schwarz
+Conversely, \eqn{A_{ij} = r_{ij} \sqrt{A_{ii} A_{jj}}}{A[i,j] = r[i,j] * sqrt(A[i,i] * A[j,j])}
+(Henderson 1976). This is what \code{\link[stats:cor]{stats::cov2cor()}} computes from the additive
+relationship matrix. Being a correlation, it lies between 0 and 1 (the Cauchy-Schwarz
 inequality guarantees that
 \eqn{A_{ij} \le \sqrt{A_{ii} A_{jj}}}{A[i,j] <= sqrt(A[i,i] * A[j,j])}), and
 every individual has a relationship of 1 with itself.
@@ -103,18 +129,27 @@ percent as similar to each other as each of them is to itself.
 
 \section{Hamilton's regression coefficient of relatedness (\code{"hamilton"})}{
 
-Hamilton (1964a, b) used Wright's coefficient of relationship in the first
-formulation of inclusive fitness. He later showed that with inbreeding the
-relevant measure for kin selection, the \eqn{r} of Hamilton's rule
-\eqn{rb > c}, is a regression coefficient rather than a correlation
-(Hamilton 1972; Michod and Hamilton 1980): the regression of the genetic
-value of the recipient of a behaviour on that of the actor,
+Hamilton (1964a, b) used Wright's coefficient of relationship, in a
+population without inbreeding, in the first formulation of inclusive
+fitness. To allow for inbreeding, Hamilton (1972) then defined the
+regression coefficient of relatedness of a relative \eqn{B} to an actor
+\eqn{A} as \eqn{b_{AB} = 2 r_{AB} / (1 + F_A)}{b[A,B] = 2 r[A,B] / (1 + F[A])},
+where \eqn{r_{AB}}{r[A,B]}, the probability that a gene of \eqn{A} is
+present in a random gamete of \eqn{B}, is their kinship coefficient. In
+his words, it "measures the regression of B's additive genotype on that of
+A". With inbreeding, the \eqn{r} of Hamilton's rule \eqn{rb > c} is this
+regression coefficient rather than a correlation. Michod and Hamilton (1980)
+showed that the various coefficients of relatedness proposed for Hamilton's
+rule are equivalent, and that they reduce, in particular when gene effects
+are additive, to this regression of the genotype of the recipient of a
+behaviour on that of the actor,
 \deqn{b_{ij} = \frac{\mathrm{Cov}(g_i, g_j)}{\mathrm{Var}(g_i)} = \frac{A_{ij}}{A_{ii}} = \frac{2\phi_{ij}}{1 + F_i}}{b[i,j] = Cov(g[i], g[j]) / Var(g[i]) = A[i,j] / A[i,i] = 2 phi[i,j] / (1 + F[i])}
 where \eqn{i} is the actor and \eqn{j} the recipient. In the matrix
 returned, \strong{rows are actors and columns are recipients}: \code{R[i, j]} is the
 relatedness of recipient \code{j} from the point of view of actor \code{i}. The
 matrix is not symmetric when individuals differ in their inbreeding
-coefficients. Its values lie between 0 and 1 (see the section Range of values), and
+coefficients, which is also when the regression and the correlation (Wright's
+coefficient) differ (Michod and Hamilton 1980). Its values lie between 0 and 1 (see the section Range of values), and
 all individuals have a relatedness of 1 with themselves. Its interpretation
 is similar to that of Wright's coefficient, but from the point of view of
 the actor only: \code{R[i, j] = 1} means that, as far as the genes of the actor
@@ -202,6 +237,9 @@ all.equal(fastrel_ped(ped2), fastrel_ped(ped2, metric = "hamilton"))
 Emik, L. O., & Terrill, C. E. (1949). Systematic procedures for calculating
 inbreeding coefficients. \emph{Journal of Heredity}, 40(2), 51–55.
 \doi{10.1093/oxfordjournals.jhered.a105986}
+
+Falconer, D. S. (1960). \emph{Introduction to Quantitative Genetics}. Oliver and
+Boyd, Edinburgh.
 
 Hamilton, W. D. (1964a). The genetical evolution of social behaviour. I.
 \emph{Journal of Theoretical Biology}, 7(1), 1–16.

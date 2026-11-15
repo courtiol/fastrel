@@ -16,7 +16,7 @@ the population is at its demographic equilibrium
 [`ggroups`](https://cran.r-project.org/web/packages/ggroups/index.html), [`kinship2`](https://cran.r-project.org/web/packages/kinship2/index.html) or
 [`Pedixplorer`](https://louislenezet.github.io/Pedixplorer/)
 (which now supersedes `kinship2`)
-- a function to simulate a pedigree
+- a function to simulate a pedigree (with character or integer identifiers)
 - a function to simulate a population with its pedigree, deaths, births,
 immigrations and emigrations.
 
@@ -310,8 +310,8 @@ rel_get(rel)["b3", "a1"] # b3 remains related to its grandparent in patch A
 In that case we recommend creating the store with
 `rel_new(remember_removed = TRUE)`, as above: `rel_add()` then raises an error if an
 individual that was removed is added again, a mistake that is easy to make when
-individuals move between patches. This is off by default because it costs 11 to
-23 bytes per individual removed, so the memory used then grows (slowly) with
+individuals move between patches. This is off by default because it costs about
+30 bytes per individual removed, so the memory used then grows (slowly) with
 the length of the pedigree. See `?rel_new` for details.
 
 ### Saving and loading the relatedness store
@@ -322,11 +322,14 @@ restore it:
 
 ``` r
 rel_save(rel, "store.rds")
+rel <- rel_load("store.rds") # a working store again
 ```
 
 ## Benchmarks
 
-The computation of the relatedness metrics are much faster in `fastrel` than in `ggroups` or `kinship2` under virtually all conditions. Here is an example:
+The relatedness metrics are computed much faster by `fastrel` than by `ggroups`
+or `kinship2` under virtually all conditions. Here is an example, using a pedigree simulated with integer
+identifiers and 0 for unknown parents, which suits all three packages:
 
 
 ``` r
@@ -335,19 +338,21 @@ library(ggroups)
 library(kinship2)
 
 set.seed(1) # for reproducibility
-ped <- sim_ped(1000)
+ped <- sim_ped(1000, numeric_ids = TRUE)
+head(ped, n = 3)
+```
 
-# convert pedigree to be usable by all packages
-ID_num <- seq_len(nrow(ped))   # sim_ped() returns individuals in birth order
-ped_test <- data.frame(ID = ID_num,
-                       SIRE = ID_num[match(ped$dadid, ped$id)],
-                       DAM  = ID_num[match(ped$momid, ped$id)])
-ped_test$SIRE[is.na(ped_test$SIRE)] <- 0
-ped_test$DAM[is.na(ped_test$DAM)]   <- 0
+```
+##   id momid dadid sex
+## 1  1     0     0   1
+## 2  2     0     0   2
+## 3  3     0     0   1
+```
 
+``` r
 # check that the computed relatedness are the same
-all.equal(unname(as.matrix(buildA(ped_test))),
-          unname(fastrel_ped(ped_test)))
+all.equal(unname(buildA(ped[, c("id", "dadid", "momid")])), # columns: individual, sire, dam
+          unname(fastrel_ped(ped)))
 ```
 
 ```
@@ -355,9 +360,8 @@ all.equal(unname(as.matrix(buildA(ped_test))),
 ```
 
 ``` r
-all.equal(unname(as.matrix(kinship(ped_test$ID, ped_test$SIRE, ped_test$DAM))),
-          unname(fastrel_vec(ped_test$ID, ped_test$SIRE, ped_test$DAM,
-                             metric = "kinship")))
+all.equal(unname(kinship(ped$id, ped$dadid, ped$momid)),
+          unname(fastrel_ped(ped, metric = "kinship")))
 ```
 
 ```
@@ -366,20 +370,25 @@ all.equal(unname(as.matrix(kinship(ped_test$ID, ped_test$SIRE, ped_test$DAM))),
 
 ``` r
 # benchmark
-microbenchmark(ggroups = buildA(ped_test),
-               kinship2 = kinship(ped_test$ID, ped_test$SIRE, ped_test$DAM),
-               fastrel_ped = fastrel_ped(ped_test),
-               fastrel_vec = fastrel_vec(ped_test$ID, ped_test$SIRE, ped_test$DAM,
+microbenchmark(ggroups = buildA(ped[, c("id", "dadid", "momid")]),
+               kinship2 = kinship(ped$id, ped$dadid, ped$momid),
+               fastrel_ped = fastrel_ped(ped),
+               fastrel_vec = fastrel_vec(ped$id, ped$dadid, ped$momid,
                                          metric = "kinship"))
 ```
 
 ```
 ## Unit: milliseconds
-##         expr        min         lq       mean     median         uq        max neval cld
-##      ggroups 103.370123 104.702396 107.973735 105.354579 109.298212 145.855047   100 a  
-##     kinship2  10.790303  11.060935  11.885469  11.273752  11.681968  23.081994   100  b 
-##  fastrel_ped   1.438588   1.502125   1.611017   1.535788   1.619090   2.880133   100   c
-##  fastrel_vec   2.188877   2.308218   2.435897   2.333740   2.391946   4.074611   100   c
+##         expr        min         lq       mean     median         uq       max
+##      ggroups 122.003128 127.396422 132.461313 131.158967 137.104818 172.15611
+##     kinship2  16.814116  23.015420  27.484279  26.041132  29.130176 133.15792
+##  fastrel_ped   1.268417   2.081106   2.730765   2.492844   2.851635   7.41647
+##  fastrel_vec   1.619900   2.550982   4.584552   3.003825   3.692775 132.62793
+##  neval
+##    100
+##    100
+##    100
+##    100
 ```
 
 You can also run the more detailed integrated benchmarks as follows:
@@ -400,7 +409,7 @@ Most of this package was written with the help of large language models (LLMs),
 such as Claude Fable 5.2. The increase in computational speed has been achieved
 by relying heavily on a C++ implementation (rather than pure R code). The
 results have been cross-checked using alternative LLMs and compared to the
-output of established packages (e.g. `kinship2`). Many tests have also been
+output of established packages (`kinship2` and `ggroups`). Many tests have also been
 implemented to ensure the results are accurate.
 
 ### Tips for developers

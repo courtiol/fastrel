@@ -19,7 +19,7 @@ the population is at its demographic equilibrium
 [`ggroups`](https://cran.r-project.org/web/packages/ggroups/index.html), [`kinship2`](https://cran.r-project.org/web/packages/kinship2/index.html) or
 [`Pedixplorer`](https://louislenezet.github.io/Pedixplorer/)
 (which now supersedes `kinship2`)
-- a function to simulate a pedigree
+- a function to simulate a pedigree (with character or integer identifiers)
 - a function to simulate a population with its pedigree, deaths, births,
 immigrations and emigrations.
 
@@ -175,7 +175,7 @@ plot(mean_rel ~ step, data = mean_relatedness,
 Although `r nrow(pop)` individuals were simulated in total, the store never
 held more than a few hundred of them at once:
 
-```{r reel_size}
+```{r rel_size}
 rel_size(rel)     # individuals currently in the store
 ```
 
@@ -203,8 +203,8 @@ rel_get(rel)["b3", "a1"] # b3 remains related to its grandparent in patch A
 In that case we recommend creating the store with
 `rel_new(remember_removed = TRUE)`, as above: `rel_add()` then raises an error if an
 individual that was removed is added again, a mistake that is easy to make when
-individuals move between patches. This is off by default because it costs 11 to
-23 bytes per individual removed, so the memory used then grows (slowly) with
+individuals move between patches. This is off by default because it costs about
+30 bytes per individual removed, so the memory used then grows (slowly) with
 the length of the pedigree. See `?rel_new` for details.
 
 ### Saving and loading the relatedness store
@@ -214,41 +214,36 @@ restore it:
 
 ```{r saving, eval = FALSE}
 rel_save(rel, "store.rds")
+rel <- rel_load("store.rds") # a working store again
 ```
 
 ## Benchmarks
 
-The computation of the relatedness metrics are much faster in `fastrel` than in `ggroups` or `kinship2` under virtually all conditions. Here is an example:
+The relatedness metrics are computed much faster by `fastrel` than by `ggroups`
+or `kinship2` under virtually all conditions. Here is an example, using a pedigree simulated with integer
+identifiers and 0 for unknown parents, which suits all three packages:
 
-```{r benchmark}
+```{r benchmark, message = FALSE, warning = FALSE}
 library(microbenchmark)
 library(ggroups)
 library(kinship2)
 
 set.seed(1) # for reproducibility
-ped <- sim_ped(1000)
-
-# convert pedigree to be usable by all packages
-ID_num <- seq_len(nrow(ped))   # sim_ped() returns individuals in birth order
-ped_test <- data.frame(ID = ID_num,
-                       SIRE = ID_num[match(ped$dadid, ped$id)],
-                       DAM  = ID_num[match(ped$momid, ped$id)])
-ped_test$SIRE[is.na(ped_test$SIRE)] <- 0
-ped_test$DAM[is.na(ped_test$DAM)]   <- 0
+ped <- sim_ped(1000, numeric_ids = TRUE)
+head(ped, n = 3)
 
 # check that the computed relatedness are the same
-all.equal(unname(as.matrix(buildA(ped_test))),
-          unname(fastrel_ped(ped_test)))
+all.equal(unname(buildA(ped[, c("id", "dadid", "momid")])), # columns: individual, sire, dam
+          unname(fastrel_ped(ped)))
 
-all.equal(unname(as.matrix(kinship(ped_test$ID, ped_test$SIRE, ped_test$DAM))),
-          unname(fastrel_vec(ped_test$ID, ped_test$SIRE, ped_test$DAM,
-                             metric = "kinship")))
+all.equal(unname(kinship(ped$id, ped$dadid, ped$momid)),
+          unname(fastrel_ped(ped, metric = "kinship")))
 
 # benchmark
-microbenchmark(ggroups = buildA(ped_test),
-               kinship2 = kinship(ped_test$ID, ped_test$SIRE, ped_test$DAM),
-               fastrel_ped = fastrel_ped(ped_test),
-               fastrel_vec = fastrel_vec(ped_test$ID, ped_test$SIRE, ped_test$DAM,
+microbenchmark(ggroups = buildA(ped[, c("id", "dadid", "momid")]),
+               kinship2 = kinship(ped$id, ped$dadid, ped$momid),
+               fastrel_ped = fastrel_ped(ped),
+               fastrel_vec = fastrel_vec(ped$id, ped$dadid, ped$momid,
                                          metric = "kinship"))
 ```
 
@@ -269,7 +264,7 @@ Most of this package was written with the help of large language models (LLMs),
 such as Claude Fable 5.2. The increase in computational speed has been achieved
 by relying heavily on a C++ implementation (rather than pure R code). The
 results have been cross-checked using alternative LLMs and compared to the
-output of established packages (e.g. `kinship2`). Many tests have also been
+output of established packages (`kinship2` and `ggroups`). Many tests have also been
 implemented to ensure the results are accurate.
 
 ### Tips for developers

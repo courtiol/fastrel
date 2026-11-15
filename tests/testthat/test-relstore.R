@@ -298,3 +298,24 @@ test_that("rel_add finds the columns by their names", {
   expect_error(rel_add(rel, data.frame(id = "z", mom = NA, mum = NA, dad = NA)), "several")
   expect_equal(rel_size(rel), nrow(pop))
 })
+
+test_that("0 means an unknown parent, unless an individual is called 0", {
+  ## numeric and character codes, in a single call or step by step
+  rel <- rel_new()
+  rel_add(rel, data.frame(id = 1:3, mom = c(0, 0, 1), dad = c(0, 0, 2)))
+  rel_add(rel, data.frame(id = "4", mom = "3", dad = "0"))
+  ref <- fastrel_vec(c("1", "2", "3", "4"), dadid = c(NA, NA, "2", NA),
+                     momid = c(NA, NA, "1", "3"))
+  expect_equal(rel_get(rel, c("1", "2", "3", "4")), ref)
+  ## other missing identifiers are still errors
+  expect_error(rel_add(rel, data.frame(id = 5, mom = 99, dad = 0)), "not found")
+  expect_equal(rel_size(rel), 4L)
+  ## an individual called 0 makes the code ambiguous, in ped or in the store
+  rel2 <- rel_new()
+  expect_error(rel_add(rel2, data.frame(id = c(0, 1), mom = c(NA, 0), dad = NA)), "ambiguous|cannot also mean")
+  expect_equal(rel_size(rel2), 0L)
+  rel_add(rel2, data.frame(id = 0, mom = NA, dad = NA))
+  expect_error(rel_add(rel2, data.frame(id = 1, mom = 0, dad = NA)), "cannot also mean")
+  rel_add(rel2, data.frame(id = 1, mom = NA, dad = NA))     # NA is always fine
+  expect_equal(rel_size(rel2), 2L)
+})

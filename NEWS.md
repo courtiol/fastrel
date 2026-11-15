@@ -1,3 +1,15 @@
+# fastrel 0.7.0
+
+* New argument `sim_ped(numeric_ids = TRUE)` to simulate a pedigree with
+  integer identifiers and 0 for unknown parents, which can be given as it is to
+  `fastrel_ped()`, `rel_add()`, `kinship2::kinship()` or `ggroups::buildA()`. The README
+  benchmark uses it.
+* 0 is now an unknown parent everywhere, as in many programs of animal
+  breeding: `rel_add()` used to refuse it as a parent not found. It is refused
+  as ambiguous if an individual is itself called 0. Other parents that cannot
+  be found still raise an error in `rel_add()`, as they usually reveal a
+  mistake.
+
 # fastrel 0.6.2
 
 * The results are now validated in the tests against `kinship2` and `ggroups`,

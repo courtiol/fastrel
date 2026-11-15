@@ -70,3 +70,19 @@ id_vector <- function(x, arg) {
     stop("`", arg, "` must be a vector")
   x
 }
+
+## The parent code 0 means "unknown", as in many programs of animal breeding,
+## unless an individual is itself called 0, which would make it ambiguous.
+## `id`: identifiers of the individuals that 0 could refer to; `parents`:
+## identifiers of parents (any type). Returns `parents`, of the same type, with
+## the 0 (or "0") replaced by NA.
+zero_as_unknown <- function(parents, id) {
+  zero <- !is.na(parents) & as.character(parents) == "0"
+  if (!any(zero)) return(parents)
+  if (any(as.character(id) == "0", na.rm = TRUE))
+    stop("0 is used as a parent, but it is also the identifier of an individual: ",
+         "it cannot also mean an unknown parent. Use NA for unknown parents, or ",
+         "give that individual another identifier.")
+  parents[zero] <- NA
+  parents
+}
