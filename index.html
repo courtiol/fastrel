@@ -6,6 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Fast Relatedness, Relationship and Kinship Matrices from Pedigrees • fastrel</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="katex-auto.js"></script><script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
@@ -54,7 +59,7 @@
 <a class="anchor" aria-label="anchor" href="#fastrel-"></a>
 </h1>
 </div>
-<p><strong>fast</strong> <strong>rel</strong>atedness (aka <code>fastrel</code>) is an R package to compute relatedness, relationship or kinship from a pedigree quickly. Its documentation is also available as a website: <a href="https://courtiol.github.io/fastrel/" class="uri">https://courtiol.github.io/fastrel/</a>.</p>
+<p><strong>fast</strong> <strong>rel</strong>atedness (aka <code>fastrel</code>) is an R package to compute relatedness, relationship or kinship from a pedigree quickly.</p>
 <p>This package offers five main sets of functionalities:</p>
 <ul>
 <li>a set of functions allowing for updating a relatedness matrix, conceived with individual based simulations in mind, with no need to store a pedigree, and with a computation time and memory footprint that do not increase over time as long as the population is at its demographic equilibrium (it only requires storing the information about alive individuals)</li>
@@ -270,18 +275,6 @@
 <span><span class="co">## P  -2 10 -4 -4</span></span>
 <span><span class="co">## O1  . -4  4  .</span></span>
 <span><span class="co">## O2  . -4  .  4</span></span></code></pre>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">Ainv</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/solve.html" class="external-link">solve</a></span><span class="op">(</span><span class="fu"><a href="reference/fastrel_ped.html">fastrel_ped</a></span><span class="op">(</span><span class="va">ped_selfing</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="co"># it is the inverse of A</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">big</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim_ped.html">sim_ped</a></span><span class="op">(</span><span class="fl">20000</span><span class="op">)</span>          <span class="co"># A would take 3.2 GB</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="va">Ainv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fastrel_inv.html">fastrel_inv</a></span><span class="op">(</span><span class="va">big</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##    user  system elapsed</span></span>
-<span><span class="co">##   3.159   0.019   3.161</span></span></code></pre>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">Matrix</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/nnzero-methods.html" class="external-link">nnzero</a></span><span class="op">(</span><span class="va">Ainv</span><span class="op">)</span>           <span class="co"># number of nonzero entries</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 130866</span></span></code></pre>
 <p>The result is a sparse matrix from the package Matrix, which can be given as it is to modelling packages, e.g. e.g. as <code>covStruct=list(precision=Ainv)</code> in <code>spaMM::fitme()</code> or <code>ginverse=list(var=Ainv)</code> in <code>MCMCglmm::MCMCglmm()</code>.</p>
 </div>
 <div class="section level2">
@@ -299,7 +292,7 @@
 <h3 id="a-complete-example">A complete example<a class="anchor" aria-label="anchor" href="#a-complete-example"></a>
 </h3>
 <p><code><a href="reference/sim_pop.html">sim_pop()</a></code> simulates a population with births, deaths, emigration and immigration, and returns the step at which each individual arrives and leaves. Here we replay it with a store, adding the arrivals and removing the departures at each step, and we record the mean relatedness among the individuals present:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rel</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/relstore.html">rel_new</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">pop</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim_pop.html">sim_pop</a></span><span class="op">(</span>n_steps <span class="op">=</span> <span class="fl">1000</span>, n_init <span class="op">=</span> <span class="fl">200</span><span class="op">)</span> <span class="co"># simulate pop (fine tuning the life history is possible)</span></span>
@@ -311,7 +304,7 @@
 <span><span class="co">## 4 ind00000004  &lt;NA&gt;  &lt;NA&gt;   1       0    7      dead founder</span></span>
 <span><span class="co">## 5 ind00000005  &lt;NA&gt;  &lt;NA&gt;   2       0    3      dead founder</span></span>
 <span><span class="co">## 6 ind00000006  &lt;NA&gt;  &lt;NA&gt;   1       0   22      dead founder</span></span></code></pre>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mean_relatedness</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>step <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1000</span>, mean_rel <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="co"># record mean relatedness</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">t</span> <span class="kw">in</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1000</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="reference/relstore.html">rel_add</a></span><span class="op">(</span><span class="va">rel</span>, <span class="va">pop</span><span class="op">[</span><span class="va">pop</span><span class="op">$</span><span class="va">arrival</span> <span class="op">==</span> <span class="va">t</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"dadid"</span>, <span class="st">"momid"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
@@ -325,7 +318,7 @@
 <p align="center">
 <img src="reference/figures/README-simulation-1.png" width="80%" alt="Mean relatedness over time"></p>
 <p>Although 27150 individuals were simulated in total, the store never held more than a few hundred of them at once:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/relstore.html">rel_size</a></span><span class="op">(</span><span class="va">rel</span><span class="op">)</span>     <span class="co"># individuals currently in the store</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 241</span></span></code></pre>
 </div>
@@ -333,7 +326,7 @@
 <h3 id="metapopulations">Metapopulations<a class="anchor" aria-label="anchor" href="#metapopulations"></a>
 </h3>
 <p>To model a metapopulation, use a single store for all the patches and keep the migrants in it: remove an individual only when it dies or leaves the metapopulation for good. Keep track of the patch of each individual on your side, and extract a patch with <code>rel_get(rel, ids_of_the_patch)</code>. Migrants then keep their relatedness with the relatives they left behind and with the offspring they produce elsewhere.</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rel</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/relstore.html">rel_new</a></span><span class="op">(</span>remember_removed <span class="op">=</span> <span class="st">"fingerprint"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/relstore.html">rel_add</a></span><span class="op">(</span><span class="va">rel</span>, <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a1"</span>, <span class="st">"a2"</span>, <span class="st">"b1"</span>, <span class="st">"b2"</span><span class="op">)</span>, dad <span class="op">=</span> <span class="cn">NA</span>, mom <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">patch</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>a1 <span class="op">=</span> <span class="st">"A"</span>, a2 <span class="op">=</span> <span class="st">"A"</span>, b1 <span class="op">=</span> <span class="st">"B"</span>, b2 <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span> <span class="co"># the patch of each individual</span></span>
@@ -347,7 +340,7 @@
 <span><span class="co">## b2 0.0  1 0.0 0.0</span></span>
 <span><span class="co">## a3 0.0  0 1.0 0.5</span></span>
 <span><span class="co">## b3 0.5  0 0.5 1.0</span></span></code></pre>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/relstore.html">rel_get</a></span><span class="op">(</span><span class="va">rel</span><span class="op">)</span><span class="op">[</span><span class="st">"b3"</span>, <span class="st">"a1"</span><span class="op">]</span> <span class="co"># b3 remains related to its grandparent in patch A</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 0.25</span></span></code></pre>
 <p>In that case we recommend creating the store with <code>rel_new(remember_removed = "fingerprint")</code>, as above: <code><a href="reference/relstore.html">rel_add()</a></code> then raises an error if an individual that was removed is added again, a mistake that is easy to make when individuals move between patches. This is off by default because it costs about 30 bytes per individual removed, so the memory used then grows (slowly) with the length of the pedigree. This trace relies on a fingerprint of each identifier, which could in principle be mistaken for that of another one, with a negligible probability; <code>rel_new(remember_removed = "id")</code> keeps the identifiers themselves instead, which can never be wrong but takes more memory (about 70 bytes per individual removed for short identifiers). See <code><a href="reference/relstore.html">?rel_new</a></code> for details.</p>
@@ -356,7 +349,7 @@
 <h3 id="saving-and-loading-the-relatedness-store">Saving and loading the relatedness store<a class="anchor" aria-label="anchor" href="#saving-and-loading-the-relatedness-store"></a>
 </h3>
 <p>Since the store is a C++ object, you need to use specific functions to save and restore it:</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/relstore_io.html">rel_save</a></span><span class="op">(</span><span class="va">rel</span>, <span class="st">"store.rds"</span><span class="op">)</span></span>
 <span><span class="va">rel</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/relstore_io.html">rel_load</a></span><span class="op">(</span><span class="st">"store.rds"</span><span class="op">)</span> <span class="co"># a working store again</span></span></code></pre></div>
 </div>
@@ -365,7 +358,7 @@
 <h2 id="benchmarks">Benchmarks<a class="anchor" aria-label="anchor" href="#benchmarks"></a>
 </h2>
 <p>The relatedness metrics are computed much faster by <code>fastrel</code> than by <code>ggroups</code>, <code>kinship2</code> or <code>nadiv</code> under virtually all conditions. Here is an example, using a pedigree simulated with integer identifiers and 0 for unknown parents, which suits all four packages:</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/joshuaulrich/microbenchmark/" class="external-link">microbenchmark</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/nilforooshan/ggroups" class="external-link">ggroups</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cran.r-project.org/package=kinship2" class="external-link">kinship2</a></span><span class="op">)</span></span>
@@ -378,7 +371,7 @@
 <span><span class="co">## 1  1     0     0   1</span></span>
 <span><span class="co">## 2  2     0     0   2</span></span>
 <span><span class="co">## 3  3     0     0   1</span></span></code></pre>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># benchmark</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/microbenchmark/man/microbenchmark.html" class="external-link">microbenchmark</a></span><span class="op">(</span>ggroups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/ggroups/man/buildA.html" class="external-link">buildA</a></span><span class="op">(</span><span class="va">ped</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"dadid"</span>, <span class="st">"momid"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>,</span>
 <span>               nadiv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nadiv/man/makeA.html" class="external-link">makeA</a></span><span class="op">(</span><span class="va">ped</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"momid"</span>, <span class="st">"dadid"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>, <span class="co"># sparse matrix</span></span>
@@ -387,20 +380,20 @@
 <span>                                         metric <span class="op">=</span> <span class="st">"kinship"</span><span class="op">)</span>,</span>
 <span>               fastrel_ped <span class="op">=</span> <span class="fu"><a href="reference/fastrel_ped.html">fastrel_ped</a></span><span class="op">(</span><span class="va">ped</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Unit: microseconds</span></span>
-<span><span class="co">##         expr        min         lq       mean     median         uq</span></span>
-<span><span class="co">##      ggroups 103417.663 107482.550 123956.040 115789.660 119202.160</span></span>
-<span><span class="co">##        nadiv 140993.970 151990.894 160865.795 155400.333 163162.046</span></span>
-<span><span class="co">##     kinship2  11355.091  23382.626  32280.682  24145.208  34794.615</span></span>
-<span><span class="co">##  fastrel_vec   1120.628   1190.670   6213.938   1316.283   2490.677</span></span>
-<span><span class="co">##  fastrel_ped    907.746   1040.597   5863.974   1126.590   2458.561</span></span>
-<span><span class="co">##       max neval  cld</span></span>
-<span><span class="co">##  464688.8   100 a</span></span>
-<span><span class="co">##  461525.1   100  b</span></span>
-<span><span class="co">##  231321.7   100   c</span></span>
-<span><span class="co">##  220612.8   100    d</span></span>
-<span><span class="co">##  214948.1   100    d</span></span></code></pre>
+<span><span class="co">##         expr        min         lq       mean     median         uq        max</span></span>
+<span><span class="co">##      ggroups 104014.191 109202.802 131375.080 117776.265 121240.177 1234483.28</span></span>
+<span><span class="co">##        nadiv 140211.832 153731.884 161850.065 156811.775 163625.813  477643.79</span></span>
+<span><span class="co">##     kinship2  11374.898  13755.237  26179.597  24586.352  25592.569  260272.88</span></span>
+<span><span class="co">##  fastrel_vec   1122.472   1204.652   2654.996   1297.417   2255.593   19048.78</span></span>
+<span><span class="co">##  fastrel_ped    912.324   1017.994   5326.970   1114.606   2090.260  232990.83</span></span>
+<span><span class="co">##  neval  cld</span></span>
+<span><span class="co">##    100 a</span></span>
+<span><span class="co">##    100  b</span></span>
+<span><span class="co">##    100   c</span></span>
+<span><span class="co">##    100    d</span></span>
+<span><span class="co">##    100   cd</span></span></code></pre>
 <p>You can also run the more detailed integrated benchmarks as follows:</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"benchmarks/relstore_benchmark.R"</span>, package <span class="op">=</span> <span class="st">"fastrel"</span><span class="op">)</span><span class="op">)</span> <span class="co"># fastrel vs kinship2</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"benchmarks/sim_pop_benchmark.R"</span>, package <span class="op">=</span> <span class="st">"fastrel"</span><span class="op">)</span><span class="op">)</span> <span class="co"># fastrel vs simulation steps</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"benchmarks/precision_benchmark.R"</span>, package <span class="op">=</span> <span class="st">"fastrel"</span><span class="op">)</span><span class="op">)</span> <span class="co"># fastrel_inv() vs nadiv</span></span>
@@ -418,16 +411,16 @@
 <h3 id="tips-for-developers">Tips for developers<a class="anchor" aria-label="anchor" href="#tips-for-developers"></a>
 </h3>
 <p>After editing README.Rmd, do:</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/knit.html" class="external-link">knit</a></span><span class="op">(</span><span class="st">"README.Rmd"</span><span class="op">)</span> <span class="co"># Knit in RStudio does not update README.md!</span></span></code></pre></div>
 <p>After editing C++ attributes, do:</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">Rcpp</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Rcpp/man/compileAttributes.html" class="external-link">compileAttributes</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># or "Build/Document" in RStudio </span></span></code></pre></div>
 <p>To generate the manual, do:</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">build_manual</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>To build the website locally (it is otherwise built and published by GitHub Actions after each push to <code>main</code>), do:</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown</span><span class="fu">::</span><span class="fu"><a href="https://pkgdown.r-lib.org/reference/build_site.html" class="external-link">build_site</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>

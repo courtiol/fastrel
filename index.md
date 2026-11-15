@@ -1,9 +1,7 @@
 # fastrel
 
 **fast** **rel**atedness (aka `fastrel`) is an R package to compute
-relatedness, relationship or kinship from a pedigree quickly. Its
-documentation is also available as a website:
-<https://courtiol.github.io/fastrel/>.
+relatedness, relationship or kinship from a pedigree quickly.
 
 This package offers five main sets of functionalities:
 
@@ -254,30 +252,6 @@ Ainv
     ## O1  . -4  4  .
     ## O2  . -4  .  4
 
-``` r
-
-all.equal(as.matrix(Ainv), solve(fastrel_ped(ped_selfing))) # it is the inverse of A
-```
-
-    ## [1] TRUE
-
-``` r
-
-set.seed(1)
-big <- sim_ped(20000)          # A would take 3.2 GB
-system.time(Ainv <- fastrel_inv(big))
-```
-
-    ##    user  system elapsed
-    ##   3.159   0.019   3.161
-
-``` r
-
-Matrix::nnzero(Ainv)           # number of nonzero entries
-```
-
-    ## [1] 130866
-
 The result is a sparse matrix from the package Matrix, which can be
 given as it is to modelling packages, e.g. e.g. as
 `covStruct=list(precision=Ainv)` in `spaMM::fitme()` or
@@ -462,18 +436,18 @@ microbenchmark(ggroups = buildA(ped[, c("id", "dadid", "momid")]),
 ```
 
     ## Unit: microseconds
-    ##         expr        min         lq       mean     median         uq
-    ##      ggroups 103417.663 107482.550 123956.040 115789.660 119202.160
-    ##        nadiv 140993.970 151990.894 160865.795 155400.333 163162.046
-    ##     kinship2  11355.091  23382.626  32280.682  24145.208  34794.615
-    ##  fastrel_vec   1120.628   1190.670   6213.938   1316.283   2490.677
-    ##  fastrel_ped    907.746   1040.597   5863.974   1126.590   2458.561
-    ##       max neval  cld
-    ##  464688.8   100 a
-    ##  461525.1   100  b
-    ##  231321.7   100   c
-    ##  220612.8   100    d
-    ##  214948.1   100    d
+    ##         expr        min         lq       mean     median         uq        max
+    ##      ggroups 104014.191 109202.802 131375.080 117776.265 121240.177 1234483.28
+    ##        nadiv 140211.832 153731.884 161850.065 156811.775 163625.813  477643.79
+    ##     kinship2  11374.898  13755.237  26179.597  24586.352  25592.569  260272.88
+    ##  fastrel_vec   1122.472   1204.652   2654.996   1297.417   2255.593   19048.78
+    ##  fastrel_ped    912.324   1017.994   5326.970   1114.606   2090.260  232990.83
+    ##  neval  cld
+    ##    100 a
+    ##    100  b
+    ##    100   c
+    ##    100    d
+    ##    100   cd
 
 You can also run the more detailed integrated benchmarks as follows:
 
