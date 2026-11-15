@@ -19,7 +19,6 @@ LinkingTo: Rcpp
 Suggests: 
     ggroups,
     kinship2,
-    lobstr,
     microbenchmark,
     testthat (>= 3.0.0),
     tibble,

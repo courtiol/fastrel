@@ -401,7 +401,7 @@ You can also run the more detailed integrated benchmarks as follows:
 ``` r
 source(system.file("benchmarks/relstore_benchmark.R", package = "fastrel"))
 source(system.file("benchmarks/sim_pop_benchmark.R", package = "fastrel"))
-source(system.file("benchmarks/memory_benchmark.R", package = "fastrel")) # memory used (needs lobstr)
+source(system.file("benchmarks/memory_benchmark.R", package = "fastrel")) # memory used
 ```
 
 

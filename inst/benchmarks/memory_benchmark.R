@@ -1,21 +1,19 @@
 ## Benchmark of the memory used by fastrel, to check the claims made in the
 ## documentation (run interactively, or with Rscript).
-## Needs the suggested package lobstr.
 ##
 ## Two kinds of measurements are used:
-## - lobstr::obj_size() gives the exact size of an R object (a matrix returned
+## - utils::object.size() gives the size of an R object (a matrix returned
 ##   by fastrel, a saved store, ...);
 ## - the matrix of a store lives in memory managed by C++, which R (hence
-##   lobstr) does not see. For this, we read the memory used by the whole R
+##   object.size()) does not see. For this, we read the memory used by the whole R
 ##   process as reported by the operating system (the "resident set size"),
 ##   before and after. This is approximate (the system counts in pages, and R
 ##   itself allocates and frees memory in between), so sizes are chosen large
 ##   enough for the signal to dominate, and the comparisons are made with a
 ##   tolerance. It is not available on Windows, where those lines show NA.
 library(fastrel)
-library(lobstr)
 
-MB <- 1e6        # as lobstr does
+MB <- 1e6
 
 ## memory used by the R process, in bytes
 process_memory <- function() {
@@ -60,7 +58,7 @@ ped <- sim_ped(n)
 A <- fastrel_ped(ped)
 ## (plus the row and column names: about 64 bytes per individual)
 record("fastrel_ped(): result is about 8 * n^2 bytes (MB)",
-       8 * n^2 / MB, as.numeric(obj_size(A)) / MB, tolerance = 0.01)
+       8 * n^2 / MB, as.numeric(object.size(A)) / MB, tolerance = 0.01)
 
 ## 2. Computing it needs no second matrix, whatever the order of the rows -----
 ## (peak memory used by R during the call, compared with the size of the result)
@@ -86,16 +84,17 @@ taken <- memory_taken(rel <- store_of(n))
 record("store: memory is 8 * rel_capacity(rel)^2 bytes (MB)",
        8 * rel_capacity(rel)^2 / MB, taken / MB)
 ## ... which R does not see: the R side of the store is small
-cat("R side of this store, as seen by lobstr::obj_size():",
-    format(obj_size(rel$ids, rel$slots), units = "auto"), "\n")
+cat("R side of this store, as seen by utils::object.size():",
+    format(structure(object.size(rel$ids) + object.size(rel$slots), class = "object_size"),
+           units = "auto", standard = "SI"), "\n")
 
 ## 4. rel_get() returns 8 * k^2 bytes, and a saved store 8 * n^2 bytes --------
 k <- 1000
 record("rel_get() of k individuals: about 8 * k^2 bytes (MB)",
-       8 * k^2 / MB, as.numeric(obj_size(rel_get(rel, seq_len(k)))) / MB,
+       8 * k^2 / MB, as.numeric(object.size(unname(rel_get(rel, seq_len(k))))) / MB,
        tolerance = 0.01)
 record("rel_save(): saved object is about 8 * n^2 bytes (MB)",
-       8 * n^2 / MB, as.numeric(obj_size(rel_save(rel))) / MB, tolerance = 0.02)
+       8 * n^2 / MB, as.numeric(object.size(rel_save(rel))) / MB, tolerance = 0.02)
 rm(rel)
 
 ## 5. The capacity stays within about 1.5 times the peak number held ----------
@@ -197,7 +196,7 @@ rel <- rel_new(remember_removed = "fingerprint")
 rel_add(rel, data.frame(id = 1:1000, mom = NA, dad = NA))
 rel_remove(rel, 1:1000)
 record("rel_save() with remember_removed: bytes saved per individual removed",
-       8, as.numeric(obj_size(rel_save(rel)$removed) - obj_size(raw(0))) / 1000,
+       8, as.numeric(object.size(rel_save(rel)$removed) - object.size(raw(0))) / 1000,
        tolerance = 0.01)
 
 ## summary ---------------------------------------------------------------------
