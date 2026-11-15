@@ -107,7 +107,7 @@
 #' all.equal(A, fastrel_vec(ped$id, dadid = ped$dad, momid = ped$mom))
 #'
 #' ## columns are found by their names, whatever their order
-#' ped2 <- data.frame(Sire = ped$dad, Dam = ped$mom, Animal = ped$id, weight = 1:9)
+#' ped2 <- data.frame(Sire = ped$dad, Dam = ped$mom, Animal = ped$id)
 #' all.equal(A, fastrel_ped(ped2))
 #'
 #' ## the same as twice the kinship matrix of the kinship2 package
