@@ -323,3 +323,19 @@ test_that("0 means an unknown parent, unless an individual is called 0", {
   rel_add(rel2, data.frame(id = 1, mom = NA, dad = NA))     # NA is always fine
   expect_equal(rel_size(rel2), 2L)
 })
+
+test_that("a store is shared, not copied, on assignment or when passed to a function", {
+  rel <- rel_new()
+  rel2 <- rel
+  rel_add(rel2, data.frame(id = c("a", "b"), dad = NA, mom = NA))
+  expect_identical(rel_ids(rel), c("a", "b"))
+  f <- function(r) rel_remove(r, "a")
+  f(rel)
+  expect_identical(rel_ids(rel2), "b")
+  expect_identical(rel_get(rel), rel_get(rel2))
+  ## rel_save() and rel_load() make an independent copy
+  rel3 <- rel_load(rel_save(rel))
+  rel_add(rel3, data.frame(id = "c", dad = "b", mom = NA))
+  expect_identical(rel_ids(rel), "b")
+  expect_identical(rel_ids(rel3), c("b", "c"))
+})
