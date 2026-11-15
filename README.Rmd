@@ -155,12 +155,6 @@ pedigrees far too large for A to fit in memory:
 ```{r precision}
 Ainv <- fastrel_inv(ped_selfing)
 Ainv
-all.equal(as.matrix(Ainv), solve(fastrel_ped(ped_selfing))) # it is the inverse of A
-
-set.seed(1)
-big <- sim_ped(20000)          # A would take 3.2 GB
-system.time(Ainv <- fastrel_inv(big))
-Matrix::nnzero(Ainv)           # number of nonzero entries
 ```
 
 The result is a sparse matrix from the package Matrix, which can be given as it

@@ -239,33 +239,6 @@ Ainv
 ## O2  . -4  .  4
 ```
 
-``` r
-all.equal(as.matrix(Ainv), solve(fastrel_ped(ped_selfing))) # it is the inverse of A
-```
-
-```
-## [1] TRUE
-```
-
-``` r
-set.seed(1)
-big <- sim_ped(20000)          # A would take 3.2 GB
-system.time(Ainv <- fastrel_inv(big))
-```
-
-```
-##    user  system elapsed 
-##   3.159   0.019   3.161
-```
-
-``` r
-Matrix::nnzero(Ainv)           # number of nonzero entries
-```
-
-```
-## [1] 130866
-```
-
 The result is a sparse matrix from the package Matrix, which can be given as it
 is to modelling packages, e.g. e.g. as `covStruct=list(precision=Ainv)` in `spaMM::fitme()` or `ginverse=list(var=Ainv)` in `MCMCglmm::MCMCglmm()`.
 
@@ -444,17 +417,17 @@ microbenchmark(ggroups = buildA(ped[, c("id", "dadid", "momid")]),
 ```
 ## Unit: microseconds
 ##         expr        min         lq       mean     median         uq
-##      ggroups 103417.663 107482.550 123956.040 115789.660 119202.160
-##        nadiv 140993.970 151990.894 160865.795 155400.333 163162.046
-##     kinship2  11355.091  23382.626  32280.682  24145.208  34794.615
-##  fastrel_vec   1120.628   1190.670   6213.938   1316.283   2490.677
-##  fastrel_ped    907.746   1040.597   5863.974   1126.590   2458.561
+##      ggroups 104102.698 106889.264 114073.721 108895.912 118757.184
+##        nadiv 140345.245 152222.637 159157.156 155286.909 160101.062
+##     kinship2  11317.820  13399.389  23686.424  24225.018  24942.986
+##  fastrel_vec   1094.629   1199.122   5244.731   1248.249   2208.654
+##  fastrel_ped    924.788   1016.581   5202.809   1083.798   2117.618
 ##       max neval  cld
-##  464688.8   100 a   
-##  461525.1   100  b  
-##  231321.7   100   c 
-##  220612.8   100    d
-##  214948.1   100    d
+##  277962.8   100 a   
+##  387208.3   100  b  
+##  224682.5   100   c 
+##  228837.3   100    d
+##  218193.3   100    d
 ```
 
 You can also run the more detailed integrated benchmarks as follows:
