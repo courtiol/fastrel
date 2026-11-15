@@ -10,13 +10,18 @@
   individuals removed rather than a fingerprint of each of them. It takes more
   memory but can never mistake a new identifier for a removed one.
   `rel_save()` and `rel_load()` keep the kind of trace used.
+* Preparation for CRAN: references with DOIs in the description of the
+  package, stricter checks of the arguments of `sim_ped()` and `sim_pop()`
+  (single whole numbers or probabilities, no `NA`), canonical CRAN links in the
+  README, and unused packages removed from `Suggests`.
 
 # fastrel 0.7.0
 
 * New argument `sim_ped(numeric_ids = TRUE)` to simulate a pedigree with
-integer identifiers and 0 for unknown parents, which can be given as it is to
-`fastrel_ped()`, `rel_add()`, `kinship2::kinship()` or `ggroups::buildA()`.
-* 0 can now be used to define an unknown parent everywhere (synonymous to `NA`).
+  integer identifiers and 0 for unknown parents, which can be given as it is to
+  `fastrel_ped()`, `rel_add()`, `kinship2::kinship()` or `ggroups::buildA()`.
+* 0 can now be used to define an unknown parent everywhere (synonymous with
+  `NA`).
 
 # fastrel 0.6.2
 

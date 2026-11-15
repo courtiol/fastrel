@@ -71,8 +71,8 @@
 #'
 #' @section Removed individuals:
 #' With `remember_removed` set to `"fingerprint"` or `"id"` (rather than
-#' `"none"`, the default), the store keeps a trace of every individual removed and `rel_add()` refuses to add it
-#' again. This protects against a silent error, at a cost in memory that grows
+#' `"none"`, the default), the store keeps a trace of every individual removed
+#' and `rel_add()` refuses to add it again. This protects against a silent error, at a cost in memory that grows
 #' slowly with the length of the pedigree, instead of depending only on the
 #' number of individuals in the store. This is why it is off by default. Two
 #' kinds of trace are offered:
@@ -100,12 +100,12 @@
 #' Migrants then keep their exact relatedness with everybody, including the
 #' relatives they left behind and the offspring they produce elsewhere. The
 #' time per birth and the memory depend on the number of individuals alive
-#' over all the patches (see the section Memory).
+#' over all the patches (see the section Memory management).
 #'
 #' Creating the store with `rel_new(remember_removed = "fingerprint")` or
-#' `rel_new(remember_removed = "id")` is recommended here: with individuals moving between patches, removing one that left a
-#' patch and adding it again when it comes back is an easy mistake to make,
-#' and it would go unnoticed.
+#' `rel_new(remember_removed = "id")` is recommended here: with individuals
+#' moving between patches, removing one that left a patch and adding it again
+#' when it comes back is an easy mistake to make, and it would go unnoticed.
 #'
 #' @section Memory management:
 #' The store allocates its matrix by itself: there is nothing to set. The
@@ -297,7 +297,7 @@ rel_remove <- function(rel, ids) {
 
 #' @rdname relstore
 #' @export
-rel_get <- function(rel, ids = rel$ids,
+rel_get <- function(rel, ids = rel_ids(rel),
                     metric = c("additive", "kinship", "wright", "hamilton", "Wright", "Hamilton")) {
   metric <- match.arg(metric)
   code <- metric_code(metric)

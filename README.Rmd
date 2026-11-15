@@ -16,7 +16,7 @@ a computation time and memory footprint that do not increase over time as long a
 the population is at its demographic equilibrium
 (it only requires storing the information about alive individuals)
 - a function to compute relatedness from a pedigree more quickly than
-[`ggroups`](https://cran.r-project.org/web/packages/ggroups/index.html), [`kinship2`](https://cran.r-project.org/web/packages/kinship2/index.html) or
+[`ggroups`](https://CRAN.R-project.org/package=ggroups), [`kinship2`](https://CRAN.R-project.org/package=kinship2) or
 [`Pedixplorer`](https://louislenezet.github.io/Pedixplorer/)
 (which now supersedes `kinship2`)
 - a function to simulate a pedigree (with character or integer identifiers)
@@ -29,7 +29,7 @@ Between individuals that are not inbred, relatedness is at most 1 (identical twi
 
 The kinship coefficient, Wright's coefficient of relationship and Hamilton's regression coefficient of relatedness can be returned instead (see [Measures of relatedness](#measures-of-relatedness)).
 
-All four measures are validated in the tests of the package against two independent implementations, [`kinship2`](https://cran.r-project.org/package=kinship2) and [`ggroups`](https://cran.r-project.org/package=ggroups), on pedigrees of many shapes (with inbreeding, selfing, unknown parents and unsorted rows).
+All four measures are validated in the tests of the package against two independent implementations, [`kinship2`](https://CRAN.R-project.org/package=kinship2) and [`ggroups`](https://CRAN.R-project.org/package=ggroups), on pedigrees of many shapes (with inbreeding, selfing, unknown parents and unsorted rows).
 
 | Task | Functions |
 |---|---|

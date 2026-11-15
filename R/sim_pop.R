@@ -79,10 +79,13 @@ sim_pop <- function(n_steps = 50, n_init = 100, K = 2 * n_init,
   if (!whole(n_steps) || n_steps < 0) stop("`n_steps` must be a non-negative whole number")
   if (!whole(n_init) || n_init < 1) stop("`n_init` must be a whole number, at least 1")
   if (!whole(maturity) || maturity < 0) stop("`maturity` must be a non-negative whole number")
-  if (K <= 0) stop("`K` must be positive")
-  if (any(c(p_birth, p_death, p_emigrate) < 0 | c(p_birth, p_death, p_emigrate) > 1))
+  number <- function(x) is.numeric(x) && length(x) == 1L && !is.na(x)
+  if (!number(K) || K <= 0) stop("`K` must be a positive number")
+  p <- list(p_birth, p_death, p_emigrate)
+  if (!all(vapply(p, function(x) number(x) && x >= 0 && x <= 1, TRUE)))
     stop("`p_birth`, `p_death` and `p_emigrate` must be probabilities")
-  if (n_immigrants < 0) stop("`n_immigrants` must be non-negative")
+  if (!number(n_immigrants) || n_immigrants < 0)
+    stop("`n_immigrants` must be a non-negative number")
 
   ## Individuals are numbered 1, 2, ... in order of arrival; the numbers are
   ## turned into identifiers at the end. Records are kept as plain vectors, one
