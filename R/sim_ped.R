@@ -24,10 +24,8 @@
 #'   with `NA` for unknown parents, or with `numeric_ids = TRUE` integers, with
 #'   0 for unknown parents.
 #'
-#'   [fastrel_ped()] and [fastrel_vec()] treat a parent that is not among the
-#'   identifiers as unknown, so they accept both forms. [rel_add()] does not: it
-#'   refuses parents that are neither in the store nor in `ped`, so replace the
-#'   0 by `NA` before adding such a pedigree to a store.
+#'   Both forms can be given as they are to [fastrel_ped()], [fastrel_vec()]
+#'   and [rel_add()], which all take 0 as an unknown parent.
 #'
 #' @examples
 #' set.seed(1)

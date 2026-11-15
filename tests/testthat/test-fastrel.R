@@ -127,3 +127,16 @@ test_that("range of values stated in the documentation", {
   expect_equal(unname(diag(A)), rep(1, 7))
   expect_lte(max(A[upper.tri(A)]), 0.5)
 })
+
+test_that("0 means an unknown parent, unless an individual is called 0", {
+  A_na <- fastrel_vec(1:4, dadid = c(NA, NA, 2, NA), momid = c(NA, NA, 1, 3))
+  expect_equal(fastrel_vec(1:4, dadid = c(0, 0, 2, 0), momid = c(0, 0, 1, 3)), A_na)
+  expect_equal(fastrel_vec(c("1", "2", "3", "4"), dadid = c("0", "0", "2", NA),
+                           momid = c("0", NA, "1", "3")), A_na)
+  expect_equal(fastrel_ped(data.frame(id = factor(1:4), mom = factor(c(0, 0, 1, 3)),
+                                      dad = factor(c(0, 0, 2, 0)))), A_na)
+  ## an individual called 0 cannot be a parent coded 0: refused, not guessed
+  expect_error(fastrel_vec(c(0, 1), dadid = c(NA, 0), momid = c(NA, NA)), "cannot also mean")
+  ## ... but it is fine as long as 0 is not used as a parent
+  expect_equal(dim(fastrel_vec(c(0, 1), dadid = c(NA, NA), momid = c(NA, NA))), c(2L, 2L))
+})

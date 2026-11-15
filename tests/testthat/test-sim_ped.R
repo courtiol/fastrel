@@ -43,13 +43,9 @@ test_that("numeric_ids gives the same pedigree with integers and 0 for unknown p
   expect_equal(unname(fastrel_ped(b)), unname(fastrel_ped(a)))
   expect_equal(unname(fastrel_vec(b$id, b$dadid, b$momid, metric = "kinship")),
                unname(fastrel_ped(a, metric = "kinship")))
-  ## rel_add() needs NA for unknown parents
+  ## rel_add() takes 0 as an unknown parent too
   rel <- rel_new()
-  expect_error(rel_add(rel, b), "not found")
-  b0 <- b
-  b0$momid[b0$momid == 0L] <- NA
-  b0$dadid[b0$dadid == 0L] <- NA
-  rel_add(rel, b0)
+  rel_add(rel, b)
   expect_equal(unname(rel_get(rel, b$id)), unname(fastrel_ped(a)))
   expect_error(sim_ped(10, n_founders = 2, numeric_ids = NA), "TRUE or FALSE")
 })

@@ -73,8 +73,10 @@ fast replacement for \code{2 * kinship2::kinship()}, or for
 }
 \details{
 Rows of the pedigree can be in any order: parents do not need to appear
-before their offspring. Parents that are \code{NA} or that are not found among
-the individuals are treated as unknown. The algorithm uses a topological
+before their offspring. Parents that are \code{NA} or 0 (as in many programs of
+animal breeding), or that are not found among the individuals, are treated
+as unknown; 0 is refused if an individual is itself called 0, as it would
+then be ambiguous. The algorithm uses a topological
 sort of the pedigree, so an impossible pedigree (someone being their own
 ancestor) raises an error.
 

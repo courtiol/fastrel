@@ -33,10 +33,8 @@ male, 2 = female). Identifiers are character strings such as \code{"ind0001"},
 with \code{NA} for unknown parents, or with \code{numeric_ids = TRUE} integers, with
 0 for unknown parents.
 
-\code{\link[=fastrel_ped]{fastrel_ped()}} and \code{\link[=fastrel_vec]{fastrel_vec()}} treat a parent that is not among the
-identifiers as unknown, so they accept both forms. \code{\link[=rel_add]{rel_add()}} does not: it
-refuses parents that are neither in the store nor in \code{ped}, so replace the
-0 by \code{NA} before adding such a pedigree to a store.
+Both forms can be given as they are to \code{\link[=fastrel_ped]{fastrel_ped()}}, \code{\link[=fastrel_vec]{fastrel_vec()}}
+and \code{\link[=rel_add]{rel_add()}}, which all take 0 as an unknown parent.
 }
 \description{
 Simulates a pedigree with overlapping generations, some inbreeding, and some
