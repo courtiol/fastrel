@@ -25,6 +25,7 @@ The relatedness matrix is here technically defined as the additive relationship 
 Its values lie between 0 and 2.
 Between individuals that are not inbred, relatedness is at most 1 (identical twins or clones; 0.5 for parent and offspring or full siblings), and it can only exceed 1 with inbreeding.
 
+This is the measure returned by default: 0.5 for parent and offspring, not the 0.25 of the kinship coefficient returned by `kinship2::kinship()`.
 The kinship coefficient, Wright's coefficient of relationship and Hamilton's regression coefficient of relatedness can be returned instead (see [Measures of relatedness](#measures-of-relatedness)).
 
 All four measures are validated in the tests of the package against two independent implementations, [`kinship2`](https://CRAN.R-project.org/package=kinship2) and [`ggroups`](https://CRAN.R-project.org/package=ggroups), on pedigrees of many shapes (with inbreeding, selfing, unknown parents and unsorted rows).
@@ -189,6 +190,16 @@ fastrel_ped(ped_selfing, metric = "hamilton") # regressions (row = actor)
 ## O1 0.5714286 0.8571429 1.0000000 0.8571429
 ## O2 0.5714286 0.8571429 0.8571429 1.0000000
 ```
+
+The additive relationship is the default because it keeps all the information:
+the three other measures can be computed from it, while the diagonal of 1 of
+Wright's coefficient, for instance, discards the inbreeding coefficients. It is
+also the matrix that animal models and other mixed models expect, as the
+covariance of the genetic values, and what `ggroups::buildA()` and
+`2 * kinship2::kinship()` return. Wright's coefficient is the one to choose
+for a measure of resemblance bounded by 1 whatever the inbreeding, but it
+should not be used as a covariance matrix in a model, since it gives every
+individual a variance of 1 whatever its inbreeding.
 
 See `?relatedness_metrics` for the definitions, their interpretation and the
 references.
