@@ -255,7 +255,7 @@ system.time(Ainv <- fastrel_inv(big))
 
 ```
 ##    user  system elapsed 
-##   3.169   0.015   3.174
+##   3.159   0.019   3.161
 ```
 
 ``` r
@@ -267,8 +267,7 @@ Matrix::nnzero(Ainv)           # number of nonzero entries
 ```
 
 The result is a sparse matrix from the package Matrix, which can be given as it
-is to modelling packages, e.g. as `covStruct = list(precision  = Ainv)` in
-`spaMM::fitme()`, or `ginverse` in `MCMCglmm::MCMCglmm()`.
+is to modelling packages, e.g. e.g. as `covStruct=list(precision=Ainv)` in `spaMM::fitme()` or `ginverse=list(var=Ainv)` in `MCMCglmm::MCMCglmm()`.
 
 ## Using the store in a simulation
 
@@ -445,17 +444,17 @@ microbenchmark(ggroups = buildA(ped[, c("id", "dadid", "momid")]),
 ```
 ## Unit: microseconds
 ##         expr        min         lq       mean     median         uq
-##      ggroups 108835.543 112486.809 122860.313 120465.152 122564.940
-##        nadiv 149452.988 154853.730 162338.357 157776.152 164057.003
-##     kinship2  11440.762  22229.327  31998.607  23148.855  25341.119
-##  fastrel_vec   1116.781   1219.499   3312.971   1768.592   2459.534
-##  fastrel_ped    963.191   1048.412   3249.684   1154.918   2232.505
-##        max neval  cld
-##  318516.46   100 a   
-##  313277.20   100  b  
-##  240451.87   100   c 
-##   13792.10   100    d
-##   15145.91   100    d
+##      ggroups 103417.663 107482.550 123956.040 115789.660 119202.160
+##        nadiv 140993.970 151990.894 160865.795 155400.333 163162.046
+##     kinship2  11355.091  23382.626  32280.682  24145.208  34794.615
+##  fastrel_vec   1120.628   1190.670   6213.938   1316.283   2490.677
+##  fastrel_ped    907.746   1040.597   5863.974   1126.590   2458.561
+##       max neval  cld
+##  464688.8   100 a   
+##  461525.1   100  b  
+##  231321.7   100   c 
+##  220612.8   100    d
+##  214948.1   100    d
 ```
 
 You can also run the more detailed integrated benchmarks as follows:

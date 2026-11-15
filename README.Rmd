@@ -164,8 +164,7 @@ Matrix::nnzero(Ainv)           # number of nonzero entries
 ```
 
 The result is a sparse matrix from the package Matrix, which can be given as it
-is to modelling packages, e.g. as `covStruct = list(precision  = Ainv)` in
-`spaMM::fitme()`, or `ginverse` in `MCMCglmm::MCMCglmm()`.
+is to modelling packages, e.g. e.g. as `covStruct=list(precision=Ainv)` in `spaMM::fitme()` or `ginverse=list(var=Ainv)` in `MCMCglmm::MCMCglmm()`.
 
 ## Using the store in a simulation
 
