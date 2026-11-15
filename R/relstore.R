@@ -54,7 +54,7 @@
 #'   the section Memory management.
 #'
 #' The content of the environment is internal: use the functions above rather
-#' than reading or modifying it.
+#' than reading or modifying it directly.
 #'
 #' @section What to keep in the store:
 #' Keep an individual for as long as it can still become a parent, or for as long
