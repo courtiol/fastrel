@@ -57,9 +57,13 @@ probability \eqn{F_i}{F[i]}.
 \section{Additive relationship (\code{"additive"})}{
 
 The additive relationship \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 phi[i,j]} is
-what animal and plant breeders call the numerator relationship matrix
-(Henderson 1976), computed here with the tabular method (Emik and Terrill
-1949). It is not a probability but an expected count: \eqn{A_{ij}}{A[i,j]}
+what animal and plant breeders call the numerator relationship, as it is
+the numerator of Wright's coefficient of relationship (see below). Emik and
+Terrill (1949) introduced this name and described the tabular method used
+here to compute it: the values of an individual are the averages of those
+of its two parents (an unknown parent counting as 0), and its diagonal value is 1 plus half the value between
+its parents. Henderson (1976) gives the same method for the whole numerator
+relationship matrix, as used to predict breeding values. It is not a probability but an expected count: \eqn{A_{ij}}{A[i,j]}
 is the expected number of the two alleles of \eqn{j} that are identical by
 descent with an allele drawn at random from \eqn{i}, which is why it can
 exceed 1 (see the section Range of values). For example, two
@@ -83,8 +87,9 @@ between the genetic values of two individuals, which is obtained by dividing
 the covariance \eqn{A_{ij}}{A[i,j]} by the product of the two standard
 deviations:
 \deqn{r_{ij} = \frac{A_{ij}}{\sqrt{A_{ii} A_{jj}}} = \frac{2\phi_{ij}}{\sqrt{(1 + F_i)(1 + F_j)}}}{r[i,j] = A[i,j] / sqrt(A[i,i] * A[j,j]) = 2 phi[i,j] / sqrt((1 + F[i]) * (1 + F[j]))}
-This is what \code{\link[stats:cor]{stats::cov2cor()}} computes from the additive relationship
-matrix. Being a correlation, it lies between 0 and 1 (the Cauchy-Schwarz
+Conversely, \eqn{A_{ij} = r_{ij} \sqrt{A_{ii} A_{jj}}}{A[i,j] = r[i,j] * sqrt(A[i,i] * A[j,j])}
+(Henderson 1976). This is what \code{\link[stats:cor]{stats::cov2cor()}} computes from the additive
+relationship matrix. Being a correlation, it lies between 0 and 1 (the Cauchy-Schwarz
 inequality guarantees that
 \eqn{A_{ij} \le \sqrt{A_{ii} A_{jj}}}{A[i,j] <= sqrt(A[i,i] * A[j,j])}), and
 every individual has a relationship of 1 with itself.
@@ -103,12 +108,18 @@ percent as similar to each other as each of them is to itself.
 
 \section{Hamilton's regression coefficient of relatedness (\code{"hamilton"})}{
 
-Hamilton (1964a, b) used Wright's coefficient of relationship in the first
-formulation of inclusive fitness. He later showed that with inbreeding the
-relevant measure for kin selection, the \eqn{r} of Hamilton's rule
-\eqn{rb > c}, is a regression coefficient rather than a correlation
-(Hamilton 1972; Michod and Hamilton 1980): the regression of the genetic
-value of the recipient of a behaviour on that of the actor,
+Hamilton (1964a, b) used Wright's coefficient of relationship, in a
+population without inbreeding, in the first formulation of inclusive
+fitness. To allow for inbreeding, Hamilton (1972) then defined the
+regression coefficient of relatedness of a relative \eqn{B} to an actor
+\eqn{A} as \eqn{b_{AB} = 2 r_{AB} / (1 + F_A)}{b[A,B] = 2 r[A,B] / (1 + F[A])},
+where \eqn{r_{AB}}{r[A,B]}, the probability that a gene of \eqn{A} is
+present in a random gamete of \eqn{B}, is their kinship coefficient. In
+his words, it "measures the regression of B's additive genotype on that of
+A". With inbreeding, the \eqn{r} of Hamilton's rule \eqn{rb > c} is this
+regression coefficient rather than a correlation (see also Michod and
+Hamilton 1980): the regression of the genetic value of the recipient of a
+behaviour on that of the actor,
 \deqn{b_{ij} = \frac{\mathrm{Cov}(g_i, g_j)}{\mathrm{Var}(g_i)} = \frac{A_{ij}}{A_{ii}} = \frac{2\phi_{ij}}{1 + F_i}}{b[i,j] = Cov(g[i], g[j]) / Var(g[i]) = A[i,j] / A[i,i] = 2 phi[i,j] / (1 + F[i])}
 where \eqn{i} is the actor and \eqn{j} the recipient. In the matrix
 returned, \strong{rows are actors and columns are recipients}: \code{R[i, j]} is the
