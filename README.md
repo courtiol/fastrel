@@ -21,15 +21,18 @@ the population is at its demographic equilibrium
 immigrations and emigrations.
 
 The relatedness matrix is here technically defined as the additive relationship matrix, A = 2 × kinship, with diagonal 1 + F.
-Its values lie between 0 and 2: between individuals that are not inbred, relatedness is at most 1 (identical twins or clones; 0.5 for parent and offspring or full siblings), and it can only exceed 1 with inbreeding.
+Its values lie between 0 and 2.
+Between individuals that are not inbred, relatedness is at most 1 (identical twins or clones; 0.5 for parent and offspring or full siblings), and it can only exceed 1 with inbreeding.
+
 The kinship coefficient, Wright's coefficient of relationship and Hamilton's regression coefficient of relatedness can be returned instead (see [Measures of relatedness](#measures-of-relatedness)).
+
 All four measures are validated in the tests of the package against two independent implementations, [`kinship2`](https://cran.r-project.org/package=kinship2) and [`ggroups`](https://cran.r-project.org/package=ggroups), on pedigrees of many shapes (with inbreeding, selfing, unknown parents and unsorted rows).
 
 | Task | Functions |
 |---|---|
 | Relatedness of a whole pedigree | `fastrel_ped()` (from a data frame), `fastrel_vec()` (from vectors) |
 | Relatedness updated step by step (the "store") | `rel_new()`, `rel_add()`, `rel_remove()`, `rel_get()` |
-| Content of a store | `rel_ids()`, `rel_size()`, `rel_capacity()` |
+| Content of a relatedness store | `rel_ids()`, `rel_size()`, `rel_capacity()` |
 | Saving and restoring a store | `rel_save()`, `rel_load()` |
 | Simulating data | `sim_ped()`, `sim_pop()` |
 
@@ -45,7 +48,7 @@ compiler installed:
 - on MacOS, you will need [Apple Command Line Tools](https://developer.apple.com/download/)
 or equivalent.
 
-You may then use [pak](https://pak.r-lib.org/) to install the package simply:
+You may then use [pak](https://pak.r-lib.org/) to install the package:
 
 ``` r
 if (!requireNamespace("pak")) {
@@ -110,9 +113,7 @@ rel_get(rel) # extract relatedness matrix between remaining individuals
 ## D 0.25 1.00
 ```
 
-`fastrel_ped()` and `rel_add()` find the columns they need by their names,
-whatever their order and their capitalisation, and ignore the other columns.
-The usual names are recognised (e.g. `id`, `focal` or `animal`; `mom`, `mum`,
+`fastrel_ped()` and `rel_add()` find the columns they need by their names, and the usual names are recognised (e.g. `id`, `focal` or `animal`; `mom`, `mum`,
 `mother` or `dam`; `dad`, `father` or `sire`; with or without `id`, as in
 `momid` or `mother_id`): see `?fastrel_ped` for the list.
 
@@ -121,11 +122,11 @@ The usual names are recognised (e.g. `id`, `focal` or `animal`; `mom`, `mum`,
 By default, the package returns the additive relationship A = 2 × kinship
 (diagonal 1 + F, where F is the inbreeding coefficient). `fastrel_ped()`,
 `fastrel_vec()` and `rel_get()` can return three other measures with their
-argument `metric`, at no extra memory cost:
+argument `metric`:
 
 | `metric` | Measure | Definition | Range | Typical use |
 |---|---|---|---|---|
-| `"additive"` (default) | additive (numerator) relationship | 2 × kinship | 0 to 2 | covariance of breeding values (animal models, heritability) |
+| `"additive"` (default) | additive (numerator) relationship | A = 2 × kinship | 0 to 2 | covariance of breeding values (animal models, heritability) |
 | `"kinship"` | kinship (coancestry) coefficient | probability that two alleles drawn at random, one from each individual, are identical by descent | 0 to 1 | probability of identity by descent; same as `kinship2::kinship()` |
 | `"wright"` | Wright's coefficient of relationship | correlation between genetic values, `cov2cor(A)` | 0 to 1 | genetic resemblance compared with that of an individual to itself (1 = as similar as an individual is to itself), whatever the inbreeding |
 | `"hamilton"` | regression coefficient of relatedness | regression of the recipient's genetic value on the actor's, A[i, j] / A[i, i] | 0 to 1 | the *r* of Hamilton's rule (kin selection); not symmetric: rows are actors |
@@ -189,10 +190,7 @@ fastrel_ped(ped_selfing, metric = "hamilton") # regressions (row = actor)
 ```
 
 See `?relatedness_metrics` for the definitions, their interpretation and the
-references: Malécot (1948) for the kinship coefficient; Wright (1922) for the
-coefficient of relationship; Henderson (1976) for the additive relationship
-matrix; Hamilton (1964a, b, 1972) and Michod & Hamilton (1980) for relatedness in
-kin selection.
+references.
 
 ## Using the store in a simulation
 
@@ -324,27 +322,42 @@ restore it:
 
 ``` r
 rel_save(rel, "store.rds")
-rel <- rel_load("store.rds") # a working store again
 ```
 
 ## Benchmarks
+
+The computation of the relatedness metrics are much faster in `fastrel` than in `ggroups` or `kinship2` under virtually all conditions. Here is an example:
 
 
 ``` r
 library(microbenchmark)
 library(ggroups)
+library(kinship2)
 
-# convert pedigree for ggroups
+set.seed(1) # for reproducibility
+ped <- sim_ped(1000)
+
+# convert pedigree to be usable by all packages
 ID_num <- seq_len(nrow(ped))   # sim_ped() returns individuals in birth order
-ped_ggroups <- data.frame(ID = ID_num,
-                          SIRE = ID_num[match(ped$dadid, ped$id)],
-                          DAM  = ID_num[match(ped$momid, ped$id)])
-ped_ggroups$SIRE[is.na(ped_ggroups$SIRE)] <- 0
-ped_ggroups$DAM[is.na(ped_ggroups$DAM)]   <- 0
+ped_test <- data.frame(ID = ID_num,
+                       SIRE = ID_num[match(ped$dadid, ped$id)],
+                       DAM  = ID_num[match(ped$momid, ped$id)])
+ped_test$SIRE[is.na(ped_test$SIRE)] <- 0
+ped_test$DAM[is.na(ped_test$DAM)]   <- 0
 
 # check that the computed relatedness are the same
-all.equal(unname(as.matrix(buildA(ped_ggroups))),
-          unname(fastrel_vec(ped$id, dadid = ped$dadid, momid = ped$momid)))
+all.equal(unname(as.matrix(buildA(ped_test))),
+          unname(fastrel_ped(ped_test)))
+```
+
+```
+## [1] TRUE
+```
+
+``` r
+all.equal(unname(as.matrix(kinship(ped_test$ID, ped_test$SIRE, ped_test$DAM))),
+          unname(fastrel_vec(ped_test$ID, ped_test$SIRE, ped_test$DAM,
+                             metric = "kinship")))
 ```
 
 ```
@@ -353,20 +366,23 @@ all.equal(unname(as.matrix(buildA(ped_ggroups))),
 
 ``` r
 # benchmark
-microbenchmark(ggroups = buildA(ped_ggroups),
-               fastrel = fastrel_vec(ped$id, dadid = ped$dadid, momid = ped$momid))
+microbenchmark(ggroups = buildA(ped_test),
+               kinship2 = kinship(ped_test$ID, ped_test$SIRE, ped_test$DAM),
+               fastrel_ped = fastrel_ped(ped_test),
+               fastrel_vec = fastrel_vec(ped_test$ID, ped_test$SIRE, ped_test$DAM,
+                                         metric = "kinship"))
 ```
 
 ```
-## Unit: microseconds
-##     expr        min         lq       mean     median       uq       max neval cld
-##  ggroups 104953.416 106603.450 113262.758 108456.276 113117.9 267280.22   100  a 
-##  fastrel    742.794    799.877   1695.781    868.401   1817.7  10641.95   100   b
+## Unit: milliseconds
+##         expr        min         lq       mean     median         uq        max neval cld
+##      ggroups 103.370123 104.702396 107.973735 105.354579 109.298212 145.855047   100 a  
+##     kinship2  10.790303  11.060935  11.885469  11.273752  11.681968  23.081994   100  b 
+##  fastrel_ped   1.438588   1.502125   1.611017   1.535788   1.619090   2.880133   100   c
+##  fastrel_vec   2.188877   2.308218   2.435897   2.333740   2.391946   4.074611   100   c
 ```
-As you can see `fastrel::fastrel_vec()` is much faster than `ggroups::buildA()` on our machine, for 1000 individuals.
 
-
-You can also run the integrated benchmarks as follows:
+You can also run the more detailed integrated benchmarks as follows:
 
 
 ``` r
