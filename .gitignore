@@ -8,3 +8,4 @@ src/*.dll
 README.html
 biblio
 docs
+tests/testthat/testthat-problems.rds
