@@ -86,11 +86,10 @@
 #' 1976; Lynch and Walsh 1998, chapter 7). In a population without inbreeding,
 #' the covariance is thus half the additive variance between parent and
 #' offspring and a quarter of it between half siblings, as Falconer (1960,
-#' chapter 9) derives directly (between full siblings, the covariance of
-#' genotypic values also includes a quarter of the dominance variance).
-#' The diagonal, \eqn{1 + F_i}{1 + F[i]}, shows that the breeding values of
-#' inbred individuals vary more, since inbred individuals are more homozygous. This matrix is the one used in animal models and to
-#' estimate heritability.
+#' chapter 9) derives directly. The diagonal, \eqn{1 + F_i}{1 + F[i]}, shows
+#' that the breeding values of inbred individuals vary more, since inbred
+#' individuals are more homozygous. This matrix is the one used in animal
+#' models and to estimate heritability.
 #'
 #' @section Wright's coefficient of relationship (`"wright"`):
 #' Wright (1922) defined the coefficient of relationship as the correlation
@@ -145,8 +144,9 @@
 #' itself.
 #'
 #' @section Range of values:
-#' The ranges given in the second table all follow from one property: in a
-#' pedigree, nobody is more related to another individual than to itself,
+#' The ranges given in the second table above all follow from one property: in
+#' a pedigree of diploid individuals, nobody is more related to another
+#' individual than to itself,
 #' \deqn{A_{ij} \le \min(A_{ii}, A_{jj})}{A[i,j] <= min(A[i,i], A[j,j])}
 #' Consequently:
 #' * The off-diagonal values of the additive relationship are at most 2 and
@@ -163,7 +163,9 @@
 #'   The maximum of 2 (a kinship of 1) is approached but never reached, since
 #'   founders are assumed not to be inbred.
 #'
-#' Here is why the property holds. Take two individuals, and call \eqn{i} the one that
+#' Here is why the property
+#' \eqn{A_{ij} \le \min(A_{ii}, A_{jj})}{A[i,j] <= min(A[i,i], A[j,j])}
+#' holds. Take two individuals, and call \eqn{i} the one that
 #' is not an ancestor of the other, \eqn{j}; let \eqn{m} and \eqn{d} be the
 #' parents of \eqn{i}, so that
 #' \eqn{A_{ij} = (A_{mj} + A_{dj})/2}{A[i,j] = (A[m,j] + A[d,j]) / 2} and
