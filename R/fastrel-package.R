@@ -7,7 +7,7 @@
 #' Wright's coefficient of relationship (Wright 1922) and Hamilton's regression
 #' coefficient of relatedness (Hamilton 1972; Michod and Hamilton 1980).
 #'
-#' Two interfaces are provided:
+#' Two interfaces compute the relatedness matrix itself:
 #' * [fastrel_ped()] and [fastrel_vec()] compute the whole matrix from a
 #'   pedigree in one go, given as a data frame or as vectors (the latter is a
 #'   fast replacement for `2 * kinship2::kinship()`).
@@ -17,6 +17,10 @@
 #'   [rel_capacity()] describe the content of such a store, and [rel_save()] and
 #'   [rel_load()] save it to disk and restore it. [rel_copy()] makes an
 #'   independent copy of it.
+#'
+#' [fastrel_inv()] computes the inverse of the relatedness matrix (the
+#' precision matrix used by animal models) as a sparse matrix, directly from the
+#' pedigree, so that it can be obtained even for very large pedigrees.
 #'
 #' [sim_ped()] simulates a pedigree, and [sim_pop()] a population with births,
 #' deaths, emigration and immigration, for testing and benchmarking.

@@ -14,7 +14,7 @@ Wright's coefficient of relationship (Wright 1922) and Hamilton's regression
 coefficient of relatedness (Hamilton 1972; Michod and Hamilton 1980).
 }
 \details{
-Two interfaces are provided:
+Two interfaces compute the relatedness matrix itself:
 \itemize{
 \item \code{\link[=fastrel_ped]{fastrel_ped()}} and \code{\link[=fastrel_vec]{fastrel_vec()}} compute the whole matrix from a
 pedigree in one go, given as a data frame or as vectors (the latter is a
@@ -26,6 +26,10 @@ an individual-based simulation. \code{\link[=rel_ids]{rel_ids()}}, \code{\link[=
 \code{\link[=rel_load]{rel_load()}} save it to disk and restore it. \code{\link[=rel_copy]{rel_copy()}} makes an
 independent copy of it.
 }
+
+\code{\link[=fastrel_inv]{fastrel_inv()}} computes the inverse of the relatedness matrix (the
+precision matrix used by animal models) as a sparse matrix, directly from the
+pedigree, so that it can be obtained even for very large pedigrees.
 
 \code{\link[=sim_ped]{sim_ped()}} simulates a pedigree, and \code{\link[=sim_pop]{sim_pop()}} a population with births,
 deaths, emigration and immigration, for testing and benchmarking.

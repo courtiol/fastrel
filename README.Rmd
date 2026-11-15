@@ -9,7 +9,7 @@ dir.create("man/figures", showWarnings = FALSE)
 relationship or kinship from a pedigree quickly.
 Its documentation is also available as a website: <https://courtiol.github.io/fastrel/>.
 
-This package offers four main sets of functionalities:
+This package offers five main sets of functionalities:
 
 - a set of functions allowing for updating a relatedness matrix, conceived with
 individual based simulations in mind, with no need to store a pedigree, and with
@@ -21,6 +21,9 @@ the population is at its demographic equilibrium
 [`nadiv`](https://CRAN.R-project.org/package=nadiv) or
 [`Pedixplorer`](https://louislenezet.github.io/Pedixplorer/)
 (which now supersedes `kinship2`)
+- a function to compute the inverse of the relatedness matrix (the precision
+matrix used by animal models), as a sparse matrix built directly from the
+pedigree, much more quickly than `nadiv`
 - a function to simulate a pedigree (with character or integer identifiers)
 - a function to simulate a population with its pedigree, deaths, births,
 immigrations and emigrations.
@@ -37,6 +40,7 @@ All four measures are validated in the tests of the package against three indepe
 | Task | Functions |
 |---|---|
 | Relatedness of a whole pedigree | `fastrel_ped()` (from a data frame), `fastrel_vec()` (from vectors) |
+| Inverse of the relatedness matrix (sparse) | `fastrel_inv()` |
 | Relatedness updated step by step (the "store") | `rel_new()`, `rel_add()`, `rel_remove()`, `rel_get()` |
 | Content of a relatedness store | `rel_ids()`, `rel_size()`, `rel_capacity()` |
 | Copying, saving and restoring a store | `rel_copy()`, `rel_save()`, `rel_load()` |
@@ -132,6 +136,33 @@ individual a variance of 1 whatever its inbreeding.
 
 See `?relatedness_metrics` for the definitions, their interpretation and the
 references.
+
+## Inverse of the relatedness matrix
+
+Animal models and other mixed models of genetic values are fitted with the
+inverse of the relatedness matrix, A⁻¹ (the precision matrix of the genetic
+values), rather than with A. While A is dense in most pedigrees (nearly all
+individuals of a population end up sharing an ancestor), A⁻¹ is always
+sparse: each individual adds at most six entries to its upper triangle.
+`fastrel_inv()` builds it directly from the pedigree, with the rules of
+Henderson (1976) and the inbreeding coefficients computed with the algorithm
+of Meuwissen and Luo (1992), without ever forming A. The memory used is thus
+proportional to the number of individuals, and A⁻¹ can be obtained for
+pedigrees far too large for A to fit in memory:
+
+```{r precision}
+Ainv <- fastrel_inv(ped_selfing)
+Ainv
+all.equal(as.matrix(Ainv), solve(fastrel_ped(ped_selfing))) # it is the inverse of A
+
+set.seed(1)
+big <- sim_ped(20000)          # A would take 3.2 GB
+system.time(Ainv <- fastrel_inv(big))
+Matrix::nnzero(Ainv)           # number of nonzero entries
+```
+
+The result is a sparse matrix from the package Matrix, which can be given as it
+is to modelling packages, e.g. as `ginverse` in `MCMCglmm::MCMCglmm()`.
 
 ## Using the store in a simulation
 
@@ -275,6 +306,7 @@ You can also run the more detailed integrated benchmarks as follows:
 source(system.file("benchmarks/relstore_benchmark.R", package = "fastrel"))
 source(system.file("benchmarks/sim_pop_benchmark.R", package = "fastrel"))
 source(system.file("benchmarks/memory_benchmark.R", package = "fastrel")) # memory used
+source(system.file("benchmarks/precision_benchmark.R", package = "fastrel")) # fastrel_inv() vs nadiv
 ```
 
 

@@ -59,7 +59,7 @@ all.equal(as.matrix(Ainv), solve(fastrel_ped(ped)))
 
 ## a large pedigree: the inverse is sparse
 set.seed(1)
-big <- sim_ped(20000)
+big <- sim_ped(2000)
 Ainv <- fastrel_inv(big)
 Matrix::nnzero(Ainv) / prod(dim(Ainv))   # share of nonzero entries
 }

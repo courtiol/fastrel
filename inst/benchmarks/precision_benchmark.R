@@ -52,9 +52,13 @@ compare <- function(p, label) {
 
 results <- list()
 set.seed(1)
-for (n in c(1000, 5000, 10000, 20000))
+for (n in c(50, 100, 1000, 5000, 10000)) {
+  print(paste("pkg comparison for deep pedigrees with n =", n))
   results[[length(results) + 1]] <- compare(sim_ped(n), "sim_ped (deep)")
-for (n in c(10000, 50000, 100000))
+}
+for (n in c(50, 100, 1000, 5000, 10000)) {
+  print(paste("pkg comparison for shallow pedigrees with n =", n))
   results[[length(results) + 1]] <- compare(shallow_ped(n, 12), "12 generations")
+}
 results <- do.call(rbind, results)
 print(results, row.names = FALSE)   # times in seconds
