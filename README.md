@@ -14,8 +14,10 @@ a computation time and memory footprint that do not increase over time as long a
 the population is at its demographic equilibrium
 (it only requires storing the information about alive individuals)
 - a function to compute relatedness from a pedigree more quickly than
-[`ggroups`](https://CRAN.R-project.org/package=ggroups), [`kinship2`](https://CRAN.R-project.org/package=kinship2),
-[`nadiv`](https://CRAN.R-project.org/package=nadiv) or
+[`ggroups`](https://CRAN.R-project.org/package=ggroups), 
+[`nadiv`](https://CRAN.R-project.org/package=nadiv),
+[`kinship2`](https://CRAN.R-project.org/package=kinship2)
+ or
 [`Pedixplorer`](https://louislenezet.github.io/Pedixplorer/)
 (which now supersedes `kinship2`)
 - a function to compute the inverse of the relatedness matrix (the precision
@@ -211,7 +213,7 @@ references.
 
 ## Inverse of the relatedness matrix
 
-Animal models and other mixed models of genetic values are fitted with the
+Animal models and other mixed models of genetic values can be fitted with the
 inverse of the relatedness matrix, A⁻¹ (the precision matrix of the genetic
 values), rather than with A. While A is dense in most pedigrees (nearly all
 individuals of a population end up sharing an ancestor), A⁻¹ is always
@@ -253,7 +255,7 @@ system.time(Ainv <- fastrel_inv(big))
 
 ```
 ##    user  system elapsed 
-##   3.142   0.000   3.149
+##   3.169   0.015   3.174
 ```
 
 ``` r
@@ -265,7 +267,8 @@ Matrix::nnzero(Ainv)           # number of nonzero entries
 ```
 
 The result is a sparse matrix from the package Matrix, which can be given as it
-is to modelling packages, e.g. as `ginverse` in `MCMCglmm::MCMCglmm()`.
+is to modelling packages, e.g. as `covStruct = list(precision  = Ainv)` in
+`spaMM::fitme()`, or `ginverse` in `MCMCglmm::MCMCglmm()`.
 
 ## Using the store in a simulation
 
@@ -430,61 +433,39 @@ head(ped, n = 3)
 ```
 
 ``` r
-# check that the computed relatedness are the same
-all.equal(unname(buildA(ped[, c("id", "dadid", "momid")])), # columns: individual, sire, dam
-          unname(fastrel_ped(ped)))
-```
-
-```
-## [1] TRUE
-```
-
-``` r
-all.equal(unname(kinship(ped$id, ped$dadid, ped$momid)),
-          unname(fastrel_ped(ped, metric = "kinship")))
-```
-
-```
-## [1] TRUE
-```
-
-``` r
-all.equal(unname(as.matrix(makeA(ped[, c("id", "momid", "dadid")]))), # columns: individual, dam, sire
-          unname(fastrel_ped(ped)))
-```
-
-```
-## [1] TRUE
-```
-
-``` r
 # benchmark
 microbenchmark(ggroups = buildA(ped[, c("id", "dadid", "momid")]),
-               kinship2 = kinship(ped$id, ped$dadid, ped$momid),
                nadiv = makeA(ped[, c("id", "momid", "dadid")]), # sparse matrix
-               fastrel_ped = fastrel_ped(ped),
+               kinship2 = kinship(ped$id, ped$dadid, ped$momid),
                fastrel_vec = fastrel_vec(ped$id, ped$dadid, ped$momid,
-                                         metric = "kinship"))
+                                         metric = "kinship"),
+               fastrel_ped = fastrel_ped(ped))
 ```
 
 ```
 ## Unit: microseconds
-##         expr        min         lq       mean     median         uq      max neval  cld
-##      ggroups 106272.199 108268.315 110237.299 109506.877 111722.178 117117.2   100 a   
-##     kinship2  11487.551  14660.944  19475.791  15204.501  16520.628 145837.5   100  b  
-##        nadiv 142949.737 152536.015 154928.548 155011.893 157682.035 163811.6   100   c 
-##  fastrel_ped    935.819   1011.903   3546.488   2025.178   2244.998 144639.7   100    d
-##  fastrel_vec   1080.492   1185.792   3355.241   1332.338   2352.801 135784.8   100    d
+##         expr        min         lq       mean     median         uq
+##      ggroups 108835.543 112486.809 122860.313 120465.152 122564.940
+##        nadiv 149452.988 154853.730 162338.357 157776.152 164057.003
+##     kinship2  11440.762  22229.327  31998.607  23148.855  25341.119
+##  fastrel_vec   1116.781   1219.499   3312.971   1768.592   2459.534
+##  fastrel_ped    963.191   1048.412   3249.684   1154.918   2232.505
+##        max neval  cld
+##  318516.46   100 a   
+##  313277.20   100  b  
+##  240451.87   100   c 
+##   13792.10   100    d
+##   15145.91   100    d
 ```
 
 You can also run the more detailed integrated benchmarks as follows:
 
 
 ``` r
-source(system.file("benchmarks/relstore_benchmark.R", package = "fastrel"))
-source(system.file("benchmarks/sim_pop_benchmark.R", package = "fastrel"))
-source(system.file("benchmarks/memory_benchmark.R", package = "fastrel")) # memory used
+source(system.file("benchmarks/relstore_benchmark.R", package = "fastrel")) # fastrel vs kinship2
+source(system.file("benchmarks/sim_pop_benchmark.R", package = "fastrel")) # fastrel vs simulation steps
 source(system.file("benchmarks/precision_benchmark.R", package = "fastrel")) # fastrel_inv() vs nadiv
+source(system.file("benchmarks/memory_benchmark.R", package = "fastrel")) # memory used
 ```
 
 
@@ -505,7 +486,7 @@ After editing README.Rmd, do:
 
 
 ``` r
-knitr::knit("README.Rmd")
+knitr::knit("README.Rmd") # Knit in RStudio does not update README.md!
 ```
 
 After editing C++ attributes, do:

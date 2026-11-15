@@ -19,7 +19,7 @@ the population is at its demographic equilibrium
 - a function to compute relatedness from a pedigree more quickly than
 [`ggroups`](https://CRAN.R-project.org/package=ggroups), 
 [`nadiv`](https://CRAN.R-project.org/package=nadiv),
-[`kinship2`](https://CRAN.R-project.org/package=kinship2),
+[`kinship2`](https://CRAN.R-project.org/package=kinship2)
  or
 [`Pedixplorer`](https://louislenezet.github.io/Pedixplorer/)
 (which now supersedes `kinship2`)
@@ -319,7 +319,7 @@ implemented to ensure the results are accurate.
 After editing README.Rmd, do:
 
 ```{r knit, eval = FALSE}
-knitr::knit("README.Rmd")
+knitr::knit("README.Rmd") # Knit in RStudio does not update README.md!
 ```
 
 After editing C++ attributes, do:
