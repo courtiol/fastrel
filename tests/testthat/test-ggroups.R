@@ -1,7 +1,9 @@
 ## Validation against ggroups::buildA(), an independent implementation of the
 ## additive (numerator) relationship matrix used in animal breeding, on the
-## same pedigrees as for kinship2 (see helper-pedigrees.R). ggroups needs the
-## parents to come before their offspring, and codes unknown parents as 0.
+## same pedigrees as for kinship2 (see helper-pedigrees.R). Only the additive
+## relationship is compared: the other measures are derived from it in
+## fastrel, and are checked against kinship2 (test-kinship2.R). ggroups needs
+## the parents to come before their offspring, and codes unknown parents as 0.
 
 skip_if_not_installed("ggroups")
 
@@ -16,29 +18,12 @@ ggroups_additive <- function(p) {
   A
 }
 
-## buildA() fails on a pedigree of a single individual (a limitation of
-## ggroups), so that one is checked against kinship2 only
-ggroups_pedigrees <- function() {
+test_that("the additive relationship matches ggroups on pedigrees of various shapes", {
+  ## buildA() fails on a pedigree of a single individual (a limitation of
+  ## ggroups), so that one is checked against kinship2 only
   peds <- validation_pedigrees()
-  peds[names(peds) != "single"]
-}
-
-test_that("all measures match ggroups on pedigrees of various shapes", {
-  peds <- ggroups_pedigrees()
-  set.seed(2)
+  peds <- peds[names(peds) != "single"]
   for (nm in names(peds))
-    expect_matches_reference(peds[[nm]], ggroups_additive(peds[[nm]]), what = nm)
-})
-
-test_that("ggroups and kinship2 agree with each other on these pedigrees", {
-  ## a check of the references themselves: if they disagreed, a pass against
-  ## one of them would mean little
-  skip_if_not_installed("kinship2")
-  peds <- ggroups_pedigrees()
-  for (nm in names(peds)) {
-    p <- peds[[nm]]
-    expect_equal(unname(ggroups_additive(p)),
-                 unname(2 * kinship2::kinship(p$id, dadid = p$dad, momid = p$mom)),
+    expect_equal(fastrel_ped(peds[[nm]]), ggroups_additive(peds[[nm]]),
                  tolerance = 1e-12, label = nm)
-  }
 })

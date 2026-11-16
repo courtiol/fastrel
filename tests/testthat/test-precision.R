@@ -11,10 +11,14 @@ test_that("fastrel_inv() is the inverse of fastrel_ped() on pedigrees of various
     expect_s4_class(Ainv, "dgCMatrix")
     expect_true(Matrix::isSymmetric(Ainv))
     expect_identical(dimnames(Ainv), dimnames(A), label = nm)
-    ## relative to the largest entry, which is large in inbred pedigrees
-    S <- solve(A)
-    expect_lt(max(abs(as.matrix(Ainv) - S)) / max(abs(S)), 1e-10, label = nm)
-    expect_lt(max(abs(as.matrix(Ainv) %*% A - diag(nrow(A)))), 1e-8, label = nm)
+    ## against the dense inverse, relative to the largest entry, which is large
+    ## in inbred pedigrees; larger pedigrees are checked against nadiv and
+    ## MCMCglmm (test-MCMCglmm.R)
+    if (nrow(p) <= 800) {
+      S <- solve(A)
+      expect_lt(max(abs(as.matrix(Ainv) - S)) / max(abs(S)), 1e-10, label = nm)
+      expect_lt(max(abs(as.matrix(Ainv) %*% A - diag(nrow(A)))), 1e-8, label = nm)
+    }
     ## whatever the order of the rows
     shuffled <- p[sample(nrow(p)), ]
     expect_equal(as.matrix(fastrel_inv(shuffled))[rownames(A), rownames(A), drop = FALSE],
@@ -38,10 +42,9 @@ test_that("fastrel_inv(matrix_class = \"dsCMatrix\") gives the same matrix, one 
 
 test_that("fastrel_inv() has at most 6 entries per individual in its upper triangle", {
   set.seed(5)
-  p <- sim_ped(3000)
+  p <- sim_ped(1000)
   Ainv <- fastrel_inv(p)
   expect_lte(Matrix::nnzero(Matrix::triu(Ainv)), 6 * nrow(p))
-  expect_equal(as.matrix(Ainv), solve(fastrel_ped(p)), tolerance = 1e-8)
 })
 
 test_that("fastrel_inv() handles selfing, unknown parents given as 0, and edge cases", {

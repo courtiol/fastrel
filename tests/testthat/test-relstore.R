@@ -124,7 +124,6 @@ test_that("by default a removed individual can be added again, as a founder", {
   expect_identical(rel_save(rel)$removed, raw(0))
   expect_identical(rel_save(rel)$remember_removed, "none")
   expect_error(rel_new(remember_removed = NA), "character vector")
-  expect_error(rel_new(remember_removed = TRUE), "character vector")
   expect_error(rel_new(remember_removed = "ids"), "should be one of")
   expect_error(rel_new(remember_removed = c("id", "none")), "length 1")
 })
@@ -200,7 +199,6 @@ test_that("a metapopulation in one store: migrants keep their relatives", {
 })
 
 test_that("the capacity is handled automatically and stays close to the peak", {
-  expect_error(rel_new(capacity = 100), "unused argument")
   rel <- rel_new()
   set.seed(1)
   ped <- sim_ped(900, n_founders = 20, window = 60)

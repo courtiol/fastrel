@@ -33,7 +33,7 @@ Between individuals that are not inbred, relatedness is at most 1 (identical twi
 This is the measure returned by default: 0.5 for parent and offspring, not the 0.25 of the kinship coefficient returned by `kinship2::kinship()`.
 The kinship coefficient, Wright's coefficient of relationship and Hamilton's regression coefficient of relatedness can be returned instead (see [Measures of relatedness](#measures-of-relatedness)).
 
-All four measures are validated in the tests of the package against three independent implementations, [`kinship2`](https://CRAN.R-project.org/package=kinship2), [`ggroups`](https://CRAN.R-project.org/package=ggroups) and [`nadiv`](https://CRAN.R-project.org/package=nadiv), on pedigrees of many shapes (with inbreeding, selfing, unknown parents and unsorted rows).
+The relatedness matrix is validated in the tests of the package against three independent implementations, [`kinship2`](https://CRAN.R-project.org/package=kinship2), [`ggroups`](https://CRAN.R-project.org/package=ggroups) and [`nadiv`](https://CRAN.R-project.org/package=nadiv), and all four measures against `kinship2`, on pedigrees of many shapes (with inbreeding, selfing, unknown parents and unsorted rows).
 
 | Task | Functions |
 |---|---|

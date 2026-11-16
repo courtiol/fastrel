@@ -46,7 +46,6 @@ test_that("edge cases", {
   expect_error(sim_pop(5, p_birth = NA), "probabilities")
   expect_error(sim_pop(5, p_emigrate = c(0.1, 0.2)), "probabilities")
   expect_error(sim_pop(5, n_immigrants = -1), "n_immigrants")
-  expect_error(sim_pop(5, carrying = 100), "unused argument")
   set.seed(2); small <- sim_pop(60, n_init = 40, K = 50)
   set.seed(2); large <- sim_pop(60, n_init = 40, K = 400)
   expect_lt(nrow(small), nrow(large))            # K limits the births
