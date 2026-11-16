@@ -6,11 +6,12 @@
   [`fastrel_ped()`](https://courtiol.github.io/fastrel/reference/fastrel_ped.md)
   and
   [`rel_add()`](https://courtiol.github.io/fastrel/reference/relstore.md)
-  take the first three columns as the individual, its father and its
-  mother (not its mother and its father), the order of
+  now take the first three columns as the individual, its father and its
+  mother (instead of mother then father). This aligns with the order
+  used by
   [`fastrel_vec()`](https://courtiol.github.io/fastrel/reference/fastrel_ped.md),
   [`kinship2::kinship()`](https://rdrr.io/pkg/kinship2/man/kinship.html)
-  and of pedigrees in animal breeding.
+  and standard animal breeding pedigrees.
   [`sim_ped()`](https://courtiol.github.io/fastrel/reference/sim_ped.md)
   and
   [`sim_pop()`](https://courtiol.github.io/fastrel/reference/sim_pop.md)

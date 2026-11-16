@@ -251,13 +251,12 @@ never shrinks.
 
 R does not see this memory:
 [`utils::object.size()`](https://rdrr.io/r/utils/object.size.html) or
-[`lobstr::obj_size()`](https://lobstr.r-lib.org/reference/obj_size.html)
-only report the small R side of a store. Also, each time the matrix is
-enlarged, the old and the new matrix coexist for a moment, and the
-memory of the old one is not always returned to the operating system at
-once: in our benchmark, a store that grew in small steps made the R
-process use about 20% more memory than its matrix. All the figures given
-here can be checked on your machine with the script
+`lobstr::obj_size()` only report the small R side of a store. Also, each
+time the matrix is enlarged, the old and the new matrix coexist for a
+moment, and the memory of the old one is not always returned to the
+operating system at once: in our benchmark, a store that grew in small
+steps made the R process use about 20% more memory than its matrix. All
+the figures given here can be checked on your machine with the script
 `system.file("benchmarks/memory_benchmark.R", package = "fastrel")`.
 
 ## See also
