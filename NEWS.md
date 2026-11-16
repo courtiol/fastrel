@@ -1,6 +1,5 @@
 # fastrel 1.0.0
 
-* First release on CRAN.
 * Breaking: `fastrel_inv()` now returns a `dgCMatrix`, which stores both
   triangles of the matrix, instead of a `dsCMatrix`, which stores only one:
   `MCMCglmm::MCMCglmm()` (version 2.36) silently gives wrong results with the
