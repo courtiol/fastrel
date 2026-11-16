@@ -4,10 +4,10 @@ This is a new submission.
 
 ## Test environments
 
-* Local: Ubuntu 24.04, R 4.3.3, with the suggested packages installed
+* Local: Ubuntu 24.04 R 4.3.3 + Fedora 44 R 4.6.2, with the suggested packages installed
   (`R CMD check --as-cran`).
 * GitHub Actions: ubuntu-latest, R release.
-* R-hub: PLATFORMS.
+* winbuilder: all 3 options.
 * The C++ code was also run through the whole test suite built with
   AddressSanitizer and UndefinedBehaviorSanitizer (gcc 13), without any error.
 
