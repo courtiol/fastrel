@@ -49,6 +49,12 @@ slots, which is invisible when you work through the identifiers. The
 restored store behaves exactly like the original one: you can keep
 adding and removing individuals.
 
+The saved object also records the version of fastrel that saved it
+(`fastrel_version`) and the format of the object (`format`, which
+changes only when the structure of saved objects changes). `rel_load()`
+reads objects in the format of the installed version of fastrel. If an
+object is in another format, it says which version of fastrel saved it.
+
 ## See also
 
 [`rel_new()`](https://courtiol.github.io/fastrel/reference/relstore.md)

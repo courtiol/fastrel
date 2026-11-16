@@ -11,13 +11,13 @@ Source:
 [`DESCRIPTION`](https://github.com/courtiol/fastrel/blob/main/DESCRIPTION)
 
 Courtiol A (2026). *fastrel: Fast Relatedness, Relationship and Kinship
-Matrices from Pedigrees*. R package version 0.9.0,
+Matrices from Pedigrees*. R package version 1.0.0,
 <https://courtiol.github.io/fastrel/>.
 
     @Manual{,
       title = {fastrel: Fast Relatedness, Relationship and Kinship Matrices from Pedigrees},
       author = {Alexandre Courtiol},
       year = {2026},
-      note = {R package version 0.9.0},
+      note = {R package version 1.0.0},
       url = {https://courtiol.github.io/fastrel/},
     }

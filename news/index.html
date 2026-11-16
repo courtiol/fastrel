@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fastrel</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,14 @@
       <small>Source: <a href="https://github.com/courtiol/fastrel/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.0" id="fastrel-100">fastrel 1.0.0<a class="anchor" aria-label="anchor" href="#fastrel-100"></a></h2>
+<ul><li>Breaking: <code><a href="../reference/fastrel_inv.html">fastrel_inv()</a></code> now returns a <code>dgCMatrix</code>, which stores both triangles of the matrix, instead of a <code>dsCMatrix</code>, which stores only one: <code><a href="https://rdrr.io/pkg/MCMCglmm/man/MCMCglmm.html" class="external-link">MCMCglmm::MCMCglmm()</a></code> (version 2.36) silently gives wrong results with the latter. The new argument <code>matrix_class = "dsCMatrix"</code> still returns the leaner symmetric class, for software that reads it correctly, such as spaMM.</li>
+<li>
+<code><a href="../reference/fastrel_inv.html">fastrel_inv()</a></code> is tested in animal models fitted with spaMM and MCMCglmm.</li>
+<li>The documentation calls the additive relationship the genetic covariance (Emik and Terrill 1949), and says between what it is a covariance.</li>
+<li>New hex logo.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.0" id="fastrel-090">fastrel 0.9.0<a class="anchor" aria-label="anchor" href="#fastrel-090"></a></h2>
 <ul><li>Breaking: when no column of <code>ped</code> has a recognised name, <code><a href="../reference/fastrel_ped.html">fastrel_ped()</a></code> and <code><a href="../reference/relstore.html">rel_add()</a></code> now take the first three columns as the individual, its father and its mother (instead of mother then father). This aligns with the order used by <code><a href="../reference/fastrel_ped.html">fastrel_vec()</a></code>, <code><a href="https://rdrr.io/pkg/kinship2/man/kinship.html" class="external-link">kinship2::kinship()</a></code> and standard animal breeding pedigrees. <code><a href="../reference/sim_ped.html">sim_ped()</a></code> and <code><a href="../reference/sim_pop.html">sim_pop()</a></code> return their columns in the same order (<code>id</code>, <code>dadid</code>, <code>momid</code>).</li>

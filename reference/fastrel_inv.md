@@ -11,7 +11,7 @@ for
 ## Usage
 
 ``` r
-fastrel_inv(ped)
+fastrel_inv(ped, matrix_class = c("dgCMatrix", "dsCMatrix"))
 ```
 
 ## Arguments
@@ -22,12 +22,30 @@ fastrel_inv(ped)
   columns giving the identifier of the individual, of its father and of
   its mother (`NA` or 0 if unknown). See the section Columns of `ped`.
 
+- matrix_class:
+
+  The class of sparse matrix returned, from the package Matrix:
+
+  - `"dgCMatrix"` (the default) stores both triangles of the matrix, as
+    [`MCMCglmm::inverseA()`](https://rdrr.io/pkg/MCMCglmm/man/inverseA.html)
+    does. This is the safe choice: it is read correctly by any software
+    that accepts sparse matrices.
+
+  - `"dsCMatrix"` stores only the upper triangle, and the matrix is
+    known to be symmetric. Its entries take about 40% less memory (at
+    most 6 per individual instead of 11; the diagonal is stored in both
+    cases, as are the row and column names), which matters only for very
+    large pedigrees. Use it only with software that reads symmetric
+    sparse matrices correctly, such as
+    [`spaMM::fitme()`](https://rdrr.io/pkg/spaMM/man/fitme.html):
+    [`MCMCglmm::MCMCglmm()`](https://rdrr.io/pkg/MCMCglmm/man/MCMCglmm.html)
+    (version 2.36) silently gives wrong results with it.
+
 ## Value
 
-A symmetric sparse matrix of class `"dsCMatrix"` (see the package
-Matrix), with the identifiers of the individuals as dimnames, in the
-order of the rows of `ped`. Use
-[`as.matrix()`](https://rdrr.io/r/base/matrix.html) to get a base
+A sparse matrix of class `matrix_class`, with the identifiers of the
+individuals as row and column names, in the order of the rows of `ped`.
+Use [`as.matrix()`](https://rdrr.io/r/base/matrix.html) to get a base
 (dense) matrix.
 
 ## Details
@@ -38,8 +56,10 @@ each individual adds at most six distinct entries to its upper triangle,
 in the cells of itself and of its parents. This is what makes the
 inverse useful in mixed models of genetic values (animal models), which
 can be fitted with \\A^{-1}\\ rather than with \\A\\: e.g. as
-`covStruct=list(precision=Ainv)` in `spaMM::fitme()` or
-`ginverse=list(var=Ainv)` in `MCMCglmm::MCMCglmm()`.
+`covStruct=list(precision=Ainv)` in
+[`spaMM::fitme()`](https://rdrr.io/pkg/spaMM/man/fitme.html) or
+`ginverse=list(var=Ainv)` in
+[`MCMCglmm::MCMCglmm()`](https://rdrr.io/pkg/MCMCglmm/man/MCMCglmm.html).
 
 The inverse is \\A^{-1} = \sum_i q_i q_i^\top / D_i\\, where \\q_i\\ has
 1 for individual \\i\\ and \\-1/2\\ for each of its known parents, and
@@ -83,7 +103,7 @@ ped <- data.frame(id  = c("A", "B", "C", "D", "E"),
                   mom = c(NA,  NA,  "B", "B", "D"))   # E: offspring of siblings
 Ainv <- fastrel_inv(ped)
 Ainv
-#> 5 x 5 sparse Matrix of class "dsCMatrix"
+#> 5 x 5 sparse Matrix of class "dgCMatrix"
 #>    A  B    C    D  E
 #> A  2  1 -1.0 -1.0  .
 #> B  1  2 -1.0 -1.0  .
@@ -101,4 +121,9 @@ big <- sim_ped(2000)
 Ainv <- fastrel_inv(big)
 Matrix::nnzero(Ainv) / prod(dim(Ainv))   # share of nonzero entries
 #> [1] 0.003229
+
+## less memory, for software that reads symmetric sparse matrices
+Ainv_sym <- fastrel_inv(big, matrix_class = "dsCMatrix")
+c(object.size(Ainv), object.size(Ainv_sym))
+#> [1] 420592 355320
 ```
