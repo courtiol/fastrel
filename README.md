@@ -230,7 +230,7 @@ Ainv
 ```
 
 ```
-## 4 x 4 sparse Matrix of class "dgCMatrix"
+## 4 x 4 sparse Matrix of class "dsCMatrix"
 ##     G  P O1 O2
 ## G   3 -2  .  .
 ## P  -2 10 -4 -4
@@ -415,18 +415,18 @@ microbenchmark(ggroups = buildA(ped[, c("id", "dadid", "momid")]),
 
 ```
 ## Unit: microseconds
-##         expr        min         lq       mean    median         uq       max
-##      ggroups 107034.749 111930.457 120145.126 116527.35 118944.373 335097.27
-##        nadiv 145631.896 152228.433 159943.235 155484.40 158755.954 364326.51
-##     kinship2  12649.207  18829.467  30490.802  20054.10  25378.213 225419.79
-##  fastrel_vec   1104.527   1191.898   2570.546   1301.38   2341.571  11652.23
-##  fastrel_ped    939.807    998.091   2571.385   1111.19   2179.830  10158.54
-##  neval  cld
-##    100 a   
-##    100  b  
-##    100   c 
-##    100    d
-##    100    d
+##         expr        min         lq       mean     median         uq
+##      ggroups 103793.965 106346.980 110168.863 110412.799 113708.227
+##        nadiv 141746.303 152460.085 156131.803 155623.895 159018.066
+##     kinship2  11330.454  18690.163  29362.478  19258.142  20371.040
+##  fastrel_vec   1062.207   1169.811   2249.512   1224.109   2204.601
+##  fastrel_ped    899.089   1008.040   2792.079   1113.114   2340.132
+##        max neval  cld
+##  119660.08   100 a   
+##  171251.17   100  b  
+##  232273.80   100   c 
+##   10456.64   100    d
+##   10358.26   100    d
 ```
 
 You can also run the more detailed integrated benchmarks as follows:
