@@ -239,7 +239,7 @@ Ainv
 ```
 
 The result is a sparse matrix from the package Matrix, which can be given as it
-is to modelling packages, e.g. e.g. as `covStruct=list(precision=Ainv)` in `spaMM::fitme()` or `ginverse=list(var=Ainv)` in `MCMCglmm::MCMCglmm()`.
+is to modelling packages, e.g. as `covStruct=list(precision=Ainv)` in `spaMM::fitme()` or `ginverse=list(var=Ainv)` in `MCMCglmm::MCMCglmm()`.
 
 ## Using the store in a simulation
 
@@ -415,18 +415,18 @@ microbenchmark(ggroups = buildA(ped[, c("id", "dadid", "momid")]),
 
 ```
 ## Unit: microseconds
-##         expr        min         lq       mean     median         uq        max
-##      ggroups 104014.191 109202.802 131375.080 117776.265 121240.177 1234483.28
-##        nadiv 140211.832 153731.884 161850.065 156811.775 163625.813  477643.79
-##     kinship2  11374.898  13755.237  26179.597  24586.352  25592.569  260272.88
-##  fastrel_vec   1122.472   1204.652   2654.996   1297.417   2255.593   19048.78
-##  fastrel_ped    912.324   1017.994   5326.970   1114.606   2090.260  232990.83
+##         expr        min         lq       mean    median         uq       max
+##      ggroups 107034.749 111930.457 120145.126 116527.35 118944.373 335097.27
+##        nadiv 145631.896 152228.433 159943.235 155484.40 158755.954 364326.51
+##     kinship2  12649.207  18829.467  30490.802  20054.10  25378.213 225419.79
+##  fastrel_vec   1104.527   1191.898   2570.546   1301.38   2341.571  11652.23
+##  fastrel_ped    939.807    998.091   2571.385   1111.19   2179.830  10158.54
 ##  neval  cld
 ##    100 a   
 ##    100  b  
 ##    100   c 
 ##    100    d
-##    100   cd
+##    100    d
 ```
 
 You can also run the more detailed integrated benchmarks as follows:
@@ -452,6 +452,13 @@ output of established packages (`kinship2`, `ggroups` and `nadiv`). Many tests h
 implemented to ensure the results are accurate.
 
 ### Tips for developers
+
+To check a Pull Request locally, do:
+
+
+``` r
+usethis::pr_fetch()
+```
 
 After editing README.Rmd, do:
 

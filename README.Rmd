@@ -157,7 +157,7 @@ Ainv
 ```
 
 The result is a sparse matrix from the package Matrix, which can be given as it
-is to modelling packages, e.g. e.g. as `covStruct=list(precision=Ainv)` in `spaMM::fitme()` or `ginverse=list(var=Ainv)` in `MCMCglmm::MCMCglmm()`.
+is to modelling packages, e.g. as `covStruct=list(precision=Ainv)` in `spaMM::fitme()` or `ginverse=list(var=Ainv)` in `MCMCglmm::MCMCglmm()`.
 
 ## Using the store in a simulation
 
@@ -307,6 +307,12 @@ output of established packages (`kinship2`, `ggroups` and `nadiv`). Many tests h
 implemented to ensure the results are accurate.
 
 ### Tips for developers
+
+To check a Pull Request locally, do:
+
+```{r PR, eval = FALSE}
+usethis::pr_fetch()
+```
 
 After editing README.Rmd, do:
 
