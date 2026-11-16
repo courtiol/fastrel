@@ -59,11 +59,13 @@ probability \eqn{F_i}{F[i]}.
 
 The additive relationship \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 phi[i,j]} is
 the genetic covariance between individuals \eqn{i} and \eqn{j}, as Emik and
-Terrill (1949) first called it: the covariance between their additive
-genetic values (breeding values), expressed in units of the additive genetic
-variance of the base population, i.e. of the founders of the pedigree,
-assumed unrelated and not inbred (see below). Emik and Terrill named it the
-numerator relationship, as animal and plant breeders still call it, since it
+Terrill (1949) first called it: for any trait, the covariance between the
+additive genetic values of \eqn{i} and \eqn{j} (their true breeding values,
+i.e. the sums of the average effects of their alleles, which BLUPs predict),
+in units of the additive genetic variance of that trait in the base
+population (the founders of the pedigree, assumed unrelated and not inbred).
+The matrix is thus the same for all traits; only the variance differs (see
+below). Emik and Terrill named it the numerator relationship, as animal and plant breeders still call it, since it
 is the numerator of Wright's coefficient of relationship (see below), and
 described the tabular method used here to compute it. Individuals are added one by one, parents before
 offspring. When individual \eqn{i}, with mother \eqn{m} and father
