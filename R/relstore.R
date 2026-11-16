@@ -392,6 +392,12 @@ nil_pointer <- methods::new("externalptr")
 #' you work through the identifiers. The restored store behaves exactly like the
 #' original one: you can keep adding and removing individuals.
 #'
+#' The saved object also records the version of fastrel that saved it
+#' (`fastrel_version`) and the format of the object (`format`, which changes
+#' only when the structure of saved objects changes). `rel_load()` reads
+#' objects in the format of the installed version of fastrel. If an object is
+#' in another format, it says which version of fastrel saved it.
+#'
 #' @param rel A store created by [rel_new()].
 #' @param file Path of an `.rds` file. If `NULL` (default), `rel_save()` returns
 #'   the saved object instead of writing it.
@@ -425,7 +431,9 @@ rel_save <- function(rel, file = NULL) {
   out <- structure(
     list(ids = rel$ids, A = rel_get(rel),
          remember_removed = c("none", "fingerprint", "id")[rel$ks$remember() + 1L],
-         removed = rel$ks$gone(), format = 2L),
+         removed = rel$ks$gone(),
+         format = saved_format,
+         fastrel_version = as.character(utils::packageVersion("fastrel"))),
     class = "relatedness_store_saved")
   if (is.null(file)) return(out)
   saveRDS(out, file)
@@ -436,12 +444,20 @@ rel_save <- function(rel, file = NULL) {
 #' @export
 rel_load <- function(x) {
   if (is.character(x) && length(x) == 1L) x <- readRDS(x)
-  fields <- c("ids", "A", "remember_removed", "removed", "format")
-  if (!inherits(x, "relatedness_store_saved") || !all(fields %in% names(x)))
+  if (!inherits(x, "relatedness_store_saved") || !is.list(x))
     stop("`x` must be a file or an object produced by rel_save()")
-  if (!identical(x$format, 2L))
-    stop("this object was saved by another version of fastrel and cannot be ",
-         "read by this one")
+  ## the format is checked first: an object in another format may have other
+  ## fields
+  if (!identical(x$format, saved_format))
+    stop("this object was saved ",
+         if (is.character(x$fastrel_version)) paste0("by fastrel ", x$fastrel_version, " "),
+         "in a format that this version of fastrel (",
+         as.character(utils::packageVersion("fastrel")), ") cannot read",
+         if (is.numeric(x$format) && isTRUE(x$format > saved_format))
+           "; update fastrel to read it")
+  fields <- c("ids", "A", "remember_removed", "removed", "format", "fastrel_version")
+  if (!all(fields %in% names(x)))
+    stop("`x` must be a file or an object produced by rel_save()")
   k <- length(x$ids)
   if (!is.matrix(x$A) || nrow(x$A) != k || ncol(x$A) != k)
     stop("the saved matrix does not match the saved identifiers")
@@ -460,3 +476,8 @@ rel_load <- function(x) {
   }
   rel
 }
+
+## Format of the objects written by rel_save(). It changes only when their
+## structure changes; rel_load() reads this format (and, in future versions,
+## may convert the earlier ones).
+saved_format <- 1L

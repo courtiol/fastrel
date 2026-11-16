@@ -48,9 +48,26 @@ test_that("empty stores and invalid input", {
   bad <- rel_save(rel2); bad$A[1, 1] <- NA
   expect_error(rel_load(bad), "non-finite")
   expect_error(rel_save(list()), "store")
-  ## an object in another format (e.g. from a future version) is refused
-  bad <- rel_save(rel2); bad$format <- 3L
-  expect_error(rel_load(bad), "another version")
   bad <- rel_save(rel2); bad$remember_removed <- NULL
+  expect_error(rel_load(bad), "rel_save")
+})
+
+test_that("the saved object records its format and the version of fastrel", {
+  obj <- rel_save(rel_new())
+  expect_identical(obj$format, 1L)
+  expect_identical(obj$fastrel_version, as.character(utils::packageVersion("fastrel")))
+  ## an object in another format is refused, naming the version that saved it
+  future <- obj
+  future$format <- 2L
+  future$fastrel_version <- "9.9.9"
+  expect_error(rel_load(future), "saved by fastrel 9.9.9 in a format.*update fastrel")
+  ## ... even if its structure differs entirely
+  future$ids <- NULL
+  expect_error(rel_load(future), "saved by fastrel 9.9.9 in a format")
+  bad <- obj
+  bad$format <- NULL
+  expect_error(rel_load(bad), "cannot read")
+  bad <- obj
+  bad$fastrel_version <- NULL
   expect_error(rel_load(bad), "rel_save")
 })
