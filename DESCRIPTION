@@ -11,6 +11,9 @@ Description: Computes quickly the main measures of identity by descent
     <doi:10.1093/oxfordjournals.jhered.a105986>, implemented in C++. The
     measures can also be updated incrementally as individuals are born, die or
     migrate, to save much computational time in individual-based simulations.
+    The package also computes the sparse inverse of the additive relationship
+    matrix directly from the pedigree, as used by animal models (Henderson
+    1976) <doi:10.2307/2529339>.
 License: GPL (>= 3)
 Encoding: UTF-8
 Depends: R (>= 4.0.0)
