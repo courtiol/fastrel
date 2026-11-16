@@ -56,6 +56,12 @@ test_that("the saved object records its format and the version of fastrel", {
   obj <- rel_save(rel_new())
   expect_identical(obj$format, 1L)
   expect_identical(obj$fastrel_version, as.character(utils::packageVersion("fastrel")))
+  ## another version of fastrel in the same format: read as usual
+  rel <- rel_new()
+  rel_add(rel, data.frame(id = c("a", "b", "c"), dad = c(NA, NA, "a"), mom = c(NA, NA, "b")))
+  other <- rel_save(rel)
+  other$fastrel_version <- "9.9.9"
+  expect_equal(rel_get(rel_load(other)), rel_get(rel))
   ## an object in another format is refused, naming the version that saved it
   future <- obj
   future$format <- 2L
