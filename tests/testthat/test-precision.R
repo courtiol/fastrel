@@ -7,7 +7,9 @@ test_that("fastrel_inv() is the inverse of fastrel_ped() on pedigrees of various
     p <- peds[[nm]]
     A <- fastrel_ped(p)
     Ainv <- fastrel_inv(p)
-    expect_s4_class(Ainv, "dsCMatrix")
+    ## both triangles stored (MCMCglmm misreads a matrix storing only one)
+    expect_s4_class(Ainv, "dgCMatrix")
+    expect_true(Matrix::isSymmetric(Ainv))
     expect_identical(dimnames(Ainv), dimnames(A), label = nm)
     ## relative to the largest entry, which is large in inbred pedigrees
     S <- solve(A)
@@ -20,11 +22,25 @@ test_that("fastrel_inv() is the inverse of fastrel_ped() on pedigrees of various
   }
 })
 
+test_that("fastrel_inv(matrix_class = \"dsCMatrix\") gives the same matrix, one triangle stored", {
+  set.seed(7)
+  p <- sim_ped(500)
+  general <- fastrel_inv(p)
+  symmetric <- fastrel_inv(p, matrix_class = "dsCMatrix")
+  expect_s4_class(symmetric, "dsCMatrix")
+  expect_identical(dimnames(symmetric), dimnames(general))
+  expect_equal(as.matrix(symmetric), as.matrix(general), tolerance = 1e-12)
+  entries <- function(m) as.numeric(object.size(m@x) + object.size(m@i) + object.size(m@p))
+  expect_lt(entries(symmetric), 0.7 * entries(general))
+  expect_s4_class(fastrel_inv(p[0, ], matrix_class = "dsCMatrix"), "dsCMatrix")
+  expect_error(fastrel_inv(p, matrix_class = "dense"))
+})
+
 test_that("fastrel_inv() has at most 6 entries per individual in its upper triangle", {
   set.seed(5)
   p <- sim_ped(3000)
   Ainv <- fastrel_inv(p)
-  expect_lte(length(Ainv@x), 6 * nrow(p))
+  expect_lte(Matrix::nnzero(Matrix::triu(Ainv)), 6 * nrow(p))
   expect_equal(as.matrix(Ainv), solve(fastrel_ped(p)), tolerance = 1e-8)
 })
 

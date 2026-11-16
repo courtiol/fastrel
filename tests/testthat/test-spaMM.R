@@ -34,4 +34,10 @@ test_that("spaMM fits the same animal model with fastrel_inv() as with fastrel_p
                                covStruct = list(precision = Ainv),
                                data = d[sample(nrow(d)), ])
   expect_equal(logLik(fit_shuffled), logLik(fit_prec), tolerance = 1e-8)
+
+  ## spaMM also reads the symmetric class, which stores one triangle only
+  fit_sym <- spaMM::fitme(y ~ 1 + corrMatrix(1 | id),
+                          covStruct = list(precision = fastrel_inv(p, matrix_class = "dsCMatrix")),
+                          data = d)
+  expect_equal(logLik(fit_sym), logLik(fit_prec), tolerance = 1e-8)
 })

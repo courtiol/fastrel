@@ -230,7 +230,7 @@ Ainv
 ```
 
 ```
-## 4 x 4 sparse Matrix of class "dsCMatrix"
+## 4 x 4 sparse Matrix of class "dgCMatrix"
 ##     G  P O1 O2
 ## G   3 -2  .  .
 ## P  -2 10 -4 -4

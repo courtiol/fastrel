@@ -31,10 +31,23 @@
 #'
 #' @inheritParams fastrel_ped
 #'
-#' @return A symmetric sparse matrix of class `"dsCMatrix"` (see the package
-#'   Matrix), with the identifiers of the individuals as dimnames, in the
-#'   order of the rows of `ped`. Use [as.matrix()] to get a base (dense)
-#'   matrix.
+#' @param matrix_class The class of sparse matrix returned, from the package
+#'   Matrix:
+#'   * `"dgCMatrix"` (the default) stores both triangles of the matrix, as
+#'     `MCMCglmm::inverseA()` does. This is the safe choice: it is read
+#'     correctly by any software that accepts sparse matrices.
+#'   * `"dsCMatrix"` stores only the upper triangle, and the matrix is known
+#'     to be symmetric. Its entries take about 40% less memory (at most 6
+#'     per individual instead of 11; the diagonal is stored in both cases, as
+#'     are the row and column names), which matters only for very large
+#'     pedigrees.
+#'     Use it only with software that reads symmetric sparse matrices
+#'     correctly, such as `spaMM::fitme()`: `MCMCglmm::MCMCglmm()` (version
+#'     2.36) silently gives wrong results with it.
+#'
+#' @return A sparse matrix of class `matrix_class`, with the identifiers of
+#'   the individuals as row and column names, in the order of the rows of
+#'   `ped`. Use [as.matrix()] to get a base (dense) matrix.
 #'
 #' @references
 #' Henderson, C. R. (1976). A simple method for computing the inverse of a
@@ -66,17 +79,30 @@
 #' big <- sim_ped(2000)
 #' Ainv <- fastrel_inv(big)
 #' Matrix::nnzero(Ainv) / prod(dim(Ainv))   # share of nonzero entries
+#'
+#' ## less memory, for software that reads symmetric sparse matrices
+#' Ainv_sym <- fastrel_inv(big, matrix_class = "dsCMatrix")
+#' c(object.size(Ainv), object.size(Ainv_sym))
 #' @export
-fastrel_inv <- function(ped) {
+fastrel_inv <- function(ped, matrix_class = c("dgCMatrix", "dsCMatrix")) {
+  matrix_class <- match.arg(matrix_class)
   cols <- ped_columns(ped)
   p <- parent_indices(ped[[cols[1L]]], dadid = ped[[cols[2L]]], momid = ped[[cols[3L]]])
   n <- length(p$id)
   ids <- as.character(p$id)
+  symmetric <- matrix_class == "dsCMatrix"
   if (n == 0L)
     return(Matrix::sparseMatrix(i = integer(0), j = integer(0), x = numeric(0),
-                                dims = c(0L, 0L), symmetric = TRUE))
+                                dims = c(0L, 0L), symmetric = symmetric))
   t <- precision_cpp(mom = p$mom, dad = p$dad)
-  ## repeated (i, j) pairs are summed by sparseMatrix()
-  Matrix::sparseMatrix(i = t$i, j = t$j, x = t$x, dims = c(n, n),
-                       dimnames = list(ids, ids), symmetric = TRUE)
+  ## The C++ code gives the upper triangle, as triplets in which repeated
+  ## (i, j) pairs are to be summed, which sparseMatrix() does.
+  if (symmetric)
+    return(Matrix::sparseMatrix(i = t$i, j = t$j, x = t$x, dims = c(n, n),
+                                dimnames = list(ids, ids), symmetric = TRUE))
+  ## both triangles: the off-diagonal entries are mirrored
+  off <- t$i != t$j
+  Matrix::sparseMatrix(i = c(t$i, t$j[off]), j = c(t$j, t$i[off]),
+                       x = c(t$x, t$x[off]), dims = c(n, n),
+                       dimnames = list(ids, ids))
 }
