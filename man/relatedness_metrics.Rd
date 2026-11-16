@@ -58,10 +58,14 @@ probability \eqn{F_i}{F[i]}.
 \section{Additive relationship (\code{"additive"})}{
 
 The additive relationship \eqn{A_{ij} = 2\phi_{ij}}{A[i,j] = 2 phi[i,j]} is
-what animal and plant breeders call the numerator relationship, as it is
-the numerator of Wright's coefficient of relationship (see below). Emik and
-Terrill (1949) introduced this name and described the tabular method used
-here to compute it. Individuals are added one by one, parents before
+the genetic covariance between individuals \eqn{i} and \eqn{j}, as Emik and
+Terrill (1949) first called it: the covariance between their additive
+genetic values (breeding values), expressed in units of the additive genetic
+variance of the base population, i.e. of the founders of the pedigree,
+assumed unrelated and not inbred (see below). Emik and Terrill named it the
+numerator relationship, as animal and plant breeders still call it, since it
+is the numerator of Wright's coefficient of relationship (see below), and
+described the tabular method used here to compute it. Individuals are added one by one, parents before
 offspring. When individual \eqn{i}, with mother \eqn{m} and father
 \eqn{d}, is added:
 \itemize{
