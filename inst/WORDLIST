@@ -6,6 +6,7 @@ Emik
 LLMs
 Leonie
 Luo
+MCMCglmm
 Malécot
 Masson
 Metapopulations
@@ -40,4 +41,5 @@ pak
 parenté
 pkgdown
 rel
+spaMM
 tibble
