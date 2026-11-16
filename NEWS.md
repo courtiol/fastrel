@@ -1,3 +1,15 @@
+# fastrel 1.0.0
+
+* Breaking: `fastrel_inv()` now returns a `dgCMatrix`, which stores both
+  triangles of the matrix, instead of a `dsCMatrix`, which stores only one:
+  `MCMCglmm::MCMCglmm()` (version 2.36) silently gives wrong results with the
+  latter. The new argument `matrix_class = "dsCMatrix"` still returns the
+  leaner symmetric class, for software that reads it correctly, such as spaMM.
+* `fastrel_inv()` is tested in animal models fitted with spaMM and MCMCglmm.
+* The documentation calls the additive relationship the genetic covariance
+  (Emik and Terrill 1949), and says between what it is a covariance.
+* New hex logo.
+
 # fastrel 0.9.0
 
 * Breaking: when no column of `ped` has a recognised name, `fastrel_ped()` and

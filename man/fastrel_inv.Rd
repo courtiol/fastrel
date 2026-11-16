@@ -4,18 +4,33 @@
 \alias{fastrel_inv}
 \title{Inverse of the relatedness matrix (precision matrix)}
 \usage{
-fastrel_inv(ped)
+fastrel_inv(ped, matrix_class = c("dgCMatrix", "dsCMatrix"))
 }
 \arguments{
 \item{ped}{A data frame (or a tibble) with one row per individual and three
 columns giving the identifier of the individual, of its father and of its
 mother (\code{NA} or 0 if unknown). See the section Columns of \code{ped}.}
+
+\item{matrix_class}{The class of sparse matrix returned, from the package
+Matrix:
+\itemize{
+\item \code{"dgCMatrix"} (the default) stores both triangles of the matrix, as
+\code{MCMCglmm::inverseA()} does. This is the safe choice: it is read
+correctly by any software that accepts sparse matrices.
+\item \code{"dsCMatrix"} stores only the upper triangle, and the matrix is known
+to be symmetric. Its entries take about 40\% less memory (at most 6
+per individual instead of 11; the diagonal is stored in both cases, as
+are the row and column names), which matters only for very large
+pedigrees.
+Use it only with software that reads symmetric sparse matrices
+correctly, such as \code{spaMM::fitme()}: \code{MCMCglmm::MCMCglmm()} (version
+2.36) silently gives wrong results with it.
+}}
 }
 \value{
-A symmetric sparse matrix of class \code{"dsCMatrix"} (see the package
-Matrix), with the identifiers of the individuals as dimnames, in the
-order of the rows of \code{ped}. Use \code{\link[=as.matrix]{as.matrix()}} to get a base (dense)
-matrix.
+A sparse matrix of class \code{matrix_class}, with the identifiers of
+the individuals as row and column names, in the order of the rows of
+\code{ped}. Use \code{\link[=as.matrix]{as.matrix()}} to get a base (dense) matrix.
 }
 \description{
 Computes the inverse \eqn{A^{-1}}{A^-1} of the additive relationship matrix
@@ -63,6 +78,10 @@ set.seed(1)
 big <- sim_ped(2000)
 Ainv <- fastrel_inv(big)
 Matrix::nnzero(Ainv) / prod(dim(Ainv))   # share of nonzero entries
+
+## less memory, for software that reads symmetric sparse matrices
+Ainv_sym <- fastrel_inv(big, matrix_class = "dsCMatrix")
+c(object.size(Ainv), object.size(Ainv_sym))
 }
 \references{
 Henderson, C. R. (1976). A simple method for computing the inverse of a

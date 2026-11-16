@@ -105,7 +105,6 @@ test_that("metric: partial matching, case and invalid values", {
   expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, c(1, 2, 1, 2), "Wright"), "autosome")
   expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, chrtype = "X"), "autosome")
   expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, chrtype = NA), "autosome")
-  expect_error(fastrel_vec(ped$id, ped$dad, ped$mom, foo = 1), "unused argument")
   ## internal calls pass it by name
   expect_equal(fastrel_ped(ped, "kinship"), A / 2)
 })

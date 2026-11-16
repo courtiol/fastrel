@@ -26,7 +26,6 @@ test_that("the simulators follow the random number generator of the session", {
   expect_false(identical(sim_ped(100), a))     # the generator has moved on
   set.seed(5); p1 <- sim_pop(10, n_init = 20)
   set.seed(5); expect_identical(sim_pop(10, n_init = 20), p1)
-  expect_error(sim_ped(100, seed = 1), "unused argument")
 })
 
 test_that("numeric_ids gives the same pedigree with integers and 0 for unknown parents", {

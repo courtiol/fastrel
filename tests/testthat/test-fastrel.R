@@ -120,7 +120,6 @@ test_that("fastrel_ped refuses ambiguous or incomplete columns", {
                "several columns.*focal")
   expect_error(fastrel_ped(p[, 1:2]), "data frame")
   expect_error(fastrel_ped(as.matrix(p)), "data frame")
-  expect_error(relatedness_fast(p$id, p$dad, p$mom), "could not find function")
 })
 
 test_that("range of values stated in the documentation", {

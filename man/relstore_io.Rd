@@ -39,6 +39,12 @@ their identifiers with \code{remember_removed = "id"}.
 After loading, individuals have new internal slots, which is invisible when
 you work through the identifiers. The restored store behaves exactly like the
 original one: you can keep adding and removing individuals.
+
+The saved object also records the version of fastrel that saved it
+(\code{fastrel_version}) and the format of the object (\code{format}, which changes
+only when the structure of saved objects changes). \code{rel_load()} reads
+objects in the format of the installed version of fastrel. If an object is
+in another format, it says which version of fastrel saved it.
 }
 \examples{
 rel <- rel_new()

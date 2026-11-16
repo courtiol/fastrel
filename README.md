@@ -33,7 +33,7 @@ Between individuals that are not inbred, relatedness is at most 1 (identical twi
 This is the measure returned by default: 0.5 for parent and offspring, not the 0.25 of the kinship coefficient returned by `kinship2::kinship()`.
 The kinship coefficient, Wright's coefficient of relationship and Hamilton's regression coefficient of relatedness can be returned instead (see [Measures of relatedness](#measures-of-relatedness)).
 
-All four measures are validated in the tests of the package against three independent implementations, [`kinship2`](https://CRAN.R-project.org/package=kinship2), [`ggroups`](https://CRAN.R-project.org/package=ggroups) and [`nadiv`](https://CRAN.R-project.org/package=nadiv), on pedigrees of many shapes (with inbreeding, selfing, unknown parents and unsorted rows).
+The relatedness matrix is validated in the tests of the package against three independent implementations, [`kinship2`](https://CRAN.R-project.org/package=kinship2), [`ggroups`](https://CRAN.R-project.org/package=ggroups) and [`nadiv`](https://CRAN.R-project.org/package=nadiv), and all four measures against `kinship2`, on pedigrees of many shapes (with inbreeding, selfing, unknown parents and unsorted rows).
 
 | Task | Functions |
 |---|---|
@@ -134,7 +134,7 @@ argument `metric`:
 
 | `metric` | Measure | Definition | Range | Typical use |
 |---|---|---|---|---|
-| `"additive"` (default) | additive (numerator) relationship | A = 2 × kinship | 0 to 2 | covariance of breeding values (animal models, heritability) |
+| `"additive"` (default) | additive (numerator) relationship, or genetic covariance | A = 2 × kinship: covariance between the additive genetic values (true breeding values) of the two individuals for any trait, in units of the trait's additive genetic variance in the founders | 0 to 2 | animal models, heritability |
 | `"kinship"` | kinship (coancestry) coefficient | probability that two alleles drawn at random, one from each individual, are identical by descent | 0 to 1 | probability of identity by descent; same as `kinship2::kinship()` |
 | `"wright"` | Wright's coefficient of relationship | correlation between genetic values, `cov2cor(A)` | 0 to 1 | genetic resemblance compared with that of an individual to itself (1 = as similar as an individual is to itself), whatever the inbreeding |
 | `"hamilton"` | regression coefficient of relatedness | regression of the recipient's genetic value on the actor's, A[i, j] / A[i, i] | 0 to 1 | the *r* of Hamilton's rule (kin selection); not symmetric: rows are actors |
@@ -239,7 +239,7 @@ Ainv
 ```
 
 The result is a sparse matrix from the package Matrix, which can be given as it
-is to modelling packages, e.g. e.g. as `covStruct=list(precision=Ainv)` in `spaMM::fitme()` or `ginverse=list(var=Ainv)` in `MCMCglmm::MCMCglmm()`.
+is to modelling packages, e.g. as `covStruct=list(precision=Ainv)` in `spaMM::fitme()` or `ginverse=list(var=Ainv)` in `MCMCglmm::MCMCglmm()`.
 
 ## Using the store in a simulation
 
@@ -415,18 +415,18 @@ microbenchmark(ggroups = buildA(ped[, c("id", "dadid", "momid")]),
 
 ```
 ## Unit: microseconds
-##         expr        min         lq       mean     median         uq        max
-##      ggroups 104014.191 109202.802 131375.080 117776.265 121240.177 1234483.28
-##        nadiv 140211.832 153731.884 161850.065 156811.775 163625.813  477643.79
-##     kinship2  11374.898  13755.237  26179.597  24586.352  25592.569  260272.88
-##  fastrel_vec   1122.472   1204.652   2654.996   1297.417   2255.593   19048.78
-##  fastrel_ped    912.324   1017.994   5326.970   1114.606   2090.260  232990.83
-##  neval  cld
-##    100 a   
-##    100  b  
-##    100   c 
-##    100    d
-##    100   cd
+##         expr        min         lq       mean     median         uq
+##      ggroups 103793.965 106346.980 110168.863 110412.799 113708.227
+##        nadiv 141746.303 152460.085 156131.803 155623.895 159018.066
+##     kinship2  11330.454  18690.163  29362.478  19258.142  20371.040
+##  fastrel_vec   1062.207   1169.811   2249.512   1224.109   2204.601
+##  fastrel_ped    899.089   1008.040   2792.079   1113.114   2340.132
+##        max neval  cld
+##  119660.08   100 a   
+##  171251.17   100  b  
+##  232273.80   100   c 
+##   10456.64   100    d
+##   10358.26   100    d
 ```
 
 You can also run the more detailed integrated benchmarks as follows:
@@ -452,6 +452,13 @@ output of established packages (`kinship2`, `ggroups` and `nadiv`). Many tests h
 implemented to ensure the results are accurate.
 
 ### Tips for developers
+
+To check a Pull Request locally, do:
+
+
+``` r
+usethis::pr_fetch()
+```
 
 After editing README.Rmd, do:
 
